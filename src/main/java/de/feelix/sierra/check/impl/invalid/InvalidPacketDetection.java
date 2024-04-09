@@ -6,6 +6,7 @@ import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
+import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.nbt.*;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -34,7 +35,9 @@ import org.bukkit.entity.Player;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 @SierraCheckData(checkType = CheckType.INVALID)
 public class InvalidPacketDetection extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
@@ -89,6 +92,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             WrapperPlayClientCreativeInventoryAction wrapper   = new WrapperPlayClientCreativeInventoryAction(event);
             ItemStack                                itemStack = wrapper.getItemStack();
             checkForInvalidBanner(event, itemStack);
+            checkIfItemIsAvailable(event, itemStack);
             checkForInvalidContainer(event, itemStack);
             checkForInvalidShulker(event, itemStack);
             checkNbtTags(event, itemStack);
@@ -273,6 +277,9 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 Player player = (Player) event.getPlayer();
                 //noinspection deprecation
                 ItemStack itemStack = SpigotConversionUtil.fromBukkitItemStack(player.getItemInHand());
+
+                if (itemStack == null) return;
+
                 if (itemStack.getType() != ItemTypes.BOOK
                     && itemStack.getType() != ItemTypes.WRITABLE_BOOK
                     && itemStack.getType() != ItemTypes.WRITTEN_BOOK) {
@@ -315,6 +322,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             if (wrapper.getItemStack().isPresent()) {
                 ItemStack itemStack = wrapper.getItemStack().get();
+                checkIfItemIsAvailable(event, itemStack);
                 checkForInvalidBanner(event, itemStack);
                 checkForInvalidContainer(event, itemStack);
                 checkForInvalidShulker(event, itemStack);
@@ -425,6 +433,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
 
             ItemStack carriedItemStack = wrapper.getCarriedItemStack();
+            checkIfItemIsAvailable(event, carriedItemStack);
             checkForInvalidContainer(event, carriedItemStack);
             checkForInvalidShulker(event, carriedItemStack);
             checkForInvalidBanner(event, carriedItemStack);
@@ -461,6 +470,55 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .punishType(PunishType.KICK)
                     .build());
             }
+        }
+    }
+
+    private void checkIfItemIsAvailable(PacketReceiveEvent event, ItemStack itemStack) {
+        ItemType itemStackType = itemStack.getType();
+
+        long millis = System.currentTimeMillis();
+
+        Player player = (Player) event.getPlayer();
+
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+
+        for (org.bukkit.inventory.ItemStack content : player.getInventory().getContents()) {
+            if (SpigotConversionUtil.fromBukkitItemStack(content).getType() == itemStackType) {
+                atomicBoolean.set(true);
+                break;
+            }
+        }
+
+        for (org.bukkit.inventory.ItemStack content : player.getOpenInventory().getTopInventory()) {
+            if (SpigotConversionUtil.fromBukkitItemStack(content).getType() == itemStackType) {
+                atomicBoolean.set(true);
+                break;
+            }
+        }
+
+        for (org.bukkit.inventory.ItemStack content : player.getOpenInventory().getBottomInventory()) {
+            if (SpigotConversionUtil.fromBukkitItemStack(content).getType() == itemStackType) {
+                atomicBoolean.set(true);
+                break;
+            }
+        }
+
+        if (!atomicBoolean.get()) {
+
+            long delay = System.currentTimeMillis() - millis;
+
+            String format = "Interacted with: %s, but its not in his inventory. (Took: %dms)";
+
+            Sierra.getPlugin().getLogger().log(Level.INFO, String.format(format, itemStackType.getName(), delay));
+
+            String msg = "This is an experimental check."
+                         + " If there are any errors with this, please report them on the Discord";
+            Sierra.getPlugin().getLogger().log(Level.INFO, msg);
+
+            violation(event, ViolationDocument.builder()
+                .debugInformation("Interacted with: " + itemStackType.getName() + ", took: " + delay + "ms")
+                .punishType(PunishType.KICK)
+                .build());
         }
     }
 
