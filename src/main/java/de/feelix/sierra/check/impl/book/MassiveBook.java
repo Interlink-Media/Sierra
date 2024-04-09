@@ -87,8 +87,8 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
 
                     ItemStack wrappedItemStack = universalWrapper.readItemStack();
 
-                    if (wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK
-                        || wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK && blockBooks) {
+                    if ((wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK
+                        || wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK) && blockBooks) {
                         violation(event, ViolationDocument.builder()
                             .debugInformation("Used book while disabled (plugin message)")
                             .punishType(PunishType.BAN)
