@@ -49,6 +49,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     private MenuType type      = MenuType.UNKNOWN;
     private int      lecternId = -1;
 
+    private long lastBookUse = 0L;
+
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
 
@@ -90,6 +92,18 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             checkForInvalidContainer(event, itemStack);
             checkForInvalidShulker(event, itemStack);
             checkNbtTags(event, itemStack);
+
+        } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
+
+            WrapperPlayClientPlayerBlockPlacement wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
+
+            wrapper.getItemStack().ifPresent(itemStack -> {
+                if (itemStack.getType() == ItemTypes.WRITABLE_BOOK
+                    || itemStack.getType() == ItemTypes.WRITTEN_BOOK
+                    || itemStack.getType() == ItemTypes.BOOK) {
+                    this.lastBookUse = System.currentTimeMillis();
+                }
+            });
 
         } else if (event.getPacketType() == PacketType.Play.Client.ENTITY_ACTION) {
 
@@ -215,6 +229,19 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             WrapperPlayClientPluginMessage wrapper = new WrapperPlayClientPluginMessage(event);
 
             String channelName = wrapper.getChannelName();
+
+            if (channelName.equals("MC|BEdit")
+                || channelName.equals("MC|BSign")
+                || channelName.equals("minecraft:bedit")
+                || channelName.equals("minecraft:bsign")) {
+
+                if (System.currentTimeMillis() - this.lastBookUse > 60000L) {
+                    violation(event, ViolationDocument.builder()
+                        .debugInformation("Send book sign, without book use")
+                        .punishType(PunishType.MITIGATE)
+                        .build());
+                }
+            }
 
             if (channelName.contains("${")) {
                 violation(event, ViolationDocument.builder()
