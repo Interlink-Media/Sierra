@@ -1,0 +1,145 @@
+#
+#  ███████╗ ██╗ ███████╗ ██████╗  ██████╗   █████╗
+#  ██╔════╝ ██║ ██╔════╝ ██╔══██╗ ██╔══██╗ ██╔══██╗
+#  ███████╗ ██║ █████╗   ██████╔╝ ██████╔╝ ███████║
+#  ╚════██║ ██║ ██╔══╝   ██╔══██╗ ██╔══██╗ ██╔══██║
+#  ███████║ ██║ ███████╗ ██║  ██║ ██║  ██║ ██║  ██║
+#  ╚══════╝ ╚═╝ ╚══════╝ ╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚═╝  ╚═╝
+#
+# Packet Analysis Tool for the Minecraft Protocol by Feelix
+# Documentation: https://sierra.squarecode.de/
+# Learn more at https://discord.gg/squarecode/
+
+# Before you change anything here:
+#
+# In the overwhelming majority of cases, changing stuff here will break things.
+# It is recommended not to change anything here unless you know exactly what you are doing.
+# When you experience false positives, report them to us, and we will fix them.
+# Before changing anything, please check the Sierra console output for any warnings or instructions.
+# If you have any questions, contact us on discord.
+
+license: "NOT_SET"
+
+# To make it difficult for those who intend to harm your server, you should hide the plugin version from the public.
+# This way, they won't be able to write version-specific crash exploits.
+# We recommend keeping this setting enabled
+hideVersion: true
+
+# The Packet Spam Checks are a collection of frequency and tick-based checks that examine incoming packets
+# for a specific frequency or certain tick variations. These checks have been thoroughly tested for any false
+# kicks and can therefore remain active without any restrictions. Please only disable them on direct instruction
+# from the support team, as they provide a significant fundamental protection against malicious attacks.
+prevent-packet-spam: true
+
+# The Sign Crasher is a method from the old days to crash a server. Even though hardly anyone uses this nowadays, we still
+# have this check in our inventory. We recommend keeping this check always enabled, as it cannot give false
+# positives and can only bring about positive effects.
+prevent-sign-crasher: true
+
+# This is the core of our system. This is the check that examines all incoming and outgoing packets for
+# incorrect values, faulty NBT tags, or protocol variations. Under no circumstances should this check be deactivated,
+# as it performs the majority of the work by far. This check operates incredibly precisely. If there are any issues
+# with it, please contact our Discord team immediately, so that they can analyze and resolve the problem
+prevent-invalid-packet: true
+
+# This is a collection of crashers that are typically only used on creative servers. However, since these checks
+# are well-developed, they can always remain active. They do not affect regular gameplay and can only provide
+# additional protection. We strongly recommend never disabling this check
+prevent-creative-crasher: true
+
+# This is a check that not everyone will need. There are a number of plugins that have poorly developed parts of their
+# code, resulting in lag with certain commands. Therefore, we have developed a check that intercepts and blocks these
+# commands before they reach the server. Below, you will find a list provided by us in the configuration, which should
+# already include most of the problematic commands. You can add or remove commands as needed
+block-disallowed-commands: true
+
+# This is a very sensitive and often error-prone check. It is relatively similar to a speed/fly check from an
+# anti-cheat system. If there is an anti-cheat on the server that provides a certain baseline, this check can
+# usually be deactivated. Examples of such anti-cheats include Polar, Intave, or Grim. However, if you still
+# have this check enabled and encounter issues, please report them to us immediately on Discord
+prevent-invalid-move: true
+
+# This is also a crucial core element of our system, as most crashers operate with books and NBT data.
+# This check must never be deactivated, as it also constitutes a very significant part of our security promise.
+# This check operates very precisely. If you experience any issues with it, please contact us immediately on Discord.
+# We can then address and resolve the problem promptly.
+prevent-book-crasher: true
+
+# This is a way to disable books and all associated crashers. This check should be activated on all servers where
+# players do not have access to books. It is important to note that enabling this check is by no means a reason to
+# deactivate the other checks. Prevention is always a sensible measure
+disable-books-completely: false
+
+# This is an important setting for both Creative and regular servers. If you have a plugin on the server that allows
+# you to get enchantments larger than those specified by Minecraft Vanilla, you need to adjust this value. If you want
+# to completely deactivate this check, simply enter -1. However, we do not recommend it.
+# We would suggest adjusting the value as needed
+max-enchantment-level: 5
+
+# Here you can choose between two punishment options.
+#
+# HARD: This one is capable of banning players as well as kicking them.
+#       With this setting, the punish command also takes effect. This is also the default setting.
+# LIGHT: This option is not capable of banning a player.
+#        This option only kicks and does not ban players.
+internal-punishment-config: "HARD"
+
+# This is the command by which the Sierra punish a player when it is 99.99% certain
+# that a player attempted to crash the server
+punish-command: "ban {username} Crashing"
+
+# This is a list of commands that, in the past, led to crashes due to the incompetence
+# of the developers of those plugins. We have listed and blocked these commands here.
+# You can add or remove commands as you wish
+disallowed-commands:
+  - "//calc" # WorldEdit
+  - "//calculate" # WorldEdit
+  - "//eval" # WorldEdit
+  - "//evaluate" # WorldEdit
+  - "//solve" # WorldEdit
+  - "//asc" # WorldEdit
+  - "//ascend" # WorldEdit
+  - "//desc" # WorldEdit
+  - "//descend" # WorldEdit
+  - "/to" #FastAsyncWorldEdit
+  - "/hd readtext" # HolographicDisplays
+  - "/hologram readtext" # HolographicDisplays
+  - "/holographicdisplays readtext" # HolographicDisplays
+  - "/pex promote" # PermissionsEx
+  - "/pex demote" # PermissionsEx
+  - "/promote" # PermissionsEx
+  - "/demote" # PermissionsEx
+  - "/execute" # PermissionsEx
+  - "/mv ^(.*." # MultiverseCore
+  - "/mv ^" # MultiverseCore
+  - "/mv help ^" # MultiverseCore
+  - "/mvhelp ^" # MultiverseCore
+  - "/$" # MultiverseCore
+  - "/pay * a a" # Essentials
+  - "/name ???????????????" # FDPClient Crasher
+  - "/replay æˆ‘å°†å°½å…¶æ‰€èƒ½åœ" # FDPClient Crasher
+  - "java.util.Random@" # FDPClient Crasher
+
+layout:
+
+  # The prefix for all plugin messages
+  prefix: "&8▎ &cSierra &8▏"
+
+  # Notification message for detecting violations
+  detection-message:
+
+    # This message is being sent to all players having the sierra.command.use permission,
+    # once someone is being suspected of crashing.
+    # The {prefix} placeholder gets replaced with the plugin`s prefix
+    # The {username} placeholder gets replaced with the offender's name.
+    # The {mitigation} placeholder gets replaced with the checks punishment result
+    # The {checkname} placeholder gets replaced with the check name
+    # The {violations} placeholder gets replaced with the checks violation count
+    staff-alert: "{prefix} &c{username} &8┃ &f{mitigation} &c{checkname} &8┃ &cx{violations}"
+
+    # What should the notice be in each alert?
+    alert-command-note: "&fClick to teleport"
+
+    # What should the command be that is executed when the message is clicked?
+    # The variable {username} can be used as a substitute for the player's name
+    alert-command: "/tp {username}"

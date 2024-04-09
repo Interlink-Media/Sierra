@@ -1,0 +1,65 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id "com.github.johnrengelman.shadow" version "7.1.2"
+}
+
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+publishing {
+    publications {
+        //noinspection GroovyAssignabilityCheck
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+        }
+    }
+}
+
+repositories {
+    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { url = 'https://repo.codemc.io/repository/maven-releases/' } // PacketEvents
+    maven { url "https://repo.demeng.dev/releases" }
+    mavenCentral()
+}
+
+dependencies {
+    implementation('com.github.retrooper.packetevents:spigot:2.2.1') {
+        exclude group: 'com.google.code.gson', module: 'gson'
+        changing = true
+    }
+    implementation ("dev.demeng:sentinel-java-wrapper:1.2.0") {
+        // Exclude GSON if it's already available
+        exclude group: 'com.google.code.gson', module: 'gson'
+    }
+    implementation(project(':api'))
+    implementation "net.kyori:adventure-api:4.16.0"
+
+    compileOnly 'org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT'
+
+    compileOnly 'org.projectlombok:lombok:1.18.26'
+    annotationProcessor 'org.projectlombok:lombok:1.18.26'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.26'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.26'
+}
+
+group = 'de.feelix.sierra'
+version = '1.0.0'
+description = 'Sierra'
+
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.targetCompatibility = JavaVersion.VERSION_1_8
+
+shadowJar {
+    minimize()
+    relocate 'club.minnced', 'de.feelix.sierra.discord-webhooks'
+
+    archiveFileName = "${project.name}-${project.version}.jar"
+    destinationDirectory = file("C://Users/admin/Desktop/server/plugins")
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
