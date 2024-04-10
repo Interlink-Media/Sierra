@@ -1,5 +1,6 @@
 package de.feelix.sierra.manager.storage;
 
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
@@ -43,8 +44,9 @@ public class PlayerData implements SierraUser {
 
     private String brand = "vanilla";
 
-    public       GameMode     gameMode;
-    public final CheckManager checkManager = new CheckManager(this);
+    public       ClientVersion clientVersion;
+    public       GameMode      gameMode;
+    public final CheckManager  checkManager = new CheckManager(this);
 
 
     /**
@@ -54,6 +56,7 @@ public class PlayerData implements SierraUser {
      */
     public PlayerData(User user) {
         this.user = user;
+        this.clientVersion = user.getClientVersion();
     }
 
     @Override

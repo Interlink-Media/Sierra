@@ -23,7 +23,7 @@ import java.util.logging.Level;
 public class PacketListener extends PacketListenerAbstract {
 
     public PacketListener() {
-        super(PacketListenerPriority.MONITOR);
+        super(PacketListenerPriority.LOWEST);
     }
 
     /**
@@ -98,7 +98,9 @@ public class PacketListener extends PacketListenerAbstract {
 
         PlayerData playerData = DataManager.getInstance().getPlayerData(event.getUser()).get();
 
-        if (playerData == null) return;
+        if (playerData == null) {
+            return;
+        }
 
         if (playerData.isExempt()) {
             event.setCancelled(false);

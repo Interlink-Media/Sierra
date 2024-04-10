@@ -13,7 +13,6 @@ import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -93,7 +92,7 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
     }
 
     private boolean playerHasPermission(PacketReceiveEvent event) {
-        Player player = Bukkit.getPlayer(event.getUser().getName());
+        Player player = (Player) event.getPlayer();
 
         if (player == null) {
             return true;

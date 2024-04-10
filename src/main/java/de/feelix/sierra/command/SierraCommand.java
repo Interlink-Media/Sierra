@@ -15,10 +15,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -93,13 +92,18 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
 
     @Nullable
     @Override
-    public List<String> onTabComplete(CommandSender sender, @NotNull Command command,
+    public List<String> onTabComplete(@NotNull CommandSender sender,
+                                      @NotNull Command command,
                                       @Nullable String alias, String[] args) {
+
+        if (!command.getName().equalsIgnoreCase("sierra")) {
+            return null;
+        }
 
         String defaultBukkitPermission = "sierra.command";
 
         if (!sender.hasPermission(defaultBukkitPermission)) {
-            return Collections.emptyList();
+            return null;
         }
 
         List<String> keys = new ArrayList<>();

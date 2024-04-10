@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
+import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
@@ -30,7 +31,6 @@ import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.nio.charset.StandardCharsets;
@@ -63,9 +63,16 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             .getBoolean("prevent-invalid-packet", true)) {
             return;
         }
+
+        if (event.getConnectionState() != ConnectionState.PLAY) return;
+
+        if (playerData.clientVersion == null) {
+            playerData.clientVersion = event.getUser().getClientVersion();
+        }
+
         //https://netty.io/4.1/api/io/netty/buffer/ByteBuf.html//Sequential Access Indexing
         int capacity = ByteBufHelper.capacity(event.getByteBuf());
-        int maxBytes = 64000 * (event.getUser().getClientVersion().isOlderThan(ClientVersion.V_1_8) ? 2 : 1);
+        int maxBytes = 64000 * (playerData.clientVersion.isOlderThan(ClientVersion.V_1_8) ? 2 : 1);
         if (capacity > maxBytes) {
             violation(event, ViolationDocument.builder()
                 .debugInformation("Bytes: " + capacity + " Max Bytes: " + maxBytes)
@@ -74,7 +81,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
         //https://netty.io/4.1/api/io/netty/buffer/ByteBuf.html//Sequential Access Indexing
         int readableBytes     = ByteBufHelper.readableBytes(event.getByteBuf());
-        int maxBytesPerSecond = 64000 * (event.getUser().getClientVersion().isOlderThan(ClientVersion.V_1_8) ? 2 : 1);
+        int maxBytesPerSecond = 64000 * (playerData.clientVersion.isOlderThan(ClientVersion.V_1_8) ? 2 : 1);
         if ((playerData.bytesSent += readableBytes) > maxBytesPerSecond) {
             violation(event, ViolationDocument.builder()
                 .debugInformation("Bytes Sent: " + playerData.getBytesSent() + " Max Bytes/s: " + maxBytesPerSecond)
@@ -169,7 +176,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .punishType(PunishType.BAN)
                     .build());
             }
-            Player player = Bukkit.getPlayer(event.getUser().getUUID());
+            Player player = (Player) event.getPlayer();
 
             if (player == null) return;
 
@@ -207,13 +214,15 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             // Detecting liquid bounce completion exploit
             if (new NBTDetector().find(text)) {
                 violation(event, ViolationDocument.builder()
-                    .debugInformation("text: " + wrapper.getText())
+                    .debugInformation("Text: " + wrapper.getText())
                     .punishType(PunishType.KICK)
                     .build());
             }
 
-            //noinspection ConstantValue
-            if (text.equals("/") && text.trim().isEmpty()) {
+            if ((text.equals("/") || text.trim().isEmpty()) && PacketEvents.getAPI()
+                .getServerManager()
+                .getVersion()
+                .isNewerThanOrEquals(ServerVersion.V_1_13)) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Trimmed empty tab to zero")
                     .punishType(PunishType.KICK)
@@ -814,7 +823,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW && isSupportedVersion()) {
             WrapperPlayServerOpenWindow window = new WrapperPlayServerOpenWindow(event);
             this.type = MenuType.getMenuType(window.getType());
-            if (MenuType.getMenuType(window.getType()) == MenuType.LECTERN) lecternId = window.getContainerId();
+            if (type == MenuType.LECTERN) lecternId = window.getContainerId();
         }
     }
 

@@ -66,9 +66,9 @@ public class HistoryCommand implements ISierraCommand {
     private void sendHelpSyntax(ISierraSender sierraSender) {
         String prefix = Sierra.PREFIX;
         sierraSender.getSender().sendMessage(prefix + " §c§lCommand Usage §8- §7History");
-        sierraSender.getSender().sendMessage(prefix + " §c- §7Show the action history");
+        sierraSender.getSender().sendMessage(prefix + " §8- §7Show the action history");
         sierraSender.getSender().sendMessage(prefix + " §7Arguments:");
-        sierraSender.getSender().sendMessage(prefix + " §c- §8<§7page§8> §8-> §7The specific page");
+        sierraSender.getSender().sendMessage(prefix + " §8- §8<§7page§8> §8-> §7The specific page");
     }
 
     @Override
