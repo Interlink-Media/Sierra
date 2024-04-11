@@ -5,6 +5,8 @@ import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.CheckManager;
+import de.feelix.sierra.manager.storage.processor.BrandProcessor;
+import de.feelix.sierra.manager.storage.processor.GameModeProcessor;
 import lombok.Getter;
 import lombok.Setter;
 import de.feelix.sierraapi.check.CheckRepository;
@@ -44,10 +46,11 @@ public class PlayerData implements SierraUser {
 
     private String brand = "vanilla";
 
-    public       ClientVersion clientVersion;
-    public       GameMode      gameMode;
-    public final CheckManager  checkManager = new CheckManager(this);
-
+    public        ClientVersion     clientVersion;
+    public        GameMode          gameMode;
+    public final  CheckManager      checkManager      = new CheckManager(this);
+    private final BrandProcessor    brandProcessor    = new BrandProcessor(this);
+    private final GameModeProcessor gameModeProcessor = new GameModeProcessor(this);
 
     /**
      * The PlayerData function is a constructor that takes in a User object and sets the user variable to it.
@@ -121,16 +124,11 @@ public class PlayerData implements SierraUser {
      * @param punishType punishType Determine what type of punishment the player should receive
      */
     public void punish(PunishType punishType) {
-        if (punishType == PunishType.BAN) {
-            setBlocked(true);
-            kick();
-            if (Sierra.getPlugin().getPunishmentConfig().isBan()) {
-                ban();
-            }
-        } else if (punishType == PunishType.KICK && Sierra.getPlugin().getPunishmentConfig().isKick()) {
-            setBlocked(true);
-            kick();
+        setBlocked(true);
+        if (punishType == PunishType.BAN && Sierra.getPlugin().getPunishmentConfig().isBan()) {
+            ban();
         }
+        kick();
     }
 
     private void ban() {
@@ -150,4 +148,5 @@ public class PlayerData implements SierraUser {
     public CheckRepository checkRepository() {
         return this.checkManager;
     }
+
 }

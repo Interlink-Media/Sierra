@@ -6,7 +6,6 @@ public enum PunishType {
     KICK("kicked for"),
     BAN("punished for");
 
-
     private final String friendlyMessage;
 
     PunishType(String friendlyMessage) {
