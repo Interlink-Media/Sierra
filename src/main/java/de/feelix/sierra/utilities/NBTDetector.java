@@ -10,8 +10,8 @@ public class NBTDetector {
     private static final List<String> stringList = new ArrayList<>();
 
     public NBTDetector() {
-        stringList.add("[");
-        stringList.add("]");
+        // stringList.add("["); falses
+        // stringList.add("]"); falses
         stringList.add("{");
         stringList.add("}");
         // stringList.add("@"); // Bug when type @a or @e

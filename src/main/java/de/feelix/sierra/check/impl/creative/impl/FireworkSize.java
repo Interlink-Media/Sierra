@@ -44,7 +44,10 @@ public class FireworkSize implements ItemCheck {
             NBTCompound fireworkNBT = itemStack.getNBT().getCompoundTagOrNull("Fireworks");
             if (fireworkNBT != null) {
                 NBTList<NBTCompound> explosionsNBT = fireworkNBT.getCompoundListTagOrNull("Explosions");
-                int                  maxExplosions = 25;
+
+                if (explosionsNBT == null) return false;
+
+                int maxExplosions = 25;
                 return explosionsNBT.size() >= maxExplosions;
             }
         }

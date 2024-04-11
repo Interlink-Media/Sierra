@@ -87,9 +87,10 @@ public final class Sierra extends JavaPlugin implements SierraApi {
             PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
             PacketEvents.getAPI().getSettings()
                 .fullStackTrace(true)
+                .reEncodeByDefault(false)
                 .kickOnPacketException(true)
-                .checkForUpdates(false)
-                .bStats(false);
+                .checkForUpdates(true)
+                .bStats(true);
             PacketEvents.getAPI().load();
         }
     }
