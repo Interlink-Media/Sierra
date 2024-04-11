@@ -146,7 +146,8 @@ public class SierraDetection implements SierraCheck {
         String username = this.playerData.getUser().getName();
 
         String clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
-        int ticks = FormatUtils.convertMillisToTicks(System.currentTimeMillis() - this.playerData.getJoinTime());
+        int    ticks         = FormatUtils.convertMillisToTicks(
+            System.currentTimeMillis() - this.playerData.getJoinTime());
 
         String content =
             " §7Username: §c" + username + "\n" +
