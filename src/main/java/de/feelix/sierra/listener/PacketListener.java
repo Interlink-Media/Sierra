@@ -4,13 +4,6 @@ import com.github.retrooper.packetevents.event.PacketListenerAbstract;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
-import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
-import com.github.retrooper.packetevents.protocol.player.GameMode;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPluginMessage;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChangeGameState;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerJoinGame;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerRespawn;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
@@ -23,7 +16,7 @@ import java.util.logging.Level;
 public class PacketListener extends PacketListenerAbstract {
 
     public PacketListener() {
-        super(PacketListenerPriority.LOWEST);
+        super(PacketListenerPriority.MONITOR);
     }
 
     /**
@@ -55,32 +48,12 @@ public class PacketListener extends PacketListenerAbstract {
             return;
         }
 
-        if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
-            WrapperPlayClientPluginMessage wrapper = new WrapperPlayClientPluginMessage(event);
-            handleChannelMessage(playerData, wrapper.getChannelName(), wrapper.getData());
-        }
+        playerData.getBrandProcessor().process(event);
 
         for (SierraCheck availableCheck : playerData.getCheckManager().availableChecks()) {
             if (availableCheck instanceof IngoingProcessor) {
                 ((IngoingProcessor) availableCheck).handle(event, playerData);
             }
-        }
-    }
-
-    private void handleChannelMessage(PlayerData playerData, String channel, byte[] data) {
-        if (channel.equalsIgnoreCase("minecraft:brand") || // 1.13+
-            channel.equals("MC|Brand")) { // 1.12
-            if (data.length > 64 || data.length == 0) {
-                playerData.setBrand("sent " + data.length + " bytes as brand");
-            } else if (!playerData.isHasBrand()) {
-
-                byte[] minusLength = new byte[data.length - 1];
-                System.arraycopy(data, 1, minusLength, 0, minusLength.length);
-
-                // Removes velocity's brand suffix
-                playerData.setBrand(new String(minusLength).replace(" (Velocity)", ""));
-            }
-            playerData.setHasBrand(true);
         }
     }
 
@@ -112,33 +85,7 @@ public class PacketListener extends PacketListenerAbstract {
             return;
         }
 
-        PacketTypeCommon typeCommon = event.getPacketType();
-
-        if (typeCommon == PacketType.Play.Server.CHANGE_GAME_STATE) {
-            WrapperPlayServerChangeGameState packet = new WrapperPlayServerChangeGameState(event);
-
-            if (packet.getReason() == WrapperPlayServerChangeGameState.Reason.CHANGE_GAME_MODE) {
-
-                int gameMode = (int) packet.getValue();
-
-                // Some plugins send invalid values such as -1, this is what the client does
-                if (gameMode < 0 || gameMode >= GameMode.values().length) {
-                    playerData.setGameMode(GameMode.SURVIVAL);
-                } else {
-                    playerData.setGameMode(GameMode.values()[gameMode]);
-                }
-            }
-        }
-
-        if (typeCommon == PacketType.Play.Server.JOIN_GAME) {
-            WrapperPlayServerJoinGame joinGame = new WrapperPlayServerJoinGame(event);
-            playerData.setGameMode(joinGame.getGameMode());
-        }
-
-        if (typeCommon == PacketType.Play.Server.RESPAWN) {
-            WrapperPlayServerRespawn respawn = new WrapperPlayServerRespawn(event);
-            playerData.setGameMode(respawn.getGameMode());
-        }
+        playerData.getGameModeProcessor().process(event);
 
         for (SierraCheck availableCheck : playerData.getCheckManager().availableChecks()) {
             if (availableCheck instanceof OutgoingProcessor) {

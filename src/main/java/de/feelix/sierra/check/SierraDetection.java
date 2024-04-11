@@ -73,21 +73,25 @@ public class SierraDetection implements SierraCheck {
             violationDocument.setDebugInformation("No debug available");
         }
 
+        // Update violation count
+        this.violations++;
+
         // Asynchronously call user detection event
         Bukkit.getScheduler().runTaskAsynchronously(
             Sierra.getPlugin(),
-            () -> Bukkit.getPluginManager().callEvent(new AsyncUserDetectionEvent(violationDocument, playerData))
+            () -> Bukkit.getPluginManager()
+                .callEvent(new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))
         );
-
-        // Update violation count
-        this.violations++;
 
         // Log to console, alert staff, create history, and potentially punish
         User user = event.getUser();
         consoleLog(user, violationDocument);
         alert(user, violationDocument.getDebugInformation(), violationDocument.punishType());
         createHistory(playerData, violationDocument);
-        playerData.punish(violationDocument.punishType());
+
+        if (violationDocument.punishType() != PunishType.MITIGATE) {
+            playerData.punish(violationDocument.punishType());
+        }
     }
 
     // Create history document asynchronously
@@ -146,7 +150,7 @@ public class SierraDetection implements SierraCheck {
         String username = this.playerData.getUser().getName();
 
         String clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
-        int    ticks         = FormatUtils.convertMillisToTicks(
+        int ticks = FormatUtils.convertMillisToTicks(
             System.currentTimeMillis() - this.playerData.getJoinTime());
 
         String content =
