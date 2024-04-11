@@ -1,5 +1,6 @@
 package de.feelix.sierra.utilities;
 
+import com.github.retrooper.packetevents.PacketEvents;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.DataManager;
 import de.feelix.sierra.manager.storage.PlayerData;
@@ -25,6 +26,8 @@ public class Ticker {
      */
     public Ticker() {
         instance = this;
+
+        if (PacketEvents.getAPI() == null) return;
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(Sierra.getPlugin(), () -> currentTick++, 1, 1);
 
