@@ -32,7 +32,6 @@ import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryType;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -492,7 +491,9 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
 
-        if (player.getOpenInventory().getType() != InventoryType.PLAYER) return;
+        if (player.getGameMode() == org.bukkit.GameMode.CREATIVE) {
+            return;
+        }
 
         for (org.bukkit.inventory.ItemStack content : player.getInventory().getContents()) {
             if (SpigotConversionUtil.fromBukkitItemStack(content).getType() == itemStackType) {
@@ -507,13 +508,13 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 break;
             }
         }
-
         for (org.bukkit.inventory.ItemStack content : player.getOpenInventory().getBottomInventory()) {
             if (SpigotConversionUtil.fromBukkitItemStack(content).getType() == itemStackType) {
                 atomicBoolean.set(true);
                 break;
             }
         }
+
 
         if (!atomicBoolean.get()) {
 
