@@ -2,14 +2,16 @@
 
   <p align="center">
     Packet Analysis Tool for the Minecraft Protocol by Feelix.
-    <p>
-      This project is based on https://github.com/jtJava/Titanium
     <br />
     <a href="https://github.com/Interlink-Media/Sierra/issues">Report Bug</a>
     ·
     <a href="https://github.com/Interlink-Media/Sierra/issues">Request Feature</a>
   </p>
 </div>
+
+<p>
+  This project is based on https://github.com/jtJava/Titanium
+</p>
 
 <!-- TABLE OF CONTENTS -->
 <details>
