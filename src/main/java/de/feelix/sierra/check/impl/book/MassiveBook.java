@@ -313,7 +313,7 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                 return new CrashDetails("Invalid extra frequency", PunishType.BAN);
             }
 
-            if (!FieldReader.isReadable(pageContent) && !pageContent.isEmpty()) {
+            if (FieldReader.isReadable(pageContent) && !pageContent.isEmpty()) {
                 return new CrashDetails("Field is not readable", PunishType.BAN);
             }
 

@@ -23,7 +23,6 @@ public class PacketListener extends PacketListenerAbstract {
         super(PacketListenerPriority.MONITOR);
     }
 
-
     /**
      * The onPacketReceive method is called whenever a packet is received by the server.
      * It processes the received packet, checks for exemptions and blocks, and handles

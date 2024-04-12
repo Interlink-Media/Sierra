@@ -14,8 +14,8 @@ public class FieldReader {
             if (Character.isAlphabetic(c) || Character.isDigit(c) || !Character.isISOControl(c)) {
                 continue;
             }
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 }
