@@ -62,10 +62,23 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
             WrapperPlayClientChatMessage wrapper = new WrapperPlayClientChatMessage(event);
             String                       message = wrapper.getMessage().toLowerCase().replaceAll("\\s+", " ");
             checkForDoubleCommands(event, message);
+            checkForLog4J(event, message);
         } else if (event.getPacketType() == PacketType.Play.Client.CHAT_COMMAND) {
             WrapperPlayClientChatCommand wrapper = new WrapperPlayClientChatCommand(event);
-            String message = wrapper.getCommand().toLowerCase().replaceAll("\\s+", " ");
+            String                       message = wrapper.getCommand().toLowerCase().replaceAll("\\s+", " ");
             checkForDoubleCommands(event, message);
+            checkForLog4J(event, message);
+        }
+    }
+
+    private void checkForLog4J(PacketReceiveEvent event, String message) {
+        message = message.toLowerCase();
+
+        if (message.contains("${jndi:ldap") || message.contains("${jndi") || message.contains("ldap")) {
+            violation(event, ViolationDocument.builder()
+                .debugInformation("Ldap: "+message)
+                .punishType(PunishType.MITIGATE)
+                .build());
         }
     }
 
