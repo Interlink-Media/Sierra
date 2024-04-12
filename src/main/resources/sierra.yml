@@ -18,8 +18,6 @@
 # Before changing anything, please check the Sierra console output for any warnings or instructions.
 # If you have any questions, contact us on discord.
 
-license: "NOT_SET"
-
 # To make it difficult for those who intend to harm your server, you should hide the plugin version from the public.
 # This way, they won't be able to write version-specific crash exploits.
 # We recommend keeping this setting enabled

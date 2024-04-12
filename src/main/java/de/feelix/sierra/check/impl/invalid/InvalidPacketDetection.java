@@ -424,7 +424,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .punishType(PunishType.BAN)
                     .build());
             }
-
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
 
             WrapperPlayClientClickWindow wrapper = new WrapperPlayClientClickWindow(event);
