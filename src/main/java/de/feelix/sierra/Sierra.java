@@ -93,7 +93,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
             .fullStackTrace(true)
             .reEncodeByDefault(false)
             .kickOnPacketException(true)
-            .checkForUpdates(true)
+            .checkForUpdates(false)
             .bStats(true);
         PacketEvents.getAPI().load();
     }
