@@ -9,7 +9,7 @@
   </p>
 </div>
 
-<p>
+<p align="center">
   This project is based on https://github.com/jtJava/Titanium
 </p>
 
