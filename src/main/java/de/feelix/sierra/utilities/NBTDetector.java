@@ -18,17 +18,17 @@ public class NBTDetector {
      * <p>
      * public class NBTDetector {
      * <p>
-     *     private static final List<String> stringList = new ArrayList<>();
+     * private static final List<String> stringList = new ArrayList<>();
      * <p>
-     *     public NBTDetector() {
-     *         stringList.add("{");
-     *         stringList.add("}");
-     *         stringList.add("nbt");
-     *     }
+     * public NBTDetector() {
+     * stringList.add("{");
+     * stringList.add("}");
+     * stringList.add("nbt");
+     * }
      * <p>
-     *     public boolean find(String input) {
-     *         // implementation
-     *     }
+     * public boolean find(String input) {
+     * // implementation
+     * }
      * }
      */
     private static final List<String> stringList = new ArrayList<>();

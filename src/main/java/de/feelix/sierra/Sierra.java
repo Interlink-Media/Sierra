@@ -20,6 +20,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Objects;
 import java.util.logging.Level;
 
+/**
+ * The Sierra class represents the main class for the Sierra plugin.
+ * It extends the JavaPlugin class and implements the SierraApi interface.
+ * The Sierra plugin provides various functionalities for managing player data and performing punishments.
+ *
+ * <p>
+ * This class initializes various components of the Sierra plugin, registers event listeners, and sets up the command executor.
+ * It also provides methods for accessing and manipulating player data and punishment configuration.
+ * </p>
+ *
+ * @see JavaPlugin
+ * @see SierraApi
+ */
 @Getter
 @Setter
 public final class Sierra extends JavaPlugin implements SierraApi {

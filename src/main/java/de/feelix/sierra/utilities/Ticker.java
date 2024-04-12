@@ -7,6 +7,12 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 
+/**
+ * The {@code Ticker} class represents a timer that runs asynchronously and performs tasks at regular intervals.
+ * {@code Ticker} is a singleton and can be accessed using the {@code instance} variable.
+ * It maintains a {@code currentTick} count that increments by 1 every tick.
+ * It also has a {@code task} that runs every second and performs certain actions.
+ */
 @Getter
 public class Ticker {
 
@@ -17,7 +23,8 @@ public class Ticker {
      * It also has a {@code task} that runs every second and performs certain actions.
      *
      * <p>
-     * The {@code Ticker} class is part of the {@code Sierra} plugin and can be obtained through the {@code Sierra} class.
+     * The {@code Ticker} class is part of the {@code Sierra} plugin and can be obtained through the {@code Sierra}
+     * class.
      * </p>
      *
      * @see Sierra#getPlugin()
@@ -25,7 +32,7 @@ public class Ticker {
      * @see Ticker#task
      */
     @Getter
-    private static Ticker     instance;
+    private static Ticker instance;
 
     /**
      * Represents the current tick count of the ticker.
@@ -33,15 +40,16 @@ public class Ticker {
      *
      * @see Ticker
      */
-    private        int        currentTick;
+    private int currentTick;
 
     /**
      * This private final variable represents a Bukkit task.
-     * It holds a reference to the task created in the Ticker class which runs every second and performs certain actions.
+     * It holds a reference to the task created in the Ticker class which runs every second and performs certain
+     * actions.
      *
      * @see Ticker
      */
-    private final  BukkitTask task;
+    private final BukkitTask task;
 
     /**
      * Ticker class represents a timer that runs asynchronously and performs tasks at regular intervals.
