@@ -14,7 +14,6 @@ import de.feelix.sierraapi.user.UserRepository;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,19 +24,64 @@ import java.util.logging.Level;
 @Setter
 public final class Sierra extends JavaPlugin implements SierraApi {
 
+    /**
+     * This variable represents the instance of the Sierra plugin.
+     * It is a static, private field with a getter method.
+     */
     @Getter
     private static Sierra plugin;
+
+    /**
+     * The PREFIX variable represents the prefix for messages sent by the Sierra plugin.
+     * It is obtained from the "layout.prefix" configuration option in the sierra.yml file.
+     * The prefix is translated using the '&' character as a color code indicator.
+     */
     public static  String PREFIX;
 
+    /**
+     * SierraConfigEngine is a class that manages the main configuration file for the Sierra plugin.
+     * It provides various methods to access and manipulate the configuration options.
+     */
     private SierraConfigEngine sierraConfigEngine;
+
+    /**
+     * The {@code ticker} variable represents an instance of the {@link Ticker} class.
+     *
+     * <p>
+     * The {@code Ticker} class is a timer that runs asynchronously and performs tasks at regular intervals.
+     * It maintains a {@code currentTick} count that increments by 1 every tick.
+     * It also has a {@code task} that runs every second and performs certain actions.
+     * </p>
+     *
+     * <p>
+     * The {@code ticker} variable is part of the {@link Sierra} plugin and can be obtained through the {@link Sierra#getPlugin()} method.
+     * </p>
+     *
+     * @see Ticker
+     * @see Sierra#getPlugin()
+     */
     private Ticker             ticker;
+
+    /**
+     * The DataManager class represents a singleton instance that manages player data in the application.
+     * It provides methods to manipulate and retrieve player data from the underlying data structures.
+     * <p>
+     * This variable is an instance of the DataManager class, used to manage player data in the application.
+     *
+     * @see DataManager
+     */
     private DataManager        dataManager;
+
+    /**
+     * The PunishmentConfig enum represents the configuration options for punishments in a system.
+     * It defines whether a user should be kicked or banned based on certain criteria.
+     */
     private PunishmentConfig   punishmentConfig;
 
     /**
-     * The onLoad function is called when the plugin is loaded.
-     * This function should be used to load config files, register events, and other things that need to be done
-     * before the plugin can run.
+     * This method is called when the plugin is being enabled.
+     * It initializes various components of the Sierra plugin,
+     * registers event listeners, and sets up the command executor.
      */
     @Override
     public void onLoad() {
@@ -55,12 +99,9 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     }
 
     /**
-     * The onEnable function is called when the plugin is enabled.
-     * It loads metrics, registers listeners, sets the prefix for messages sent by Sierra,
-     * initializes a Ticker and DataManager object (which are used to manage data),
-     * registers commands with Bukkit's command manager (so that they can be executed in-game),
-     * initializes PacketEvents' API so that it can be used by other plugins to listen for packets being
-     * sent/received, and finally enables Sierra's API.
+     * This method is called when the plugin is being enabled.
+     * It initializes various components of the Sierra plugin,
+     * registers event listeners and sets up the command executor.
      */
     @Override
     public void onEnable() {
@@ -94,14 +135,10 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         this.getLogger().log(Level.INFO, "API is ready");
     }
 
-
     /**
-     * The setPrefix function is used to set the prefix for all messages sent by Sierra.
-     * It uses the sierraConfig variable, which is an instance of a class that extends
-     * Configurable, and calls its getString function with two parameters: &quot;prefix&quot; and
-     * &quot;&amp;8▎ &amp;3Sierra &amp;8▏&quot;. The first parameter specifies what key in the config file we
-     * want to use.
-     * The second parameter specifies what value should be returned if there's no such key in the config file.
+     * Sets the prefix for messages sent by the Sierra plugin.
+     * The prefix is obtained from the "layout.prefix" configuration option in the sierra.yml file.
+     * The prefix is translated using the '&' character as a color code indicator.
      */
     public void setPrefix() {
         PREFIX = ChatColor.translateAlternateColorCodes('&', sierraConfigEngine.config()
@@ -109,10 +146,9 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     }
 
     /**
-     * The onDisable function is called when the plugin is disabled.
-     * It cancels the task that was created in onEnable, and terminates
-     * PacketEvents' API. This function should be used to clean up any resources
-     * that were allocated during onEnable, such as closing connections to a database or file system.
+     * This method is called when the plugin is being disabled.
+     * It terminates the PacketEvents API if it is not null
+     * and cancels the ticker task.
      */
     @Override
     public void onDisable() {
@@ -123,9 +159,10 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     }
 
     /**
-     * The userRepository function returns a UserRepository object.
+     * Returns the UserRepository implementation used by the Sierra plugin.
      *
-     * @return A userrepository object
+     * @return the UserRepository implementation
+     * @see UserRepository
      */
     @Override
     public UserRepository userRepository() {

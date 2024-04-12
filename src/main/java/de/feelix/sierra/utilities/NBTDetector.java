@@ -7,8 +7,35 @@ import java.util.regex.Pattern;
 
 public class NBTDetector {
 
+    /**
+     * The stringList variable is a private static final List of type String.
+     * It is used in the NBTDetector class to store a list of specific strings
+     * that are commonly found in NBT tags.
+     * <p>
+     * Example usage:
+     * NBTDetector detector = new NBTDetector();
+     * boolean result = detector.find("sample {nbt} input");
+     * <p>
+     * public class NBTDetector {
+     * <p>
+     *     private static final List<String> stringList = new ArrayList<>();
+     * <p>
+     *     public NBTDetector() {
+     *         stringList.add("{");
+     *         stringList.add("}");
+     *         stringList.add("nbt");
+     *     }
+     * <p>
+     *     public boolean find(String input) {
+     *         // implementation
+     *     }
+     * }
+     */
     private static final List<String> stringList = new ArrayList<>();
 
+    /**
+     * The NBTDetector class is responsible for detecting the presence of NBT tags in a given string.
+     */
     public NBTDetector() {
         // stringList.add("["); falses
         // stringList.add("]"); falses
@@ -20,11 +47,10 @@ public class NBTDetector {
     }
 
     /**
-     * The containsNBTTag function checks if a string contains an NBT tag.
+     * Returns true if the given string contains an NBT tag, otherwise returns false.
      *
-     * @param input input Find the nbt tag in the string
-     *              public string getnbttag(string input) {
-     * @return A boolean value
+     * @param input the string to be checked for the presence of NBT tags
+     * @return true if the string contains an NBT tag, false otherwise
      */
     public boolean find(String input) {
         // Regular expression to match NBT tags

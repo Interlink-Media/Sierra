@@ -10,12 +10,12 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public class FormatUtils {
 
+
     /**
-     * The toInt function takes a String input and converts it to an integer.
-     * If the conversion fails, the function returns 1.
+     * Converts a string representation of an integer to an integer value.
      *
-     * @param input input Convert the string to an int
-     * @return The integer value of the input string
+     * @param input The string representation of the integer.
+     * @return The integer value of the input string, or 1 if the input string is not a valid integer.
      */
     public static int toInt(String input) {
         int num;
@@ -27,14 +27,12 @@ public class FormatUtils {
         return num;
     }
 
-    public static String formatBoolean(boolean... booleans) {
-        StringBuilder builder = new StringBuilder();
-        for (boolean aBoolean : booleans) {
-            builder.append(aBoolean ? "+" : "-");
-        }
-        return builder.toString();
-    }
-
+    /**
+     * Shortens a given string if its length is greater than 50 characters.
+     *
+     * @param input The input string.
+     * @return The shortened string if its length is greater than 50 characters, otherwise the input string as is.
+     */
     public static String shortenString(String input) {
         if (input.length() > 50) {
             return input.substring(0, 50);
@@ -43,6 +41,14 @@ public class FormatUtils {
         }
     }
 
+    /**
+     * Converts a Map object to its string representation.
+     *
+     * @param map The Map object to be converted.
+     * @param <K> The type of the keys in the Map.
+     * @param <V> The type of the values in the Map.
+     * @return The string representation of the Map.
+     */
     public static <K, V> String mapToString(Map<K, V> map) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
@@ -59,6 +65,13 @@ public class FormatUtils {
         return sb.toString();
     }
 
+    /**
+     * Converts a List object to its string representation.
+     *
+     * @param <T>  the type of elements in the list
+     * @param list the list to be converted to a string
+     * @return the string representation of the list
+     */
     public static <T> String listToString(List<T> list) {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
@@ -72,23 +85,23 @@ public class FormatUtils {
         return sb.toString();
     }
 
+
     /**
-     * The convertMillisToTicks function converts a given number of milliseconds to the equivalent number of ticks.
+     * Converts a given time in milliseconds to ticks.
      *
-     * @param millis millis Convert the time in milliseconds to ticks
-     * @return The number of ticks that correspond to the given amount of milliseconds
+     * @param millis The time in milliseconds to be converted.
+     * @return The corresponding number of ticks.
      */
     public static int convertMillisToTicks(long millis) {
         return (int) (millis * 20 / 1000);
     }
 
+
     /**
-     * The formatTimestamp function takes a long timestamp and returns a string
-     * formatted as &quot;MM/dd HH:mm:ss&quot; where MM is the month, dd is the day of the
-     * month, HH is hours in 24-hour format (00-23), mm are minutes, and ss are seconds.
+     * Converts a given timestamp to a formatted string representation.
      *
-     * @param timestamp timestamp Convert the timestamp into a date
-     * @return A string
+     * @param timestamp The timestamp to be formatted.
+     * @return The formatted string representation of the timestamp.
      */
     public static String formatTimestamp(long timestamp) {
         Date             date = new Date(timestamp);
@@ -96,13 +109,12 @@ public class FormatUtils {
         return sdf.format(date);
     }
 
+
     /**
-     * The formatColor function takes a string and replaces all instances of the '&amp;' character with the ChatColor
-     * .COLOR_CHAR
-     * character, allowing for easy use of Bukkit's built-in color codes.
+     * Translates a given text by replacing any color codes with their corresponding colors.
      *
-     * @param text text Get the text that is going to be formatted
-     * @return A string with color codes replaced by their corresponding color
+     * @param text The text to be formatted.
+     * @return The formatted text with color codes replaced.
      */
     public static String formatColor(String text) {
         return ChatColor.translateAlternateColorCodes('&', text);

@@ -10,18 +10,41 @@ import org.bukkit.scheduler.BukkitTask;
 @Getter
 public class Ticker {
 
+    /**
+     * The {@code Ticker} class represents a timer that runs asynchronously and performs tasks at regular intervals.
+     * {@code Ticker} is a singleton and can be accessed using the {@code instance} variable.
+     * It maintains a {@code currentTick} count that increments by 1 every tick.
+     * It also has a {@code task} that runs every second and performs certain actions.
+     *
+     * <p>
+     * The {@code Ticker} class is part of the {@code Sierra} plugin and can be obtained through the {@code Sierra} class.
+     * </p>
+     *
+     * @see Sierra#getPlugin()
+     * @see Ticker#currentTick
+     * @see Ticker#task
+     */
     @Getter
     private static Ticker     instance;
+
+    /**
+     * Represents the current tick count of the ticker.
+     * The tick count increments by 1 every tick.
+     *
+     * @see Ticker
+     */
     private        int        currentTick;
+
+    /**
+     * This private final variable represents a Bukkit task.
+     * It holds a reference to the task created in the Ticker class which runs every second and performs certain actions.
+     *
+     * @see Ticker
+     */
     private final  BukkitTask task;
 
     /**
-     * The Ticker function is a class that allows the plugin to keep track of time.
-     * It does this by creating an instance of itself, and then running a task timer
-     * asynchronously every tick (20 ticks per second). The Ticker function also has
-     * another task timer that runs every 20 ticks (once per second) which resets the packet allowance for each
-     * player. This is done so that players can't spam packets in one tick and then not send any packets for 19
-     * seconds, thus bypassing our anti-spam system.
+     * Ticker class represents a timer that runs asynchronously and performs tasks at regular intervals.
      */
     public Ticker() {
         instance = this;

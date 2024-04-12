@@ -380,7 +380,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             int length = wrapper.getItemName().length();
 
-            if (length > 0 && FieldReader.isNotReadable(wrapper.getItemName())) {
+            if (length > 0 && !FieldReader.isReadable(wrapper.getItemName())) {
                 violation(event, ViolationDocument.builder()
                     .punishType(PunishType.KICK)
                     .debugInformation("Name is not readable: " + wrapper.getItemName())
