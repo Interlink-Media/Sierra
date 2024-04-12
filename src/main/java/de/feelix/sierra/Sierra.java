@@ -6,16 +6,11 @@ import de.feelix.sierra.listener.PacketListener;
 import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.storage.DataManager;
-import de.feelix.sierra.utilities.FormatUtils;
-import de.feelix.sierra.utilities.NetworkSecurityChecker;
-import de.feelix.sierra.utilities.RuntimeEnvironment;
 import de.feelix.sierra.utilities.Ticker;
 import de.feelix.sierra.utilities.bstats.Metrics;
 import de.feelix.sierraapi.SierraApi;
 import de.feelix.sierraapi.SierraApiAccessor;
 import de.feelix.sierraapi.user.UserRepository;
-import dev.demeng.sentinel.wrapper.SentinelClient;
-import dev.demeng.sentinel.wrapper.exception.*;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +18,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.logging.Level;
 
@@ -48,51 +42,16 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     @Override
     public void onLoad() {
         plugin = this;
-
-        String formatBoolean = FormatUtils
-            .formatBoolean(
-                NetworkSecurityChecker.isSynchronized("google.com"),
-                NetworkSecurityChecker.isSynchronized("control.squarecode.de"),
-                RuntimeEnvironment.isValid()
-            );
-
-        if (!formatBoolean.equalsIgnoreCase("+++")) {
-            this.getLogger().log(Level.SEVERE, "Invalid environment: " + formatBoolean);
-            return;
-        }
-
         sierraConfigEngine = new SierraConfigEngine();
 
-        SentinelClient sentinelClient = new SentinelClient(
-            "https://control.squarecode.de/api/v1",
-            "5lvm2v9ujf5njmmvj86lk88aio",
-            "d09941e8ba294283a25cf2ed53f5c857"
-        );
-
-        boolean auth = false;
-
-        try {
-            sentinelClient.getLicenseController().auth(
-                this.sierraConfigEngine.config().getString("license", "NOT_SET"), "Sierra",
-                null, null, SentinelClient.getCurrentHwid(), SentinelClient.getCurrentIp()
-            );
-            auth = true;
-        } catch (IOException | InvalidProductException | InvalidPlatformException | InvalidLicenseException |
-                 ExpiredLicenseException | BlacklistedLicenseException | ConnectionMismatchException |
-                 ExcessiveServersException | ExcessiveIpsException e) {
-            this.getLogger().log(Level.SEVERE, "Cant verify license: " + e.getMessage());
-        }
-
-        if (auth) {
-            PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
-            PacketEvents.getAPI().getSettings()
-                .fullStackTrace(true)
-                .reEncodeByDefault(false)
-                .kickOnPacketException(true)
-                .checkForUpdates(true)
-                .bStats(true);
-            PacketEvents.getAPI().load();
-        }
+        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
+        PacketEvents.getAPI().getSettings()
+            .fullStackTrace(true)
+            .reEncodeByDefault(false)
+            .kickOnPacketException(true)
+            .checkForUpdates(true)
+            .bStats(true);
+        PacketEvents.getAPI().load();
     }
 
     /**
@@ -111,21 +70,15 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         int pluginId = 21527; // https://bstats.org/plugin/bukkit/Sierra/21527
         new Metrics(this, pluginId);
 
-        if (PacketEvents.getAPI() != null) {
-            PacketEvents.getAPI().getEventManager().registerListener(new PacketListener());
-        }
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketListener());
         setPrefix();
 
         this.ticker = new Ticker();
-        if (PacketEvents.getAPI() != null) {
-            this.dataManager = new DataManager();
-        }
+        this.dataManager = new DataManager();
 
         Objects.requireNonNull(this.getCommand("sierra")).setExecutor(new SierraCommand());
 
-        if (PacketEvents.getAPI() != null) {
-            PacketEvents.getAPI().init();
-        }
+        PacketEvents.getAPI().init();
 
         // Setup punishment options for sierra
         this.punishmentConfig = PunishmentConfig.valueOf(
@@ -139,11 +92,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         // Enable the api
         SierraApiAccessor.setSierraApiInstance(this);
         this.getLogger().log(Level.INFO, "API is ready");
-
-        if (PacketEvents.getAPI() == null) {
-            Bukkit.getPluginManager().disablePlugin(this);
-            this.getLogger().log(Level.SEVERE, "Plugin wasn't started correctly!");
-        }
     }
 
 

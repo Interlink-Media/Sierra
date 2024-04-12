@@ -8,6 +8,16 @@ import java.util.List;
 
 public class ReloadCommand implements ISierraCommand {
 
+    /**
+     * This method is called to process a reload command. It invalidates the cache
+     * in the SierraConfigEngine, sets the prefix for all messages sent by Sierra, and sends
+     * a success message to the sender.
+     *
+     * @param sierraSender    The sender of the command.
+     * @param abstractCommand The abstract command being processed.
+     * @param sierraLabel     The label of the command.
+     * @param sierraArguments The arguments of the command.
+     */
     @Override
     public void process(ISierraSender sierraSender, IBukkitAbstractCommand abstractCommand,
                         ISierraLabel sierraLabel, ISierraArguments sierraArguments) {
@@ -17,6 +27,12 @@ public class ReloadCommand implements ISierraCommand {
         sierraSender.getSender().sendMessage(Sierra.PREFIX + " §fConfiguration reloaded §asuccessfully");
     }
 
+    /**
+     * Converts an id to a list of strings based on the given id and arguments.
+     * @param id the id to convert
+     * @param args the arguments to use during conversion
+     * @return a list of strings based on the id and arguments
+     */
     @Override
     public List<String> fromId(int id, String[] args) {
         if (id == 1) {
@@ -25,6 +41,11 @@ public class ReloadCommand implements ISierraCommand {
         return Collections.emptyList();
     }
 
+    /**
+     * Retrieves the description of the method which is to reload the configuration.
+     *
+     * @return The description of the method to reload the configuration.
+     */
     @Override
     public String description() {
         return "Reload the configuration";

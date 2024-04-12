@@ -14,6 +14,14 @@ import java.util.stream.Collectors;
 
 public class HistoryCommand implements ISierraCommand {
 
+    /**
+     * Process method to show the action history.
+     *
+     * @param sierraSender      The sender object.
+     * @param abstractCommand   The abstract command object.
+     * @param sierraLabel       The sierra label object.
+     * @param sierraArguments   The sierra arguments object.
+     */
     @Override
     public void process(ISierraSender sierraSender, IBukkitAbstractCommand abstractCommand,
                         ISierraLabel sierraLabel, ISierraArguments sierraArguments) {
@@ -63,6 +71,11 @@ public class HistoryCommand implements ISierraCommand {
         }
     }
 
+    /**
+     * Sends the help syntax for the command.
+     *
+     * @param sierraSender The sender object.
+     */
     private void sendHelpSyntax(ISierraSender sierraSender) {
         String prefix = Sierra.PREFIX;
         sierraSender.getSender().sendMessage(prefix + " §c§lCommand Usage §8- §7History");
@@ -71,6 +84,13 @@ public class HistoryCommand implements ISierraCommand {
         sierraSender.getSender().sendMessage(prefix + " §8- §8<§7page§8> §8-> §7The specific page");
     }
 
+    /**
+     * Converts an ID and arguments into a list of strings.
+     *
+     * @param id   The ID to convert.
+     * @param args The arguments to consider while converting.
+     * @return The converted list of strings.
+     */
     @Override
     public List<String> fromId(int id, String[] args) {
         if (id == 1) {
@@ -82,6 +102,11 @@ public class HistoryCommand implements ISierraCommand {
         }
     }
 
+    /**
+     * Returns the description of this method.
+     *
+     * @return The description of the method
+     */
     @Override
     public String description() {
         return "Show recent action history";

@@ -1,6 +1,5 @@
 package de.feelix.sierra.utilities;
 
-import com.github.retrooper.packetevents.PacketEvents;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.DataManager;
 import de.feelix.sierra.manager.storage.PlayerData;
@@ -14,7 +13,7 @@ public class Ticker {
     @Getter
     private static Ticker     instance;
     private        int        currentTick;
-    private        BukkitTask task;
+    private final  BukkitTask task;
 
     /**
      * The Ticker function is a class that allows the plugin to keep track of time.
@@ -26,9 +25,6 @@ public class Ticker {
      */
     public Ticker() {
         instance = this;
-
-        if (PacketEvents.getAPI() == null) return;
-
         Bukkit.getScheduler().runTaskTimerAsynchronously(Sierra.getPlugin(), () -> currentTick++, 1, 1);
 
         this.task = Bukkit.getScheduler().runTaskTimerAsynchronously(Sierra.getPlugin(), () -> {

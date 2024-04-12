@@ -6,6 +6,15 @@ import org.bukkit.command.CommandSender;
 
 public class CommandHelper {
 
+    /**
+     * Sends the version output to the given sender.
+     * The version output includes the Sierra plugin version and additional information.
+     * If the plugin version is hidden in the configuration and the sender does not have the appropriate permission,
+     * the version will be replaced with a message indicating that it is hidden.
+     *
+     * @param sierraSender the ISierraSender object representing the sender
+     * @since Unknown
+     */
     public static void sendVersionOutput(ISierraSender sierraSender) {
         final String  prefix = Sierra.PREFIX;
         Sierra        plugin = Sierra.getPlugin();

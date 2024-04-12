@@ -15,16 +15,21 @@ import java.util.logging.Level;
 
 public class PacketListener extends PacketListenerAbstract {
 
+    /**
+     * The PacketListener class is a packet listener that extends the PacketListenerAbstract class.
+     * It is used to listen for packets being sent and received by the server.
+     */
     public PacketListener() {
         super(PacketListenerPriority.MONITOR);
     }
 
+
     /**
-     * The onPacketReceive function is called whenever a player receives a packet.
-     * This function will check if the player is exempt from checks, and if they are not, it will run all of their
-     * checks on the packet.
+     * The onPacketReceive method is called whenever a packet is received by the server.
+     * It processes the received packet, checks for exemptions and blocks, and handles
+     * the packet based on the available checks.
      *
-     * @param event event Get the user and packet
+     * @param event The PacketReceiveEvent object representing the received packet event
      */
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
@@ -57,14 +62,12 @@ public class PacketListener extends PacketListenerAbstract {
         }
     }
 
+
     /**
-     * The onPacketSend function is called whenever a packet is sent from the server to the client.
-     * This function will check if the player has been flagged as exempt, and if so, it will cancel
-     * any checks that would otherwise be performed on this packet. If not, it will then check whether
-     * or not they have been blocked by Sierra (i.e., are in violation of one or more checks). If
-     * they are blocked, then their packets are cancelled; otherwise we proceed with checking for violations.
+     * The onPacketSend method is called when a packet is about to be sent by the server.
+     * It processes the packet, checks for exemptions and blocks, and handles the packet based on available checks.
      *
-     * @param event event Get the packet that is being sent
+     * @param event The PacketSendEvent object representing the packet send event
      */
     @Override
     public void onPacketSend(PacketSendEvent event) {

@@ -25,8 +25,17 @@ import java.util.stream.Collectors;
 
 public class SierraCommand implements CommandExecutor, TabExecutor {
 
+    /**
+     * The commands variable is a HashMap that stores instances of objects implementing the ISierraCommand interface.
+     * The key of the HashMap is a String representing the name of the command, and the value is the corresponding ISierraCommand object.
+     */
     private final HashMap<String, ISierraCommand> commands = new HashMap<>();
 
+    /**
+     * The SierraCommand class represents a command that can be executed in-game.
+     * It initializes various sub-commands such as AlertsCommand, VersionCommand, ReloadCommand, and HistoryCommand.
+     * These sub-commands are registered with Bukkit's command manager so that they can be executed when the corresponding command is entered in-game.
+     */
     public SierraCommand() {
         this.commands.put("alerts", new AlertsCommand());
         this.commands.put("version", new VersionCommand());
@@ -34,6 +43,15 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
         this.commands.put("history", new HistoryCommand());
     }
 
+    /**
+     * Executes the specified command when it is called. This method is called when a player or the console executes the command.
+     *
+     * @param sender the CommandSender who issued the command
+     * @param command the Command being executed
+     * @param label the alias of the command used
+     * @param args an array of arguments passed with the command
+     * @return true if the command was executed successfully, false otherwise
+     */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label,
                              String[] args) {
@@ -43,6 +61,7 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
         Bukkit.getScheduler()
             .runTaskAsynchronously(Sierra.getPlugin(), () -> Bukkit.getPluginManager().callEvent(event));
 
+        //
         if (!sender.hasPermission("sierra.command")) {
             CommandHelper.sendVersionOutput(new SierraSender(sender));
             return true;
@@ -78,6 +97,11 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
         return true;
     }
 
+    /**
+     * Sends the main command syntax to the given command sender.
+     *
+     * @param commandSender the CommandSender to send the syntax to
+     */
     private void sendMainCommandSyntax(CommandSender commandSender) {
         String prefix = Sierra.PREFIX;
         commandSender.sendMessage(prefix + " §fSubcommands §7(/sierra)");
@@ -90,6 +114,15 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
         });
     }
 
+    /**
+     * Generates tab completions for the "sierra" command.
+     *
+     * @param sender the sender of the command
+     * @param command the command being executed
+     * @param alias the command alias used
+     * @param args the arguments passed to the command
+     * @return a list of tab completions for the command, or null if no completions are available
+     */
     @Nullable
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender,

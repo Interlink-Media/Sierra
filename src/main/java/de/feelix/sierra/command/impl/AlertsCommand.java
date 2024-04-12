@@ -11,6 +11,14 @@ import java.util.List;
 
 public class AlertsCommand implements ISierraCommand {
 
+    /**
+     * This method is responsible for toggling the alerts messages for a player.
+     *
+     * @param sierraSender     the sender of the command
+     * @param abstractCommand  the command being processed
+     * @param sierraLabel      the label of the command
+     * @param sierraArguments  the arguments of the command
+     */
     @Override
     public void process(ISierraSender sierraSender, IBukkitAbstractCommand abstractCommand,
                         ISierraLabel sierraLabel, ISierraArguments sierraArguments) {
@@ -35,6 +43,13 @@ public class AlertsCommand implements ISierraCommand {
         }
     }
 
+    /**
+     * This method returns a list of strings from an id and an array of arguments.
+     *
+     * @param id   an integer representing the id
+     * @param args an array of strings representing the arguments
+     * @return a list of strings
+     */
     @Override
     public List<String> fromId(int id, String[] args) {
         if (id == 1) {
@@ -43,6 +58,11 @@ public class AlertsCommand implements ISierraCommand {
         return Collections.emptyList();
     }
 
+    /**
+     * This method returns the description of joining the alerts-mode.
+     *
+     * @return a string representing the description
+     */
     @Override
     public String description() {
         return "Join the alerts-mode";

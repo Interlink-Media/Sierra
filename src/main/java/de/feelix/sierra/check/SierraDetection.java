@@ -36,6 +36,11 @@ public class SierraDetection implements SierraCheck {
     private int    checkId;
     private int    violations = 0;
 
+    /**
+     * The SierraDetection class is used to detect violations in player data.
+     *
+     * @param playerData The PlayerData object containing the player's data
+     */
     // Constructor
     public SierraDetection(PlayerData playerData) {
         // Initialize member variables
@@ -47,6 +52,11 @@ public class SierraDetection implements SierraCheck {
         }
     }
 
+    /**
+     * Initializes the CheckType from an annotation.
+     *
+     * @return The initialized CheckType or null if the class does not have the SierraCheckData annotation.
+     */
     // Private method to initialize CheckType from annotation
     private CheckType initializeCheckType() {
         // Check if the class has the SierraCheckData annotation
@@ -58,6 +68,12 @@ public class SierraDetection implements SierraCheck {
         return null;
     }
 
+    /**
+     * Handle violation event.
+     *
+     * @param event             The ProtocolPacketEvent that triggered the violation
+     * @param violationDocument The ViolationDocument containing information about the violation
+     */
     // Handle violation event
     public void violation(ProtocolPacketEvent<Object> event, ViolationDocument violationDocument) {
 
@@ -94,6 +110,12 @@ public class SierraDetection implements SierraCheck {
         }
     }
 
+    /**
+     * Create history document asynchronously.
+     *
+     * @param playerData       The PlayerData object containing the player's data.
+     * @param violationDocument The ViolationDocument containing information about the violation.
+     */
     // Create history document asynchronously
     private void createHistory(PlayerData playerData, ViolationDocument violationDocument) {
         HistoryDocument document = new HistoryDocument(
@@ -110,6 +132,12 @@ public class SierraDetection implements SierraCheck {
         Sierra.getPlugin().getDataManager().getHistories().add(document);
     }
 
+    /**
+     * Log information to console.
+     *
+     * @param user              The User object representing the player
+     * @param violationDocument The ViolationDocument containing information about the violation
+     */
     // Log information to console
     protected void consoleLog(User user, ViolationDocument violationDocument) {
         String generalMessage = "Player " + user.getName() + " was prevented from sending an invalid packet";
@@ -127,6 +155,13 @@ public class SierraDetection implements SierraCheck {
         logger.log(Level.INFO, generalCheck);
     }
 
+    /**
+     * Alert staff members about the violation.
+     *
+     * @param user     The User object representing the player
+     * @param details  Additional details about the violation
+     * @param punishType The type of punishment to be applied (MITIGATE, KICK, or BAN)
+     */
     // Alert staff members about the violation
     protected void alert(User user, String details, PunishType punishType) {
 
@@ -182,12 +217,22 @@ public class SierraDetection implements SierraCheck {
         }
     }
 
+    /**
+     * Returns the number of violations detected.
+     *
+     * @return The number of violations detected.
+     */
     // Implement interface method for violation count
     @Override
     public double violations() {
         return this.violations;
     }
 
+    /**
+     * Retrieves the check type of the current instance.
+     *
+     * @return The check type of the instance.
+     */
     // Implement interface method for check type
     @Override
     public CheckType checkType() {

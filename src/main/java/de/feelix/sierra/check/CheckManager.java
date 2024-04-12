@@ -24,6 +24,9 @@ public class CheckManager implements CheckRepository {
 
     private final PlayerData playerData;
 
+    /**
+     * CheckManager is a class that manages the packet checks for a player.
+     */
     public CheckManager(PlayerData playerData) {
         this.playerData = playerData;
 
@@ -38,6 +41,11 @@ public class CheckManager implements CheckRepository {
                 .build();
     }
 
+    /**
+     * Retrieves a list of available checks from the CheckManager.
+     *
+     * @return a list of SierraCheck objects representing the available checks
+     */
     @Override
     public List<SierraCheck> availableChecks() {
         return new ArrayList<>(packetChecks.values());
