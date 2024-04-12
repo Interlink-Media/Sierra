@@ -20,10 +20,20 @@ import java.util.concurrent.ConcurrentHashMap;
 @Getter
 public class DataManager implements UserRepository {
 
+    /**
+     * DataManager class represents a singleton instance that manages player data in the application.
+     * It provides methods to manipulate and retrieve player data from the underlying data structures.
+     */
     @Getter
     private static DataManager           instance;
+    /**
+     * This variable represents a map of User objects to PlayerData objects.
+     */
     private final  Map<User, PlayerData> playerData = new ConcurrentHashMap<>();
 
+    /**
+     * ArrayList to store the history documents.
+     */
     private final ArrayList<HistoryDocument> histories = new ArrayList<>();
 
     /**
@@ -94,6 +104,12 @@ public class DataManager implements UserRepository {
         return Optional.empty();
     }
 
+    /**
+     * Queries for a SierraUser by the given entityId.
+     *
+     * @param id The entityId to query for
+     * @return An Optional containing the SierraUser object if found, otherwise an empty Optional
+     */
     @Override
     public Optional<SierraUser> queryUserByEntityId(int id) {
         for (User user : playerData.keySet()) {
@@ -104,6 +120,14 @@ public class DataManager implements UserRepository {
         return Optional.empty();
     }
 
+    /**
+     * The queryUserByName method is used to query for a SierraUser object
+     * by the given name. It searches for a matching user in the playerData HashMap
+     * and returns the corresponding SierraUser object if found.
+     *
+     * @param name The name to search for in the playerData HashMap
+     * @return Optional containing the SierraUser object if found, otherwise an empty Optional
+     */
     @Override
     public Optional<SierraUser> queryUserByName(String name) {
         for (User user : playerData.keySet()) {

@@ -5,6 +5,19 @@ import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * The MenuType enum represents the types of menus available in the game.
+ *
+ * <p>The menu types include generic menus, crafting menus, Anvil menu, Beacon menu, Blast Furnace menu,
+ * Brewing Stand menu, Enchantment menu, Furnace menu, Grindstone menu, Hopper menu, Lectern menu,
+ * Loom menu, Merchant menu, Shulker Box menu, Smithing menu, Smoker menu, Cartography Table menu,
+ * Stonecutter menu, and an unknown menu type.</p>
+ *
+ * <p>This enum provides a {@code getMenuType} method that can be used to retrieve the MenuType
+ * based on the given menu ID. It also contains a private field {@code id} to store the ID of each menu type.</p>
+ *
+ * @see MenuType#getMenuType(int)
+ */
 @RequiredArgsConstructor
 @Getter
 public enum MenuType {
@@ -37,6 +50,12 @@ public enum MenuType {
 
     private final int id;
 
+    /**
+     * This method is used to retrieve the MenuType based on the given menu ID.
+     *
+     * @param id The ID of the menu
+     * @return The corresponding MenuType
+     */
     //TODO: could be optimized
     public static MenuType getMenuType(int id) {
         if (id < 0) return UNKNOWN;

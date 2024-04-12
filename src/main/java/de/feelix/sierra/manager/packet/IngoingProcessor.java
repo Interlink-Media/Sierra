@@ -5,5 +5,11 @@ import de.feelix.sierra.manager.storage.PlayerData;
 
 public interface IngoingProcessor {
 
+    /**
+     * The handle method is called to process a received packet event and perform necessary actions based on the player data.
+     *
+     * @param event      The PacketReceiveEvent object representing the received packet event
+     * @param playerData The PlayerData object representing the data of the player who received the packet
+     */
     void handle(PacketReceiveEvent event, PlayerData playerData);
 }

@@ -13,12 +13,23 @@ import lombok.Getter;
 @Getter
 public class GameModeProcessor {
 
+    /**
+     * The playerData variable represents the data of a player in the game.
+     */
     private final PlayerData playerData;
 
+    /**
+     * The GameModeProcessor class processes different packet events related to the game mode of a player.
+     */
     public GameModeProcessor(PlayerData playerData) {
         this.playerData = playerData;
     }
 
+    /**
+     * The process method processes different packet events related to the game mode of a player.
+     *
+     * @param event The PacketSendEvent representing the packet send event
+     */
     public void process(PacketSendEvent event) {
         PacketTypeCommon typeCommon = event.getPacketType();
 
