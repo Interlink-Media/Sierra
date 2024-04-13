@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @SierraCheckData(checkType = CheckType.INVALID)
 public class InvalidPacketDetection extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
@@ -92,7 +93,13 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         if (event.getPacketType() == PacketType.Play.Client.CLIENT_SETTINGS) {
 
             WrapperPlayClientSettings wrapper = new WrapperPlayClientSettings(event);
-            wrapper.setViewDistance(Math.max(0, wrapper.getViewDistance()));
+
+            if (wrapper.getViewDistance() < 2) {
+                String format = "Adjusting %s's view distance from %d to 2";
+                Logger logger = Sierra.getPlugin().getLogger();
+                logger.log(Level.INFO, String.format(format, event.getUser().getName(), wrapper.getViewDistance()));
+                wrapper.setViewDistance(2);
+            }
 
         } else if (event.getPacketType() == PacketType.Play.Client.CREATIVE_INVENTORY_ACTION) {
 
