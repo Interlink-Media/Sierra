@@ -86,6 +86,11 @@ internal-punishment-config: "HARD"
 # that a player attempted to crash the server
 punish-command: "ban {username} Crashing"
 
+# Should we kick out the players experiencing errors while processing packets?
+# This option can be safely left activated, as such errors occur only in 99.99% of
+# cases with crashers, since the API is very mature
+kick-on-packet-exception: true
+
 # This is a list of commands that, in the past, led to crashes due to the incompetence
 # of the developers of those plugins. We have listed and blocked these commands here.
 # You can add or remove commands as you wish

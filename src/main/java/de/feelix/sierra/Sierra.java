@@ -26,7 +26,8 @@ import java.util.logging.Level;
  * The Sierra plugin provides various functionalities for managing player data and performing punishments.
  *
  * <p>
- * This class initializes various components of the Sierra plugin, registers event listeners, and sets up the command executor.
+ * This class initializes various components of the Sierra plugin, registers event listeners, and sets up the command
+ * executor.
  * It also provides methods for accessing and manipulating player data and punishment configuration.
  * </p>
  *
@@ -49,7 +50,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * It is obtained from the "layout.prefix" configuration option in the sierra.yml file.
      * The prefix is translated using the '&' character as a color code indicator.
      */
-    public static  String PREFIX;
+    public static String PREFIX;
 
     /**
      * SierraConfigEngine is a class that manages the main configuration file for the Sierra plugin.
@@ -67,13 +68,14 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * </p>
      *
      * <p>
-     * The {@code ticker} variable is part of the {@link Sierra} plugin and can be obtained through the {@link Sierra#getPlugin()} method.
+     * The {@code ticker} variable is part of the {@link Sierra} plugin and can be obtained through the
+     * {@link Sierra#getPlugin()} method.
      * </p>
      *
      * @see Ticker
      * @see Sierra#getPlugin()
      */
-    private Ticker             ticker;
+    private Ticker ticker;
 
     /**
      * The DataManager class represents a singleton instance that manages player data in the application.
@@ -83,13 +85,13 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      *
      * @see DataManager
      */
-    private DataManager        dataManager;
+    private DataManager dataManager;
 
     /**
      * The PunishmentConfig enum represents the configuration options for punishments in a system.
      * It defines whether a user should be kicked or banned based on certain criteria.
      */
-    private PunishmentConfig   punishmentConfig;
+    private PunishmentConfig punishmentConfig;
 
     /**
      * This method is called when the plugin is being enabled.
@@ -101,13 +103,20 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         plugin = this;
         sierraConfigEngine = new SierraConfigEngine();
 
+        boolean kickOnPacketException = sierraConfigEngine.config().getBoolean(
+            "kick-on-packet-exception",
+            true
+        );
+
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
         PacketEvents.getAPI().getSettings()
             .fullStackTrace(true)
             .reEncodeByDefault(false)
-            .kickOnPacketException(true)
             .checkForUpdates(false)
             .bStats(true);
+
+        if (kickOnPacketException) PacketEvents.getAPI().getSettings().kickOnPacketException(true);
+
         PacketEvents.getAPI().load();
     }
 
