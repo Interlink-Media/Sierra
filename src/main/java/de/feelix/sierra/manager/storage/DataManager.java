@@ -6,9 +6,12 @@ import com.github.retrooper.packetevents.event.UserConnectEvent;
 import com.github.retrooper.packetevents.event.UserDisconnectEvent;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
+import de.feelix.sierra.Sierra;
 import lombok.Getter;
 import de.feelix.sierraapi.user.UserRepository;
 import de.feelix.sierraapi.user.impl.SierraUser;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -55,6 +58,7 @@ public class DataManager implements UserRepository {
             @Override
             public void onUserConnect(UserConnectEvent event) {
                 addPlayerData(event.getUser());
+                checkForUpdate(event.getUser());
             }
 
             @Override
@@ -65,10 +69,47 @@ public class DataManager implements UserRepository {
     }
 
     /**
+     * Checks for updates of the Sierra plugin.
+     * <p>
+     * This method checks if the current version of the Sierra plugin is outdated by comparing it
+     * with the latest release version from the UpdateChecker. If the versions are the same,
+     * indicating that the plugin is up to date, the method returns without taking any further action.
+     * If the user is null or not an online player, the method also returns without doing anything.
+     * <p>
+     * If the user has the "sierra.update" permission or is an operator, the method sends a message
+     * to the player indicating that the current version of Sierra is outdated.
+     *
+     * @param user The user to check for update. Must be an online player.
+     */
+    private void checkForUpdate(User user) {
+
+        Bukkit.getScheduler().runTaskLaterAsynchronously(Sierra.getPlugin(), () -> {
+            // Is same version -> latest
+            String localVersion         = Sierra.getPlugin().getDescription().getVersion();
+            String latestReleaseVersion = Sierra.getPlugin().getUpdateChecker().getLatestReleaseVersion();
+
+            if (latestReleaseVersion.equalsIgnoreCase(localVersion)) return;
+
+            if (user == null) return;
+
+            if (user.getName() == null) return;
+
+            Player player = Bukkit.getPlayer(user.getName());
+
+            if (player == null) return;
+
+            if (!player.hasPermission("sierra.update") || !player.isOp()) return;
+
+            player.sendMessage(Sierra.PREFIX + " §cThis version of Sierra is outdated!");
+            player.sendMessage(Sierra.PREFIX + " §fLocal: §c" + localVersion + "§f, Latest: §a" + latestReleaseVersion);
+        }, 5);
+    }
+
+    /**
      * The getPlayerData function is used to get the PlayerData object associated with a given User.
      *
      * @param user user Get the player data for a specific user
-     * @return A weakreference to the playerdata object
+     * @return A weak reference to the player data object
      */
     public WeakReference<PlayerData> getPlayerData(User user) {
         return new WeakReference<>(this.playerData.get(user));

@@ -7,6 +7,7 @@ import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.storage.DataManager;
 import de.feelix.sierra.utilities.Ticker;
+import de.feelix.sierra.utilities.UpdateChecker;
 import de.feelix.sierra.utilities.bstats.Metrics;
 import de.feelix.sierraapi.SierraApi;
 import de.feelix.sierraapi.SierraApiAccessor;
@@ -14,6 +15,7 @@ import de.feelix.sierraapi.user.UserRepository;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -93,6 +95,8 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      */
     private PunishmentConfig punishmentConfig;
 
+    private UpdateChecker updateChecker;
+
     /**
      * This method is called when the plugin is being enabled.
      * It initializes various components of the Sierra plugin,
@@ -102,6 +106,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     public void onLoad() {
         plugin = this;
         sierraConfigEngine = new SierraConfigEngine();
+        updateChecker = new UpdateChecker();
 
         boolean kickOnPacketException = sierraConfigEngine.config().getBoolean(
             "kick-on-packet-exception",
@@ -150,11 +155,30 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         this.getLogger().log(
             Level.INFO,
             "Sierra is ready. (Took: " + (System.currentTimeMillis() - startTime) + "ms)"
+
         );
+        checkForUpdate();
 
         // Enable the api
         SierraApiAccessor.setSierraApiInstance(this);
         this.getLogger().log(Level.INFO, "API is ready");
+    }
+
+    private void checkForUpdate() {
+        Bukkit.getScheduler().runTaskAsynchronously(Sierra.getPlugin(), () -> {
+
+            String localVersion = Sierra.getPlugin().getDescription().getVersion();
+            String latestReleaseVersion = updateChecker.getLatestReleaseVersion();
+
+            if (!localVersion.equalsIgnoreCase(latestReleaseVersion)) {
+                Sierra.getPlugin().getLogger().log(Level.WARNING, "You are using an outdated version of Sierra!");
+                Sierra.getPlugin().getLogger().log(Level.WARNING, "Please update Sierra to the latest version!");
+                String format = "Your version: %s, latest is: %s";
+                Sierra.getPlugin().getLogger().log(Level.WARNING, String.format(format,
+                                                                                localVersion, latestReleaseVersion
+                ));
+            }
+        });
     }
 
     /**
