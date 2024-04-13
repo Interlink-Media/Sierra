@@ -164,6 +164,9 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         this.getLogger().log(Level.INFO, "API is ready");
     }
 
+    /**
+     * Checks for updates of the Sierra plugin asynchronously.
+     */
     private void checkForUpdate() {
         Bukkit.getScheduler().runTaskAsynchronously(Sierra.getPlugin(), () -> {
 
