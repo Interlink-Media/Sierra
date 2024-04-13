@@ -4,31 +4,67 @@ import lombok.Getter;
 
 import java.util.Objects;
 
+/**
+ * Represents a pair of values.
+ *
+ * @param <A> the type of the first element
+ * @param <B> the type of the second element
+ */
 @Getter
-public final class Pair<K, V> {
-    private final K key;
-    private final V value;
+// Original class: https://github.com/GrimAnticheat/Grim/blob/2.0/src/main/java/ac/grim/grimac/utils/data/Pair.java#L23
+public class Pair<A, B> {
 
-    public Pair(K key, V value) {
-        this.key = key;
-        this.value = value;
+    /**
+     * Represents the first element of a Pair object.
+     * This variable is immutable, meaning it cannot be modified after it is set.
+     * It represents the first value of a pair of values.
+     */
+    private final A first;
+
+    /**
+     * Represents the second element of a Pair object.
+     * This variable is immutable, meaning it cannot be modified after it is set.
+     * It represents the second value of a pair of values.
+     */
+    private final B second;
+
+    /**
+     * Represents a pair of values.
+     *
+     * @param first the type of the first element
+     * @param second the type of the second element
+     */
+    public Pair(A first, B second) {
+        this.first = first;
+        this.second = second;
     }
 
-    public static <K, V> Pair<K, V> of(K key, V value) {
-        return new Pair<>(key, value);
+    /**
+     * Creates a Pair object with the given values.
+     *
+     * @param a the value of the first element of the pair
+     * @param b the value of the second element of the pair
+     * @param <T> the type of the first element
+     * @param <K> the type of the second element
+     * @return the created Pair object
+     */
+    public static <T, K> Pair<T, K> of(T a, K b) {
+        return new Pair<>(a, b);
     }
 
+    /**
+     * Checks if this Pair is equal to the specified object.
+     * Two pairs are considered equal if they have the same first and second values.
+     *
+     * @param o the object to compare this Pair with
+     * @return true if the specified object is equal to this Pair, false otherwise
+     */
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Pair)) {
             return false;
         }
-        Pair pair = (Pair) o;
-        return Objects.equals(this.key, pair.key) && Objects.equals(this.value, pair.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(key, value);
+        Pair b = (Pair) o;
+        return Objects.equals(this.first, b.first) && Objects.equals(this.second, b.second);
     }
 }

@@ -431,7 +431,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 do {
                     data = keepAliveMap.poll();
                     if (data == null) break;
-                } while (data.getFirst() != id);
+                } while (data.getSecond() != id);
             }
 
         } else if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
