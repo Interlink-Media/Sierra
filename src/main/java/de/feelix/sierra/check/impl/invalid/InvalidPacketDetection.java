@@ -47,12 +47,14 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         super(playerData);
     }
 
+
     // https://github.com/PaperMC/Paper/commit/ea2c81e4b9232447f9896af2aac4cd0bf62386fd
     // https://wiki.vg/Inventory
     // https://github.com/GrimAnticheat/Grim/blob/2.0/src/main/java/ac/grim/grimac/checks/impl/crash/CrashD.java
     private MenuType type      = MenuType.UNKNOWN;
     private int      lecternId = -1;
 
+    private int  lastSlot    = -1;
     private long lastBookUse = 0L;
 
     @Override
@@ -195,6 +197,15 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .punishType(PunishType.BAN)
                     .build());
             }
+
+            if (slot == lastSlot) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Selected slot twice: " + wrapper.getSlot())
+                    .punishType(PunishType.KICK)
+                    .build());
+            }
+
+            this.lastSlot = slot;
 
         } else if (event.getPacketType() == PacketType.Play.Client.TAB_COMPLETE) {
 
