@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientChatCommand;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientChatMessage;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientNameItem;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientUpdateCommandBlock;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
@@ -23,6 +24,7 @@ import java.util.regex.Pattern;
 public class BlockedCommand extends SierraDetection implements IngoingProcessor {
 
     private static final Pattern PLUGIN_EXCLUSION = Pattern.compile("/(\\S+:)");
+    private static final Pattern EXPLOIT_PATTERN  = Pattern.compile("\\$\\{.+}");
 
     private final List<String> disallowedCommands = Sierra.getPlugin()
         .getSierraConfigEngine().config().getStringList("disallowed-commands");
@@ -63,6 +65,9 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
             String                       message = wrapper.getMessage().toLowerCase().replaceAll("\\s+", " ");
             checkForDoubleCommands(event, message);
             checkForLog4J(event, message);
+        } else if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
+            WrapperPlayClientNameItem wrapper = new WrapperPlayClientNameItem(event);
+            checkForLog4J(event, wrapper.getItemName());
         } else if (event.getPacketType() == PacketType.Play.Client.CHAT_COMMAND) {
             WrapperPlayClientChatCommand wrapper = new WrapperPlayClientChatCommand(event);
             String                       message = wrapper.getCommand().toLowerCase().replaceAll("\\s+", " ");
@@ -76,7 +81,14 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
 
         if (message.contains("${jndi:ldap") || message.contains("${jndi") || message.contains("ldap")) {
             violation(event, ViolationDocument.builder()
-                .debugInformation("Ldap: "+message)
+                .debugInformation("Ldap: " + message)
+                .punishType(PunishType.MITIGATE)
+                .build());
+        }
+
+        if (EXPLOIT_PATTERN.matcher(message).matches()) {
+            violation(event, ViolationDocument.builder()
+                .debugInformation("Pattern 4J: " + message)
                 .punishType(PunishType.MITIGATE)
                 .build());
         }
