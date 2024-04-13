@@ -127,11 +127,24 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         } else if (event.getPacketType() == PacketType.Play.Client.ENTITY_ACTION) {
 
-            WrapperPlayClientEntityAction packet = new WrapperPlayClientEntityAction(event);
-            if (packet.getEntityId() < 0) {
+            WrapperPlayClientEntityAction wrapper = new WrapperPlayClientEntityAction(event);
+            if (wrapper.getEntityId() < 0) {
                 violation(event, ViolationDocument.builder()
                     .punishType(PunishType.BAN)
-                    .debugInformation("Invalid entity action: " + packet.getEntityId())
+                    .debugInformation("Invalid entity action: " + wrapper.getEntityId())
+                    .build());
+            }
+
+            if (wrapper.getJumpBoost() < 0 || wrapper.getJumpBoost() > 100 || wrapper.getEntityId() != event.getUser()
+                .getEntityId()
+                || (wrapper.getAction() != WrapperPlayClientEntityAction.Action.START_JUMPING_WITH_HORSE
+                    && wrapper.getJumpBoost() != 0)) {
+
+                violation(event, ViolationDocument.builder()
+                    .debugInformation(
+                        "boost=" + wrapper.getJumpBoost() + ", action=" + wrapper.getAction() + ", entity="
+                        + wrapper.getEntityId())
+                    .punishType(PunishType.KICK)
                     .build());
             }
 
