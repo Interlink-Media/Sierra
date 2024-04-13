@@ -415,7 +415,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                    && isSupportedVersion(event.getUser())) {
 
             WrapperPlayClientPlayerDigging dig = new WrapperPlayClientPlayerDigging(event);
-            if (dig.getSequence() < 0) {
+            if (dig.getSequence() < 0 && isSupportedVersion(event.getUser())) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Invalid sequence in dig")
                     .punishType(PunishType.BAN)
@@ -425,7 +425,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         } else if (event.getPacketType() == PacketType.Play.Client.USE_ITEM && isSupportedVersion(
             event.getUser())) {
             WrapperPlayClientUseItem use = new WrapperPlayClientUseItem(event);
-            if (use.getSequence() < 0) {
+            if (use.getSequence() < 0 && isSupportedVersion(event.getUser())) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Invalid sequence in use item")
                     .punishType(PunishType.BAN)
