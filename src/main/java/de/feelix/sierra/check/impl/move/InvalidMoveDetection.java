@@ -116,7 +116,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
 
     public boolean invalidValue(float... value) {
         for (float v : value) {
-            if (!Float.isFinite(v)) {
+            if (Float.isInfinite(v)) {
                 return true;
             }
         }
@@ -125,7 +125,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
 
     public boolean invalidValue(double... value) {
         for (double v : value) {
-            if (Double.isNaN(v)) {
+            if (Double.isNaN(v) || Double.isInfinite(v)) {
                 return true;
             }
         }
