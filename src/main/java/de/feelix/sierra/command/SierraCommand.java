@@ -27,14 +27,42 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
 
     /**
      * The commands variable is a HashMap that stores instances of objects implementing the ISierraCommand interface.
-     * The key of the HashMap is a String representing the name of the command, and the value is the corresponding ISierraCommand object.
+     * The key of the HashMap is a String representing the name of the command, and the value is the corresponding
+     * ISierraCommand object.
      */
     private final HashMap<String, ISierraCommand> commands = new HashMap<>();
 
     /**
+     * The MESSAGE_FORMAT variable is a private static final field representing the format of a message.
+     * It is a string format that includes placeholders for the message sender, message type, and message content.
+     * <p>
+     * The format is as follows:
+     * "{sender} §c{type}§7: §f{content}"
+     * <p>
+     * This format can be used to create formatted messages by replacing the placeholders with actual values.
+     * <p>
+     * Example usage:
+     * String sender = "John";
+     * String type = "Error";
+     * String content = "An error occurred.";
+     * String message = String.format(MESSAGE_FORMAT, sender, type, content);
+     * <p>
+     * The message will be: "John §cError§7: §fAn error occurred."
+     */
+    private static final String MESSAGE_FORMAT = "%s §c%s§7: §f%s";
+
+    /**
+     * The MESSAGE_PREFIX variable represents the prefix for messages sent by the Sierra plugin.
+     * It is a static, private field and is obtained by concatenating the Sierra.PREFIX constant with the " §fSubcommands §7(/sierra)" string.
+     * The prefix is translated using the '&' character as a color code indicator.
+     */
+    private static final String MESSAGE_PREFIX = Sierra.PREFIX + " §fSubcommands §7(/sierra)";
+
+    /**
      * The SierraCommand class represents a command that can be executed in-game.
      * It initializes various sub-commands such as AlertsCommand, VersionCommand, ReloadCommand, and HistoryCommand.
-     * These sub-commands are registered with Bukkit's command manager so that they can be executed when the corresponding command is entered in-game.
+     * These sub-commands are registered with Bukkit's command manager so that they can be executed when the
+     * corresponding command is entered in-game.
      */
     public SierraCommand() {
         this.commands.put("alerts", new AlertsCommand());
@@ -43,25 +71,14 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
         this.commands.put("history", new HistoryCommand());
     }
 
-    /**
-     * Executes the specified command when it is called. This method is called when a player or the console executes the command.
-     *
-     * @param sender the CommandSender who issued the command
-     * @param command the Command being executed
-     * @param label the alias of the command used
-     * @param args an array of arguments passed with the command
-     * @return true if the command was executed successfully, false otherwise
-     */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label,
                              String[] args) {
 
         AsyncSierraCommandEvent event = new AsyncSierraCommandEvent(command.getName(), label);
-
         Bukkit.getScheduler()
             .runTaskAsynchronously(Sierra.getPlugin(), () -> Bukkit.getPluginManager().callEvent(event));
 
-        //
         if (!sender.hasPermission("sierra.command")) {
             CommandHelper.sendVersionOutput(new SierraSender(sender));
             return true;
@@ -69,26 +86,14 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
 
         CompletableFuture.runAsync(() -> {
             if (args.length > 0) {
-
-                String firstInput = args[0];
-
-                if (!sender.hasPermission("sierra.command")) {
-                    sendMainCommandSyntax(sender);
-                    return;
-                }
-
-                if (!commands.containsKey(firstInput)) {
-                    sendMainCommandSyntax(sender);
-                    return;
-                }
-
-                if (commands.get(firstInput) != null) {
-
-                    ISierraCommand iSierraCommand = commands.get(firstInput);
-
+                String         firstInput     = args[0];
+                ISierraCommand iSierraCommand = commands.get(firstInput);
+                if (iSierraCommand != null) {
                     iSierraCommand.process(new SierraSender(sender), new BukkitAbstractCommand(command),
                                            new SierraLabel(label), new SierraArguments(args)
                     );
+                } else {
+                    sendMainCommandSyntax(sender);
                 }
             } else {
                 sendMainCommandSyntax(sender);
@@ -98,56 +103,85 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
     }
 
     /**
-     * Sends the main command syntax to the given command sender.
+     * Sends the main command syntax to the specified command sender.
      *
-     * @param commandSender the CommandSender to send the syntax to
+     * @param commandSender the command sender to send the syntax to
      */
     private void sendMainCommandSyntax(CommandSender commandSender) {
-        String prefix = Sierra.PREFIX;
-        commandSender.sendMessage(prefix + " §fSubcommands §7(/sierra)");
+        commandSender.sendMessage(MESSAGE_PREFIX);
         commands.forEach((s, iSierraCommand) -> {
             if (commandSender.hasPermission("sierra.command")) {
                 String description = iSierraCommand.description();
-                String format      = "%s §c%s§7: §f%s";
-                commandSender.sendMessage(String.format(format, prefix, s, description));
+                commandSender.sendMessage(String.format(MESSAGE_FORMAT, Sierra.PREFIX, s, description));
             }
         });
     }
 
     /**
-     * Generates tab completions for the "sierra" command.
+     * This method is called when tab-completion for this command is requested.
+     * It provides a list of valid completions for the current command arguments.
      *
-     * @param sender the sender of the command
-     * @param command the command being executed
-     * @param alias the command alias used
-     * @param args the arguments passed to the command
-     * @return a list of tab completions for the command, or null if no completions are available
+     * @param sender the command sender
+     * @param command the command being completed
+     * @param alias the alias used for the command
+     * @param args the arguments provided for the command
+     * @return a list of valid completions for the current command arguments
      */
     @Nullable
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender,
-                                      @NotNull Command command,
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
                                       @Nullable String alias, String[] args) {
-
-        if (!command.getName().equalsIgnoreCase("sierra")) {
+        if (!isValidCommand(command)) {
             return null;
         }
+        if (!hasPermission(sender)) {
+            return null;
+        }
+        List<String> keys = getGeneratedKeys(args);
+        return keys.isEmpty() ? getOnlinePlayerNames() : keys;
+    }
 
+    /**
+     * Checks if the given command is a valid command.
+     *
+     * @param command the command to validate
+     * @return true if the command is valid, false otherwise
+     */
+    private boolean isValidCommand(@NotNull Command command) {
+        return command.getName().equalsIgnoreCase("sierra");
+    }
+
+    /**
+     * Checks if the specified CommandSender has permission to execute a command.
+     *
+     * @param sender the CommandSender to check permission for
+     * @return true if the sender has permission, false otherwise
+     */
+    private boolean hasPermission(@NotNull CommandSender sender) {
         String defaultBukkitPermission = "sierra.command";
+        return sender.hasPermission(defaultBukkitPermission);
+    }
 
-        if (!sender.hasPermission(defaultBukkitPermission)) {
-            return null;
-        }
-
+    /**
+     * Retrieves a list of generated keys based on the given arguments.
+     *
+     * @param args an array of strings representing the arguments
+     * @return a list of generated keys
+     */
+    private List<String> getGeneratedKeys(String[] args) {
         List<String> keys = new ArrayList<>();
-
         commands.forEach((s, iSierraCommand) -> keys.addAll(iSierraCommand.fromId(args.length, args)));
-
-        if (keys.isEmpty()) {
-            return Bukkit.getOnlinePlayers().stream()
-                .map(Player::getName)
-                .collect(Collectors.toList());
-        }
         return keys;
+    }
+
+    /**
+     * Retrieves a list of names of all players who are currently online.
+     *
+     * @return a List of String containing the names of all online players.
+     */
+    private List<String> getOnlinePlayerNames() {
+        return Bukkit.getOnlinePlayers().stream()
+            .map(Player::getName)
+            .collect(Collectors.toList());
     }
 }

@@ -19,6 +19,7 @@ public class Pagination<T> {
      * once it is assigned a value.
      */
     private final List<T> items;
+
     /**
      * The itemsPerPage variable represents the number of items to be displayed per page in a paginated list.
      * It is used by the Pagination class to determine the size of each page when retrieving a sublist of items.
@@ -34,7 +35,6 @@ public class Pagination<T> {
      * The itemsForPage method is then called with the page number 1, which returns a sublist of items for that page.
      */
     private final int     itemsPerPage;
-
 
     /**
      * The Pagination class represents a utility for paginating a list of items.
@@ -53,23 +53,58 @@ public class Pagination<T> {
     }
 
     /**
-     * Returns a sublist of items for the given page number.
-     *
-     * @param page The page number (starting from 1) for which to retrieve the items
-     * @return A sublist of items for the given page number
-     * @throws IllegalArgumentException if the page number is less than 1
+     * The constant ITEMS_PER_PAGE represents the number of items to be displayed per page in a pagination system.
+     * It specifies the number of items that should be shown to the user at a time in a paginated list.
+     * The value is set to 10.
      */
-    public List<T> itemsForPage(int page) {
-        if (page < 1) {
-            throw new IllegalArgumentException("Parameter page must be greater than 1.");
-        }
+    private static final int ITEMS_PER_PAGE = 10;
+
+    /**
+     * Retrieves a sublist of items for the specified page number.
+     *
+     * @param requestedPage The page number for which to retrieve the items
+     * @return The list of items for the specified page number
+     */
+    public List<T> itemsForPage(int requestedPage) {
+        validatePageNumber(requestedPage);
         if (this.items.isEmpty()) {
             return new ArrayList<>();
         }
-
-        int startIndex = (page - 1) * this.itemsPerPage;
-        int endIndex   = Math.min(startIndex + this.itemsPerPage, this.items.size());
+        int startIndex = calculateStartIndex(requestedPage);
+        int endIndex   = calculateEndIndex(startIndex);
         return this.items.subList(startIndex, endIndex);
+    }
+
+    /**
+     * Calculates the start index for pagination based on the given page number.
+     *
+     * @param page The page number for which to calculate the start index
+     * @return The start index for pagination
+     */
+    private int calculateStartIndex(int page) {
+        return (page - 1) * this.itemsPerPage;
+    }
+
+    /**
+     * Calculates the end index for pagination based on the given start index.
+     *
+     * @param startIndex The start index for pagination
+     * @return The end index for pagination
+     */
+    private int calculateEndIndex(int startIndex) {
+        return Math.min(startIndex + this.itemsPerPage, this.items.size());
+    }
+
+    /**
+     * Validates the given page number. Throws an exception if the page number is less than 1.
+     *
+     * @param page The page number to validate
+     * @throws IllegalArgumentException If the page number is less than 1
+     */
+    private void validatePageNumber(int page) {
+        if (page < 1) {
+            throw new IllegalArgumentException("Parameter page must be greater than 1.");
+        }
     }
 
     /**

@@ -5,19 +5,17 @@ import lombok.Getter;
 import java.util.Objects;
 
 @Getter
-// Original class: https://github.com/GrimAnticheat/Grim/blob/2.0/src/main/java/ac/grim/grimac/utils/data/Pair.java#L23
-public class Pair<A, B> {
+public final class Pair<K, V> {
+    private final K key;
+    private final V value;
 
-    private final A first;
-    private final B second;
-
-    public Pair(A first, B second) {
-        this.first = first;
-        this.second = second;
+    public Pair(K key, V value) {
+        this.key = key;
+        this.value = value;
     }
 
-    public static <T, K> Pair<T, K> of(T a, K b) {
-        return new Pair<T, K>(a, b);
+    public static <K, V> Pair<K, V> of(K key, V value) {
+        return new Pair<>(key, value);
     }
 
     @Override
@@ -25,7 +23,12 @@ public class Pair<A, B> {
         if (!(o instanceof Pair)) {
             return false;
         }
-        Pair b = (Pair) o;
-        return Objects.equals(this.first, b.first) && Objects.equals(this.second, b.second);
+        Pair pair = (Pair) o;
+        return Objects.equals(this.key, pair.key) && Objects.equals(this.value, pair.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, value);
     }
 }

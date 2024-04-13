@@ -21,6 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The Sierra class represents the main class for the Sierra plugin.
@@ -165,23 +166,30 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     }
 
     /**
-     * Checks for updates of the Sierra plugin asynchronously.
+     * Checks for updates to the Sierra plugin asynchronously.
      */
     private void checkForUpdate() {
         Bukkit.getScheduler().runTaskAsynchronously(Sierra.getPlugin(), () -> {
-
-            String localVersion = Sierra.getPlugin().getDescription().getVersion();
+            String localVersion         = Sierra.getPlugin().getDescription().getVersion();
             String latestReleaseVersion = updateChecker.getLatestReleaseVersion();
-
             if (!localVersion.equalsIgnoreCase(latestReleaseVersion)) {
-                Sierra.getPlugin().getLogger().log(Level.WARNING, "You are using an outdated version of Sierra!");
-                Sierra.getPlugin().getLogger().log(Level.WARNING, "Please update Sierra to the latest version!");
-                String format = "Your version: %s, latest is: %s";
-                Sierra.getPlugin().getLogger().log(Level.WARNING, String.format(format,
-                                                                                localVersion, latestReleaseVersion
-                ));
+                logOutdatedVersionMessage(localVersion, latestReleaseVersion);
             }
         });
+    }
+
+    /**
+     * Logs a warning message indicating that the local version of Sierra is outdated and suggests updating to the latest version.
+     *
+     * @param localVersion         the current version of Sierra being used
+     * @param latestReleaseVersion the latest release version of Sierra available
+     */
+    private void logOutdatedVersionMessage(String localVersion, String latestReleaseVersion) {
+        Logger logger = Sierra.getPlugin().getLogger();
+        logger.log(Level.WARNING, "You are using an outdated version of Sierra!");
+        logger.log(Level.WARNING, "Please update Sierra to the latest version!");
+        String format = "Your version: %s, latest is: %s";
+        logger.log(Level.WARNING, String.format(format, localVersion, latestReleaseVersion));
     }
 
     /**

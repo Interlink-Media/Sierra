@@ -37,12 +37,8 @@ public class NBTDetector {
      * The NBTDetector class is responsible for detecting the presence of NBT tags in a given string.
      */
     public NBTDetector() {
-        // stringList.add("["); falses
-        // stringList.add("]"); falses
         stringList.add("{");
         stringList.add("}");
-        // stringList.add("@"); // Bug when type @a or @e
-        // stringList.add("=");
         stringList.add("nbt");
     }
 

@@ -25,15 +25,62 @@ import org.bukkit.ChatColor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * The SierraDetection class is used to detect violations in player data.
+ */
 @Getter
 public class SierraDetection implements SierraCheck {
 
-    // Member Variables
+    /**
+     * The `playerData` variable represents the player's data associated with the `SierraDetection` class.
+     */
     private final PlayerData playerData;
+
+    /**
+     * The rawCheckType variable represents the type of check being performed.
+     * It is an instance of the CheckType enumeration, which contains different types of checks.
+     * Each check type has a unique identifier and a friendly name that describes its purpose or function.
+     * <p>
+     * The rawCheckType variable is declared as private and final, meaning its value cannot be modified once set.
+     * It is a constant that determines the type of check being performed by the SierraDetection class.
+     * <p>
+     * For example, a rawCheckType value of CheckType.SPAM represents a check for packet spam,
+     * and a value of CheckType.SIGN represents a check for sign crashing.
+     */
     private final CheckType  rawCheckType;
 
+    /**
+     * The friendlyName variable is a private field of type String.
+     * It represents the friendly name associated with a player.
+     * The friendly name is a user-friendly identifier that can be used
+     * to refer to the player in a more informal and approachable manner.
+     * Examples of friendly names can include nicknames, aliases, or abbreviated names.
+     * <p>
+     * Please note that the friendlyName field is used in the SierraDetection class,
+     * which is responsible for detecting violations in player data.
+     * The friendlyName field is accessed by various methods in the SierraDetection class
+     * to handle violation events, log information to the console, and alert staff members about violations.
+     * <p>
+     * Example usage:
+     * ```java
+     * SierraDetection sierraDetection = new SierraDetection();
+     * sierraDetection.setFriendlyName("JohnDoe");
+     * String friendlyName = sierraDetection.getFriendlyName();
+     * System.out.println("Hello, " + friendlyName + "!");
+     * ```
+     *
+     * @see SierraDetection
+     */
     private String friendlyName;
+
+    /**
+     * The ID of the check used to detect violations in player data.
+     */
     private int    checkId;
+
+    /**
+     * Represents the number of violations found by a check for violations in player data.
+     */
     private int    violations = 0;
 
     /**
@@ -41,7 +88,6 @@ public class SierraDetection implements SierraCheck {
      *
      * @param playerData The PlayerData object containing the player's data
      */
-    // Constructor
     public SierraDetection(PlayerData playerData) {
         // Initialize member variables
         this.playerData = playerData;

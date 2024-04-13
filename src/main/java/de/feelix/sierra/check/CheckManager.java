@@ -22,6 +22,10 @@ public class CheckManager implements CheckRepository {
 
     private final ClassToInstanceMap<SierraDetection> packetChecks;
 
+    /**
+     * The playerData variable represents the data associated with a player.
+     * It is an instance of the PlayerData class.
+     */
     private final PlayerData playerData;
 
     /**

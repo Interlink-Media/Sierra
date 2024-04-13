@@ -69,40 +69,75 @@ public class DataManager implements UserRepository {
     }
 
     /**
-     * Checks for updates of the Sierra plugin.
-     * <p>
-     * This method checks if the current version of the Sierra plugin is outdated by comparing it
-     * with the latest release version from the UpdateChecker. If the versions are the same,
-     * indicating that the plugin is up to date, the method returns without taking any further action.
-     * If the user is null or not an online player, the method also returns without doing anything.
-     * <p>
-     * If the user has the "sierra.update" permission or is an operator, the method sends a message
-     * to the player indicating that the current version of Sierra is outdated.
+     * Checks for any updates and sends a message to the player if their version is outdated and they can update.
      *
-     * @param user The user to check for update. Must be an online player.
+     * @param user The user to check for update.
      */
     private void checkForUpdate(User user) {
-
         Bukkit.getScheduler().runTaskLaterAsynchronously(Sierra.getPlugin(), () -> {
-            // Is same version -> latest
-            String localVersion         = Sierra.getPlugin().getDescription().getVersion();
-            String latestReleaseVersion = Sierra.getPlugin().getUpdateChecker().getLatestReleaseVersion();
+            if (!isVersionOutdated() || !isUserValid(user)) return;
 
-            if (latestReleaseVersion.equalsIgnoreCase(localVersion)) return;
+            Player player = getPlayer(user);
+            if (player == null || !playerCanUpdate(player)) return;
 
-            if (user == null) return;
-
-            if (user.getName() == null) return;
-
-            Player player = Bukkit.getPlayer(user.getName());
-
-            if (player == null) return;
-
-            if (!player.hasPermission("sierra.update") || !player.isOp()) return;
-
-            player.sendMessage(Sierra.PREFIX + " §cThis version of Sierra is outdated!");
-            player.sendMessage(Sierra.PREFIX + " §fLocal: §c" + localVersion + "§f, Latest: §a" + latestReleaseVersion);
+            sendMessage(player);
         }, 5);
+    }
+
+    /**
+     * Checks if the current version of the plugin is outdated compared to the latest release version.
+     *
+     * @return true if the current version is outdated, false otherwise
+     */
+    private boolean isVersionOutdated() {
+        String localVersion         = Sierra.getPlugin().getDescription().getVersion();
+        String latestReleaseVersion = Sierra.getPlugin().getUpdateChecker().getLatestReleaseVersion();
+
+        return !latestReleaseVersion.equalsIgnoreCase(localVersion);
+    }
+
+    /**
+     * Checks if a User is valid.
+     *
+     * @param user the User to check
+     * @return true if the User is valid, false otherwise
+     */
+    private boolean isUserValid(User user) {
+        return user != null && user.getName() != null;
+    }
+
+    /**
+     * Retrieves the Player object associated with the given User.
+     *
+     * @param user the User to retrieve the Player for
+     * @return the Player object associated with the User, or null if not found
+     */
+    private Player getPlayer(User user) {
+        return Bukkit.getPlayer(user.getName());
+    }
+
+    /**
+     * Checks if the player can update.
+     *
+     * @param player the player to check
+     * @return true if the player can update, false otherwise
+     */
+    private boolean playerCanUpdate(Player player) {
+        return player.hasPermission("sierra.update") || player.isOp();
+    }
+
+    /**
+     * Sends a message to the specified player to inform them that the current version
+     * of the Sierra plugin is outdated.
+     *
+     * @param player The Player to send the message to.
+     */
+    private void sendMessage(Player player) {
+        String localVersion         = Sierra.getPlugin().getDescription().getVersion();
+        String latestReleaseVersion = Sierra.getPlugin().getUpdateChecker().getLatestReleaseVersion();
+
+        player.sendMessage(Sierra.PREFIX + " §cThis version of Sierra is outdated!");
+        player.sendMessage(Sierra.PREFIX + " §fLocal: §c" + localVersion + "§f, Latest: §a" + latestReleaseVersion);
     }
 
     /**
