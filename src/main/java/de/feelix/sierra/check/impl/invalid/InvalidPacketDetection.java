@@ -15,6 +15,7 @@ import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.*;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerKeepAlive;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenWindow;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetExperience;
 import de.feelix.sierra.Sierra;
@@ -27,6 +28,7 @@ import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.FieldReader;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierra.utilities.NBTDetector;
+import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
@@ -34,7 +36,9 @@ import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import org.bukkit.entity.Player;
 
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -47,15 +51,18 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         super(playerData);
     }
 
-
     // https://github.com/PaperMC/Paper/commit/ea2c81e4b9232447f9896af2aac4cd0bf62386fd
     // https://wiki.vg/Inventory
     // https://github.com/GrimAnticheat/Grim/blob/2.0/src/main/java/ac/grim/grimac/checks/impl/crash/CrashD.java
     private MenuType type      = MenuType.UNKNOWN;
     private int      lecternId = -1;
 
-    private int  lastSlot    = -1;
-    private long lastBookUse = 0L;
+    private int  lastSlot      = -1;
+    private long lastBookUse   = 0L;
+    private int  containerType = -1;
+    private int  containerId   = -1;
+
+    private final Queue<Pair<Long, Long>> keepAliveMap = new LinkedList<>();
 
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
@@ -399,6 +406,34 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .build());
 
             }
+        } else if (event.getPacketType() == PacketType.Play.Client.KEEP_ALIVE) {
+
+            // Check original by https://github.com/GrimAnticheat/Grim/blob/2.0/src/main/java/ac/grim/grimac/checks/impl/badpackets/BadPacketsO.java
+            WrapperPlayClientKeepAlive packet = new WrapperPlayClientKeepAlive(event);
+
+            long id = packet.getId();
+            boolean hasID = false;
+
+            for (Pair<Long, Long> iterator : keepAliveMap) {
+                if (iterator.getFirst() == id) {
+                    hasID = true;
+                    break;
+                }
+            }
+
+            if (!hasID) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Unexpected id: "+id)
+                    .punishType(PunishType.MITIGATE)
+                    .build());
+            } else { // Found the ID, remove stuff until we get to it (to stop very slow memory leaks)
+                Pair<Long, Long> data;
+                do {
+                    data = keepAliveMap.poll();
+                    if (data == null) break;
+                } while (data.getFirst() != id);
+            }
+
         } else if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
             WrapperPlayClientNameItem wrapper = new WrapperPlayClientNameItem(event);
 
@@ -472,6 +507,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 }
             }
 
+            checkButtonClickPosition(event, wrapper);
+
             ItemStack carriedItemStack = wrapper.getCarriedItemStack();
             checkIfItemIsAvailable(event, carriedItemStack);
             checkForInvalidContainer(event, carriedItemStack);
@@ -510,6 +547,43 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .punishType(PunishType.KICK)
                     .build());
             }
+        }
+    }
+
+    // Grim check (https://github.com/GrimAnticheat/Grim/blob/2.0/src/main/java/ac/grim/grimac/checks/impl/badpackets/BadPacketsP.java)
+    private void checkButtonClickPosition(PacketReceiveEvent event, WrapperPlayClientClickWindow wrapper) {
+        int clickType = wrapper.getWindowClickType().ordinal();
+        int button    = wrapper.getButton();
+
+        boolean flag = false;
+
+        switch (clickType) {
+            case 0:
+            case 1:
+            case 4:
+                if (button != 0 && button != 1) flag = true;
+                break;
+            case 2:
+                if ((button > 8 || button < 0) && button != 40) flag = true;
+                break;
+            case 3:
+                if (button != 2) flag = true;
+                break;
+            case 5:
+                if (button == 3 || button == 7 || button > 10 || button < 0) flag = true;
+                break;
+            case 6:
+                if (button != 0) flag = true;
+                break;
+        }
+
+        //Allowing this to false flag to debug and find issues faster
+        if (flag) {
+            violation(event, ViolationDocument.builder()
+                .debugInformation("clickType=" + clickType + " button=" + button + (wrapper.getWindowId() == containerId
+                    ? " container=" + containerType : ""))
+                .punishType(PunishType.MITIGATE)
+                .build());
         }
     }
 
@@ -855,10 +929,21 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .punishType(PunishType.BAN)
                     .build());
             }
-        } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW && isSupportedVersion()) {
+        } else if (event.getPacketType() == PacketType.Play.Server.KEEP_ALIVE) {
+
+            WrapperPlayServerKeepAlive packet = new WrapperPlayServerKeepAlive(event);
+            keepAliveMap.add(new Pair<>(packet.getId(), System.nanoTime()));
+
+        } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
+
             WrapperPlayServerOpenWindow window = new WrapperPlayServerOpenWindow(event);
-            this.type = MenuType.getMenuType(window.getType());
-            if (type == MenuType.LECTERN) lecternId = window.getContainerId();
+
+            if (isSupportedVersion()) {
+                this.type = MenuType.getMenuType(window.getType());
+                if (type == MenuType.LECTERN) lecternId = window.getContainerId();
+            }
+            this.containerType = window.getType();
+            this.containerId = window.getContainerId();
         }
     }
 
