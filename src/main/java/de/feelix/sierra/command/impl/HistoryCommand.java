@@ -116,9 +116,8 @@ public class HistoryCommand implements ISierraCommand {
      * @return The formatted history message.
      */
     private String createHistoryMessage(HistoryDocument historyDocument) {
-        return FormatUtils.formatColor(String.format("§7[%s] §c[%s|%s] §7-> §c%s",
+        return FormatUtils.formatColor(String.format("§7[%s] §c%s §7-> §f%s",
                                                      historyDocument.formatTimestamp(),
-                                                     historyDocument.getHistoryType().name(),
                                                      historyDocument.getUsername(),
                                                      historyDocument.shortenDescription()));
     }
