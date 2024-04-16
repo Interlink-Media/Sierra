@@ -76,10 +76,11 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
                              String[] args) {
 
         AsyncSierraCommandEvent event = new AsyncSierraCommandEvent(command.getName(), label);
+
         Bukkit.getScheduler()
             .runTaskAsynchronously(Sierra.getPlugin(), () -> Bukkit.getPluginManager().callEvent(event));
 
-        if (!sender.hasPermission("sierra.command")) {
+        if (!hasPermission(sender)) {
             CommandHelper.sendVersionOutput(new SierraSender(sender));
             return true;
         }

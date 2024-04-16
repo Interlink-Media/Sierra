@@ -133,8 +133,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
     }
 
     private void checkForBorder(Vector3d position, PacketReceiveEvent event) {
-        if (Math.abs(position.getX()) > HARD_CODED_BORDER
-            || Math.abs(position.getY()) > HARD_CODED_BORDER
+        if (Math.abs(position.getX()) > HARD_CODED_BORDER || Math.abs(position.getY()) > HARD_CODED_BORDER
             || Math.abs(position.getZ()) > HARD_CODED_BORDER) {
 
             violation(event, ViolationDocument.builder()

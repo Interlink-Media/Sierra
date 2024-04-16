@@ -50,9 +50,7 @@ public class PacketListener extends PacketListenerAbstract {
     public void onPacketSend(PacketSendEvent event) {
         PlayerData playerData = getPlayerData(event);
 
-        if (playerData == null || handleExemptOrBlockedPlayer(playerData, event)) {
-            return;
-        }
+        if (playerData == null || handleExemptOrBlockedPlayer(playerData, event)) return;
 
         playerData.getGameModeProcessor().process(event);
         processAvailableChecksSend(playerData, event);
@@ -72,15 +70,16 @@ public class PacketListener extends PacketListenerAbstract {
      * Disconnects an uninitialized player.
      * <p>
      * This method is called when a packet receive event is triggered and the player's data is uninitialized.
-     * It logs a warning message indicating that the player is being disconnected because the packet reader is not injected yet,
+     * It logs a warning message indicating that the player is being disconnected because the packet reader is not
+     * injected yet,
      * and then closes the connection of the player.
      *
      * @param event the PacketReceiveEvent representing the packet receive event
      */
     private void disconnectUninitializedPlayer(PacketReceiveEvent event) {
-        String format            = "Disconnecting %s for cause packet reader is not injected yet";
-        String disconnectMessage = String.format(format, event.getUser().getName());
-        Sierra.getPlugin().getLogger().log(Level.WARNING, disconnectMessage);
+        String format     = "Disconnecting %s for cause packet reader is not injected yet";
+        String disconnect = String.format(format, event.getUser().getName());
+        Sierra.getPlugin().getLogger().log(Level.WARNING, disconnect);
         event.getUser().closeConnection();
     }
 

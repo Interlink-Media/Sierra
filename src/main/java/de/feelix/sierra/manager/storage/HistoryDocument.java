@@ -1,5 +1,7 @@
 package de.feelix.sierra.manager.storage;
 
+import de.feelix.sierra.utilities.FormatUtils;
+import de.feelix.sierraapi.history.HistoryType;
 import de.feelix.sierraapi.violation.PunishType;
 import lombok.Data;
 import de.feelix.sierraapi.history.History;
@@ -10,10 +12,11 @@ import de.feelix.sierraapi.history.History;
 @Data
 public class HistoryDocument implements History {
 
-    private final String     username;
-    private final String     description;
-    private final PunishType punishType;
-    private final long       timestamp = System.currentTimeMillis();
+    private final String      username;
+    private final String      description;
+    private final PunishType  punishType;
+    private final HistoryType historyType;
+    private final long        timestamp = System.currentTimeMillis();
 
     /**
      * Retrieves the username associated with this HistoryDocument.
@@ -53,5 +56,33 @@ public class HistoryDocument implements History {
     @Override
     public long timestamp() {
         return timestamp;
+    }
+
+    /**
+     * Returns the history type associated with this HistoryDocument.
+     *
+     * @return The historyType as a HistoryType object representing the type of history.
+     */
+    @Override
+    public HistoryType historyType() {
+        return historyType;
+    }
+
+    /**
+     * Formats the timestamp associated with this HistoryDocument to a formatted string representation.
+     *
+     * @return The formatted string representation of the timestamp.
+     */
+    public String formatTimestamp() {
+        return FormatUtils.formatTimestamp(this.timestamp);
+    }
+
+    /**
+     * Shortens the description string associated with a HistoryDocument instance if its length is greater than 50 characters.
+     *
+     * @return The shortened description string if its length is greater than 50 characters, otherwise the original description string.
+     */
+    public String shortenDescription() {
+        return FormatUtils.shortenString(this.description);
     }
 }

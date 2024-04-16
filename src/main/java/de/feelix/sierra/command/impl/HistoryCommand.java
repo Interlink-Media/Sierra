@@ -17,39 +17,23 @@ public class HistoryCommand implements ISierraCommand {
     /**
      * Process method to show the action history.
      *
-     * @param sierraSender      The sender object.
-     * @param abstractCommand   The abstract command object.
-     * @param sierraLabel       The sierra label object.
-     * @param sierraArguments   The sierra arguments object.
+     * @param sierraSender    The sender object.
+     * @param abstractCommand The abstract command object.
+     * @param sierraLabel     The sierra label object.
+     * @param sierraArguments The sierra arguments object.
      */
     @Override
-    public void process(ISierraSender sierraSender, IBukkitAbstractCommand abstractCommand,
-                        ISierraLabel sierraLabel, ISierraArguments sierraArguments) {
+    public void process(ISierraSender sierraSender, IBukkitAbstractCommand abstractCommand, ISierraLabel sierraLabel,
+                        ISierraArguments sierraArguments) {
 
-        if (!(sierraArguments.getArguments().size() > 1)) {
+        if (!validateArguments(sierraArguments)) {
             sendHelpSyntax(sierraSender);
             return;
         }
 
-        Pagination<HistoryDocument> pagination = new Pagination<>(
-            Sierra.getPlugin().getDataManager().getHistories().stream()
-                .sorted(Comparator.comparing(HistoryDocument::getTimestamp)
-                            .reversed())
-                .collect(Collectors.toList()), 10);
-
-        int page = FormatUtils.toInt(sierraArguments.getArguments().get(1));
-        int totalPages = pagination.totalPages();
-
-        // Correct page
-        if (page > totalPages || page < 0) {
-            page = 1;
-        }
-
-        int totalHistory = pagination.getItems().size();
-
-        String unformulated = "%s §fShowing entries: §7(page §c%s §7of §c%d §7- §c%d §7entries)";
-        sierraSender.getSender()
-            .sendMessage(String.format(unformulated, Sierra.PREFIX, page, totalPages, totalHistory));
+        Pagination<HistoryDocument> pagination = setupPagination();
+        int page = correctPage(FormatUtils.toInt(sierraArguments.getArguments().get(1)), pagination.totalPages());
+        sendMessage(sierraSender, page, pagination);
 
         List<HistoryDocument> historyDocumentList = pagination.itemsForPage(page);
 
@@ -58,17 +42,85 @@ public class HistoryCommand implements ISierraCommand {
             return;
         }
 
+        sendHistoryMessages(sierraSender, historyDocumentList);
+    }
+
+    /**
+     * Sends the history messages to the specified sender.
+     *
+     * @param sierraSender         The ISierraSender object representing the sender.
+     * @param historyDocumentList  The list of HistoryDocument objects containing the history information.
+     */
+    private void sendHistoryMessages(ISierraSender sierraSender, List<HistoryDocument> historyDocumentList) {
         for (HistoryDocument historyDocument : historyDocumentList) {
-
-            String formatTimestamp = FormatUtils.formatTimestamp(historyDocument.getTimestamp());
-            String username        = historyDocument.getUsername();
-
-            sierraSender.getSenderAsPlayer().sendMessage(FormatUtils.formatColor(
-                String.format(
-                    "§7[%s] §c%s §7-> §c%s", formatTimestamp, username,
-                    FormatUtils.shortenString(historyDocument.getDescription())
-                )));
+            sierraSender.getSenderAsPlayer().sendMessage(createHistoryMessage(historyDocument));
         }
+    }
+
+    /**
+     * Validates the arguments passed with a command.
+     *
+     * @param sierraArguments The ISierraArguments object representing the arguments.
+     * @return true if the number of arguments is greater than 1, false otherwise.
+     */
+    private boolean validateArguments(ISierraArguments sierraArguments) {
+        return sierraArguments.getArguments().size() > 1;
+    }
+
+    /**
+     * Sets up pagination for the history documents.
+     *
+     * @return A Pagination object containing the sorted history documents.
+     */
+    private Pagination<HistoryDocument> setupPagination() {
+        return new Pagination<>(Sierra.getPlugin()
+                                    .getDataManager()
+                                    .getHistories()
+                                    .stream()
+                                    .sorted(Comparator.comparing(HistoryDocument::getTimestamp).reversed())
+                                    .collect(Collectors.toList()), 10);
+    }
+
+    /**
+     * Corrects the page number by ensuring it is within the valid range of pages.
+     *
+     * @param page       The current page number.
+     * @param totalPages The total number of pages.
+     * @return The corrected page number.
+     */
+    private int correctPage(int page, int totalPages) {
+        if (page > totalPages || page < 0) {
+            return 1;
+        }
+        return page;
+    }
+
+    /**
+     * Sends a formatted message to the provided ISierraSender object using the specified pagination details.
+     *
+     * @param sierraSender - The ISierraSender object representing the sender to send the message to.
+     * @param page - The current page number.
+     * @param pagination - A Pagination object containing the history documents.
+     */
+    private void sendMessage(ISierraSender sierraSender, int page, Pagination<HistoryDocument> pagination) {
+        int totalHistory = pagination.getItems().size();
+        String unformulated = "%s §fShowing entries: §7(page §c%s §7of §c%d §7- §c%d §7entries)";
+        sierraSender.getSender()
+            .sendMessage(String.format(unformulated, Sierra.PREFIX, page, pagination.totalPages(), totalHistory));
+    }
+
+    /**
+     * Creates a formatted history message based on the provided HistoryDocument.
+     *
+     * @param historyDocument The HistoryDocument containing the history information.
+     * @return The formatted history message.
+     */
+    private String createHistoryMessage(HistoryDocument historyDocument) {
+        return FormatUtils.formatColor(String.format("§7[%s] §c[%s|%s] §7-> §c%s",
+                                                     historyDocument.formatTimestamp(),
+                                                     historyDocument.getHistoryType().name(),
+                                                     historyDocument.getUsername(),
+                                                     historyDocument.shortenDescription()));
     }
 
     /**

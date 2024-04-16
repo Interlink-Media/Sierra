@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
+import de.feelix.sierra.manager.storage.DataManager;
 import de.feelix.sierra.manager.storage.HistoryDocument;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.FormatUtils;
@@ -47,7 +48,7 @@ public class SierraDetection implements SierraCheck {
      * For example, a rawCheckType value of CheckType.SPAM represents a check for packet spam,
      * and a value of CheckType.SIGN represents a check for sign crashing.
      */
-    private final CheckType  rawCheckType;
+    private final CheckType rawCheckType;
 
     /**
      * The friendlyName variable is a private field of type String.
@@ -76,12 +77,12 @@ public class SierraDetection implements SierraCheck {
     /**
      * The ID of the check used to detect violations in player data.
      */
-    private int    checkId;
+    private int checkId;
 
     /**
      * Represents the number of violations found by a check for violations in player data.
      */
-    private int    violations = 0;
+    private int violations = 0;
 
     /**
      * The SierraDetection class is used to detect violations in player data.
@@ -139,11 +140,7 @@ public class SierraDetection implements SierraCheck {
         this.violations++;
 
         // Asynchronously call user detection event
-        Bukkit.getScheduler().runTaskAsynchronously(
-            Sierra.getPlugin(),
-            () -> Bukkit.getPluginManager()
-                .callEvent(new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))
-        );
+        throwDetectionEvent(violationDocument);
 
         // Log to console, alert staff, create history, and potentially punish
         User user = event.getUser();
@@ -152,30 +149,35 @@ public class SierraDetection implements SierraCheck {
         createHistory(playerData, violationDocument);
 
         if (violationDocument.punishType() != PunishType.MITIGATE) {
+            Sierra.getPlugin()
+                .getDataManager()
+                .createPunishmentHistory(playerData.username(), violationDocument.punishType());
             playerData.punish(violationDocument.punishType());
         }
     }
 
     /**
+     * Throws a detection event asynchronously.
+     *
+     * @param violationDocument The ViolationDocument containing information about the violation
+     */
+    private void throwDetectionEvent(ViolationDocument violationDocument) {
+        Bukkit.getScheduler().runTaskAsynchronously(
+            Sierra.getPlugin(),
+            () -> Bukkit.getPluginManager()
+                .callEvent(new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))
+        );
+    }
+
+    /**
      * Create history document asynchronously.
      *
-     * @param playerData       The PlayerData object containing the player's data.
+     * @param playerData        The PlayerData object containing the player's data.
      * @param violationDocument The ViolationDocument containing information about the violation.
      */
     // Create history document asynchronously
     private void createHistory(PlayerData playerData, ViolationDocument violationDocument) {
-        HistoryDocument document = new HistoryDocument(
-            playerData.getUser().getName(),
-            violationDocument.getDebugInformation(),
-            violationDocument.punishType()
-        );
-
-        Bukkit.getScheduler().runTaskAsynchronously(
-            Sierra.getPlugin(),
-            () -> Bukkit.getPluginManager().callEvent(new AsyncHistoryCreateEvent(document))
-        );
-
-        Sierra.getPlugin().getDataManager().getHistories().add(document);
+        Sierra.getPlugin().getDataManager().createViolationHistory(playerData, violationDocument);
     }
 
     /**
@@ -204,8 +206,8 @@ public class SierraDetection implements SierraCheck {
     /**
      * Alert staff members about the violation.
      *
-     * @param user     The User object representing the player
-     * @param details  Additional details about the violation
+     * @param user       The User object representing the player
+     * @param details    Additional details about the violation
      * @param punishType The type of punishment to be applied (MITIGATE, KICK, or BAN)
      */
     // Alert staff members about the violation

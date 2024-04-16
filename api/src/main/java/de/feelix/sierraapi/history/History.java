@@ -34,4 +34,11 @@ public interface History {
      * @return The timestamp as a long value indicating the time in milliseconds since the epoch (January 1, 1970, 00:00:00 GMT).
      */
     long timestamp();
+
+    /**
+     * Returns the HistoryType of the History instance.
+     *
+     * @return The HistoryType object representing the type of history.
+     */
+    HistoryType historyType();
 }
