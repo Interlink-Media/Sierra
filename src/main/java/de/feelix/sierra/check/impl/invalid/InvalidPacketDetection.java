@@ -583,14 +583,15 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         if (player == null) return;
 
         InventoryView openInventory = player.getOpenInventory();
-        int           max           = 0;
+
+        // Idea by someone
+        int max = PacketEvents.getAPI().getServerManager().
+            getVersion().isNewerThan(ServerVersion.V_1_9) ? 127 : openInventory.countSlots();
 
         if (openInventory.getBottomInventory().getType() == InventoryType.PLAYER
             && openInventory.getTopInventory().getType() == InventoryType.CRAFTING) {
 
-            max = openInventory.countSlots() + 4;
-        } else {
-            max = openInventory.countSlots();
+            max += 4;
         }
 
         if (slot > max) {
