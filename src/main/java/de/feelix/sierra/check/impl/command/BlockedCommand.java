@@ -23,8 +23,9 @@ import java.util.regex.Pattern;
 @SierraCheckData(checkType = CheckType.COMMAND)
 public class BlockedCommand extends SierraDetection implements IngoingProcessor {
 
-    private static final Pattern PLUGIN_EXCLUSION = Pattern.compile("/(\\S+:)");
-    private static final Pattern EXPLOIT_PATTERN  = Pattern.compile("\\$\\{.+}");
+    private static final Pattern PLUGIN_EXCLUSION = java.util.regex.Pattern.compile("/(\\S+:)");
+    private static final Pattern EXPLOIT_PATTERN  = java.util.regex.Pattern.compile("\\$\\{.+}");
+    private static final Pattern EXPLOIT_PATTERN2 = Pattern.compile("\\$\\{.*}");
 
     private final List<String> disallowedCommands = Sierra.getPlugin()
         .getSierraConfigEngine().config().getStringList("disallowed-commands");
@@ -86,7 +87,7 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
                 .build());
         }
 
-        if (EXPLOIT_PATTERN.matcher(message).matches()) {
+        if (EXPLOIT_PATTERN.matcher(message).matches() || EXPLOIT_PATTERN2.matcher(message).matches()) {
             violation(event, ViolationDocument.builder()
                 .debugInformation("Pattern 4J: " + message)
                 .punishType(PunishType.MITIGATE)
