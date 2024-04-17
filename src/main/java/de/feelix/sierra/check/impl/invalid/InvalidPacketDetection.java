@@ -34,6 +34,8 @@ import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.InventoryView;
 
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
@@ -310,7 +312,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             String payload = new String(wrapper.getData(), StandardCharsets.UTF_8);
 
-            if(payload.isEmpty()) {
+            if (payload.isEmpty()) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("String is empty")
                     .punishType(PunishType.KICK)
@@ -529,6 +531,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             checkForInvalidShulker(event, carriedItemStack);
             checkForInvalidBanner(event, carriedItemStack);
             checkNbtTags(event, carriedItemStack);
+            checkForInvalidSlot(event, wrapper);
 
             int clickType = wrapper.getWindowClickType().ordinal();
             int button    = wrapper.getButton();
@@ -561,6 +564,40 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .punishType(PunishType.KICK)
                     .build());
             }
+        }
+    }
+
+    private void checkForInvalidSlot(PacketReceiveEvent event, WrapperPlayClientClickWindow wrapper) {
+
+        int slot = wrapper.getSlot();
+
+        if (slot < 0 && slot != -999 && slot != -1) {
+            violation(event, ViolationDocument.builder()
+                .debugInformation("Invalid slot " + slot)
+                .punishType(PunishType.KICK)
+                .build());
+        }
+
+        Player player = (Player) event.getPlayer();
+
+        if (player == null) return;
+
+        InventoryView openInventory = player.getOpenInventory();
+        int           max           = 0;
+
+        if (openInventory.getBottomInventory().getType() == InventoryType.PLAYER
+            && openInventory.getTopInventory().getType() == InventoryType.CRAFTING) {
+
+            max = openInventory.countSlots() + 4;
+        } else {
+            max = openInventory.countSlots();
+        }
+
+        if (slot > max) {
+            violation(event, ViolationDocument.builder()
+                .debugInformation("Slot: " + slot + ", max: " + max)
+                .punishType(PunishType.KICK)
+                .build());
         }
     }
 
