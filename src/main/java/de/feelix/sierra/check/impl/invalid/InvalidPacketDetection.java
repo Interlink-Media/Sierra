@@ -301,6 +301,13 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .build());
             }
 
+            if (wrapper.getData().length == 0) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Send empty data")
+                    .punishType(PunishType.KICK)
+                    .build());
+            }
+
             String payload = new String(wrapper.getData(), StandardCharsets.UTF_8);
 
             if (channelName.equalsIgnoreCase("MC|PickItem")
@@ -411,7 +418,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             // Check original by https://github.com/GrimAnticheat/Grim/blob/2.0/src/main/java/ac/grim/grimac/checks/impl/badpackets/BadPacketsO.java
             WrapperPlayClientKeepAlive packet = new WrapperPlayClientKeepAlive(event);
 
-            long id = packet.getId();
+            long    id    = packet.getId();
             boolean hasID = false;
 
             for (Pair<Long, Long> iterator : keepAliveMap) {
@@ -423,7 +430,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             if (!hasID) {
                 violation(event, ViolationDocument.builder()
-                    .debugInformation("Unexpected id: "+id)
+                    .debugInformation("Unexpected id: " + id)
                     .punishType(PunishType.MITIGATE)
                     .build());
             } else { // Found the ID, remove stuff until we get to it (to stop very slow memory leaks)
