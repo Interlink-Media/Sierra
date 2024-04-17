@@ -42,6 +42,13 @@ public class SignDetection extends SierraDetection implements IngoingProcessor {
 
             for (String textLine : wrapper.getTextLines()) {
 
+                if (textLine.toLowerCase().contains("run_command")) {
+                    violation(event, ViolationDocument.builder()
+                        .debugInformation("Sign contains json command")
+                        .punishType(PunishType.KICK)
+                        .build());
+                }
+
                 int maxSignLength = 45;
                 if (textLine.length() > maxSignLength) {
                     violation(event, ViolationDocument.builder()
