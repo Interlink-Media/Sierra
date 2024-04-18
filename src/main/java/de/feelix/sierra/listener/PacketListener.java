@@ -29,16 +29,23 @@ public class PacketListener extends PacketListenerAbstract {
      */
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
+
         PlayerData playerData = getPlayerData(event);
+
         if (playerData == null) {
             disconnectUninitializedPlayer(event);
             return;
         }
-        if (handleExemptOrBlockedPlayer(playerData, event))
-            return;
+
+        playerData.getTimingProcessor().getPacketReceiveTiming().prepare();
+
+        if (handleExemptOrBlockedPlayer(playerData, event)) return;
 
         playerData.getBrandProcessor().process(event);
+        playerData.getPingProcessor().handle(event);
+
         processAvailableChecksReceive(playerData, event);
+        playerData.getTimingProcessor().getPacketReceiveTiming().end();
     }
 
     /**
@@ -52,8 +59,12 @@ public class PacketListener extends PacketListenerAbstract {
 
         if (playerData == null || handleExemptOrBlockedPlayer(playerData, event)) return;
 
+        playerData.getTimingProcessor().getPacketSendTiming().prepare();
+
         playerData.getGameModeProcessor().process(event);
+        playerData.getPingProcessor().handle(event);
         processAvailableChecksSend(playerData, event);
+        playerData.getTimingProcessor().getPacketSendTiming().end();
     }
 
     /**

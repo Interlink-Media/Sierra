@@ -7,7 +7,6 @@ import com.github.retrooper.packetevents.event.UserDisconnectEvent;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
-import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierraapi.events.AsyncHistoryCreateEvent;
 import de.feelix.sierraapi.history.HistoryType;
 import de.feelix.sierraapi.violation.PunishType;
@@ -145,30 +144,15 @@ public class DataManager implements UserRepository {
     }
 
     /**
-     * Creates a violation history entry for a player.
-     *
-     * @param playerData        The player data to associate with the violation history
-     * @param violationDocument The violation document containing the details of the violation
-     */
-    public void createViolationHistory(PlayerData playerData, ViolationDocument violationDocument) {
-        HistoryDocument document = new HistoryDocument(
-            playerData.getUser().getName(), violationDocument.getDebugInformation(),
-            violationDocument.punishType(), HistoryType.ALERT
-        );
-
-        throwHistory(document);
-    }
-
-    /**
      * Creates a punishment history entry for a user.
      *
-     * @param username    The username of the user to create the punishment history for.
-     * @param punishType  The type of punishment applied.
+     * @param username   The username of the user to create the punishment history for.
+     * @param punishType The type of punishment applied.
      */
-    public void createPunishmentHistory(String username, PunishType punishType) {
+    public void createPunishmentHistory(String username, PunishType punishType, long ping, String description) {
 
-        String          description = punishType == PunishType.BAN ? "has been banned" : "has been kicked";
-        HistoryDocument document    = new HistoryDocument(username, description, punishType, HistoryType.PUNISH);
+        HistoryDocument document = new HistoryDocument(
+            username, description, ping, punishType, HistoryType.PUNISH);
 
         throwHistory(document);
     }

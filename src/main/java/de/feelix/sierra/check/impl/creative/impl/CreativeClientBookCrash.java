@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 //{generation:0,pages:[0:"{translate:translation.test.invalid}",],author:"someone",title:"a",resolved:1b,}
 //{generation:0,pages:[0:"{translate:translation.test.invalid2}",],author:"someone",title:"a",resolved:1b,}
 public class CreativeClientBookCrash implements ItemCheck {
+
     private static final Pattern PATTERN = Pattern.compile("\\s");
 
     @Override

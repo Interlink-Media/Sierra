@@ -153,9 +153,8 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
         WrapperPlayClientPlayerFlying wrapper = new WrapperPlayClientPlayerFlying(event);
 
         sortOutInvalidRotation(wrapper, event);
-        if (!wrapper.hasPositionChanged()) {
-            return;
-        }
+
+        if (!wrapper.hasPositionChanged()) return;
 
         Location location = wrapper.getLocation();
         Vector3d position = location.getPosition();

@@ -7,6 +7,8 @@ import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.CheckManager;
 import de.feelix.sierra.manager.storage.processor.BrandProcessor;
 import de.feelix.sierra.manager.storage.processor.GameModeProcessor;
+import de.feelix.sierra.manager.storage.processor.PingProcessor;
+import de.feelix.sierra.manager.storage.processor.TimingProcessor;
 import lombok.Getter;
 import lombok.Setter;
 import de.feelix.sierraapi.check.CheckRepository;
@@ -54,6 +56,8 @@ public class PlayerData implements SierraUser {
     public final  CheckManager      checkManager      = new CheckManager(this);
     private final BrandProcessor    brandProcessor    = new BrandProcessor(this);
     private final GameModeProcessor gameModeProcessor = new GameModeProcessor(this);
+    private final PingProcessor     pingProcessor     = new PingProcessor(this);
+    private final TimingProcessor   timingProcessor   = new TimingProcessor(this);
 
     /**
      * The PlayerData function is a constructor that takes in a User object and sets the user variable to it.
@@ -190,7 +194,8 @@ public class PlayerData implements SierraUser {
 
     /**
      * The ban method is used to ban a player.
-     * It retrieves the punish command from the sierra.yml configuration file and replaces the {username} placeholder with the player's name.
+     * It retrieves the punish command from the sierra.yml configuration file and replaces the {username} placeholder
+     * with the player's name.
      * Then, it dispatches the command to the console sender.
      */
     private void ban() {

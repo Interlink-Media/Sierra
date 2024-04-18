@@ -3,7 +3,8 @@ package de.feelix.sierraapi.history;
 import de.feelix.sierraapi.violation.PunishType;
 
 /**
- * The History interface represents the history of a user's actions or punishments. It includes information such as the username, description, punishment type, and timestamp.
+ * The History interface represents the history of a user's actions or punishments. It includes information such as
+ * the username, description, punishment type, and timestamp.
  */
 public interface History {
 
@@ -31,7 +32,8 @@ public interface History {
     /**
      * Returns the timestamp associated with the instance of History.
      *
-     * @return The timestamp as a long value indicating the time in milliseconds since the epoch (January 1, 1970, 00:00:00 GMT).
+     * @return The timestamp as a long value indicating the time in milliseconds since the epoch (January 1, 1970,
+     * 00:00:00 GMT).
      */
     long timestamp();
 
@@ -41,4 +43,12 @@ public interface History {
      * @return The HistoryType object representing the type of history.
      */
     HistoryType historyType();
+
+    /**
+     * Returns the timestamp at which the ping request was sent.
+     *
+     * @return The timestamp as a long value indicating the time in milliseconds since the epoch (January 1, 1970,
+     * 00:00:00 GMT).
+     */
+    long ping();
 }

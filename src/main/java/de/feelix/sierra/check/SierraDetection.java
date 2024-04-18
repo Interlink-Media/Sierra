@@ -5,8 +5,6 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
-import de.feelix.sierra.manager.storage.DataManager;
-import de.feelix.sierra.manager.storage.HistoryDocument;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.check.SierraCheckData;
@@ -17,7 +15,6 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import de.feelix.sierraapi.check.CheckType;
-import de.feelix.sierraapi.events.AsyncHistoryCreateEvent;
 import de.feelix.sierraapi.events.AsyncUserDetectionEvent;
 import de.feelix.sierraapi.violation.PunishType;
 import org.bukkit.Bukkit;
@@ -146,12 +143,15 @@ public class SierraDetection implements SierraCheck {
         User user = event.getUser();
         consoleLog(user, violationDocument);
         alert(user, violationDocument.getDebugInformation(), violationDocument.punishType());
-        createHistory(playerData, violationDocument);
 
         if (violationDocument.punishType() != PunishType.MITIGATE) {
             Sierra.getPlugin()
                 .getDataManager()
-                .createPunishmentHistory(playerData.username(), violationDocument.punishType());
+                .createPunishmentHistory(
+                    playerData.username(), violationDocument.punishType(), playerData.getPingProcessor().getPing(),
+                    violationDocument.debugInformation()
+                );
+
             playerData.punish(violationDocument.punishType());
         }
     }
@@ -167,17 +167,6 @@ public class SierraDetection implements SierraCheck {
             () -> Bukkit.getPluginManager()
                 .callEvent(new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))
         );
-    }
-
-    /**
-     * Create history document asynchronously.
-     *
-     * @param playerData        The PlayerData object containing the player's data.
-     * @param violationDocument The ViolationDocument containing information about the violation.
-     */
-    // Create history document asynchronously
-    private void createHistory(PlayerData playerData, ViolationDocument violationDocument) {
-        Sierra.getPlugin().getDataManager().createViolationHistory(playerData, violationDocument);
     }
 
     /**

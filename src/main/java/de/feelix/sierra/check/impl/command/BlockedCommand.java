@@ -69,7 +69,6 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      * <p>
      * This list is retrieved from the Sierra plugin's configuration file.
      * It contains a collection of disallowed commands that players are not allowed to execute.
-     * </p>
      */
     private final List<String> disallowedCommands = Sierra.getPlugin()
         .getSierraConfigEngine().config().getStringList("disallowed-commands");
@@ -103,20 +102,7 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
         if (event.getPacketType() == PacketType.Play.Client.UPDATE_COMMAND_BLOCK) {
 
             WrapperPlayClientUpdateCommandBlock wrapper = new WrapperPlayClientUpdateCommandBlock(event);
-
-            String string = wrapper.getCommand().toLowerCase().replaceAll("\\s+", " ");
-
-            for (String disallowedCommand : disallowedCommands) {
-                if (string.contains(disallowedCommand)) {
-                    if (playerHasPermission(event)) {
-                        violation(event, ViolationDocument.builder()
-                            .debugInformation(string)
-                            .punishType(PunishType.MITIGATE)
-                            .build());
-                    }
-                }
-            }
-
+            checkDisallowedCommand(event, wrapper);
         } else if (event.getPacketType() == PacketType.Play.Client.CHAT_MESSAGE) {
             WrapperPlayClientChatMessage wrapper = new WrapperPlayClientChatMessage(event);
             String                       message = wrapper.getMessage().toLowerCase().replaceAll("\\s+", " ");
@@ -130,6 +116,27 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
             String                       message = wrapper.getCommand().toLowerCase().replaceAll("\\s+", " ");
             checkForDoubleCommands(event, message);
             checkForLog4J(event, message);
+        }
+    }
+
+    /**
+     * Checks the given command for disallowed commands and triggers a violation if found.
+     *
+     * @param event   the PacketReceiveEvent that triggered the check
+     * @param wrapper the WrapperPlayClientUpdateCommandBlock containing the command to be checked
+     */
+    private void checkDisallowedCommand(PacketReceiveEvent event, WrapperPlayClientUpdateCommandBlock wrapper) {
+        String string = wrapper.getCommand().toLowerCase().replaceAll("\\s+", " ");
+
+        for (String disallowedCommand : disallowedCommands) {
+            if (string.contains(disallowedCommand)) {
+                if (playerHasPermission(event)) {
+                    violation(event, ViolationDocument.builder()
+                        .debugInformation(string)
+                        .punishType(PunishType.MITIGATE)
+                        .build());
+                }
+            }
         }
     }
 

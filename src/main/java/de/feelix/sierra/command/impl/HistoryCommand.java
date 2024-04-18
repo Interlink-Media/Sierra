@@ -6,6 +6,7 @@ import de.feelix.sierra.manager.storage.HistoryDocument;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierra.utilities.Pagination;
 import de.feelix.sierraapi.commands.*;
+import net.md_5.bungee.api.chat.BaseComponent;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -53,7 +54,7 @@ public class HistoryCommand implements ISierraCommand {
      */
     private void sendHistoryMessages(ISierraSender sierraSender, List<HistoryDocument> historyDocumentList) {
         for (HistoryDocument historyDocument : historyDocumentList) {
-            sierraSender.getSenderAsPlayer().sendMessage(createHistoryMessage(historyDocument));
+            sierraSender.getSenderAsPlayer().spigot().sendMessage(createHistoryMessage(historyDocument));
         }
     }
 
@@ -77,7 +78,7 @@ public class HistoryCommand implements ISierraCommand {
                                     .getDataManager()
                                     .getHistories()
                                     .stream()
-                                    .sorted(Comparator.comparing(HistoryDocument::getTimestamp).reversed())
+                                    .sorted(Comparator.comparing(HistoryDocument::timestamp).reversed())
                                     .collect(Collectors.toList()), 10);
     }
 
@@ -115,10 +116,12 @@ public class HistoryCommand implements ISierraCommand {
      * @param historyDocument The HistoryDocument containing the history information.
      * @return The formatted history message.
      */
-    private String createHistoryMessage(HistoryDocument historyDocument) {
-        return FormatUtils.formatColor(String.format("§7[%s] §c%s §7-> §f%s",
+    private BaseComponent[] createHistoryMessage(HistoryDocument historyDocument) {
+        return FormatUtils.formatColor(String.format("§7[%s] §c%s §7(%dms) -> §c%s §7(%s)",
                                                      historyDocument.formatTimestamp(),
-                                                     historyDocument.getUsername(),
+                                                     historyDocument.username(),
+                                                     historyDocument.ping(),
+                                                     historyDocument.punishType().historyMessage(),
                                                      historyDocument.shortenDescription()));
     }
 

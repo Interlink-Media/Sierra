@@ -68,6 +68,7 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
         this.commands.put("alerts", new AlertsCommand());
         this.commands.put("version", new VersionCommand());
         this.commands.put("reload", new ReloadCommand());
+        this.commands.put("monitor", new MonitorCommand());
         this.commands.put("history", new HistoryCommand());
     }
 

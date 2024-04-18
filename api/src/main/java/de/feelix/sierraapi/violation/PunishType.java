@@ -5,9 +5,9 @@ package de.feelix.sierraapi.violation;
  */
 public enum PunishType {
 
-    MITIGATE("mitigated for"),
-    KICK("kicked for"),
-    BAN("punished for");
+    MITIGATE("mitigated for", "UNAVAILABLE"),
+    KICK("kicked for", "Security Kick"),
+    BAN("punished for", "Security Ban");
 
     /**
      * The friendlyMessage variable represents a user-friendly message associated with a punishment type.
@@ -24,10 +24,25 @@ public enum PunishType {
     private final String friendlyMessage;
 
     /**
+     * Represents a history message associated with a punishment type.
+     * <p>
+     * The historyMessage variable is a string that represents a message associated with a punishment type in the
+     * PunishType enum.
+     * It provides additional information about the punishment, such as the reason for the punishment or any other
+     * relevant details.
+     * <p>
+     * This variable is used within the PunishType enum to associate a history message with each punishment type.
+     * Each punishment type has its own unique history message that can be accessed by calling the historyMessage()
+     * method.
+     */
+    private final String historyMessage;
+
+    /**
      * The PunishType enum represents the different types of punishments that can be applied.
      */
-    PunishType(String friendlyMessage) {
+    PunishType(String friendlyMessage, String historyMessage) {
         this.friendlyMessage = friendlyMessage;
+        this.historyMessage = historyMessage;
     }
 
     /**
@@ -37,5 +52,18 @@ public enum PunishType {
      */
     public String friendlyMessage() {
         return friendlyMessage;
+    }
+
+    /**
+     * Returns the history message associated with the punishment type.
+     * <p>
+     * This method returns the history message that is associated with a punishment type in the PunishType enum. The
+     * history message provides additional information about the punishment
+     * that has been applied, such as the reason for the punishment or any other relevant details.
+     *
+     * @return The history message associated with the punishment type.
+     */
+    public String historyMessage() {
+        return historyMessage;
     }
 }

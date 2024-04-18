@@ -3,17 +3,18 @@ package de.feelix.sierra.manager.storage;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.history.HistoryType;
 import de.feelix.sierraapi.violation.PunishType;
-import lombok.Data;
+import lombok.AllArgsConstructor;
 import de.feelix.sierraapi.history.History;
 
 /**
  * The HistoryDocument class represents a document that contains information about a user's history.
  */
-@Data
+@AllArgsConstructor
 public class HistoryDocument implements History {
 
     private final String      username;
     private final String      description;
+    private final long        ping;
     private final PunishType  punishType;
     private final HistoryType historyType;
     private final long        timestamp = System.currentTimeMillis();
@@ -69,6 +70,17 @@ public class HistoryDocument implements History {
     }
 
     /**
+     * Returns the timestamp at which the ping request was sent.
+     *
+     * @return The timestamp as a long value indicating the time in milliseconds since the epoch (January 1, 1970,
+     * 00:00:00 GMT).
+     */
+    @Override
+    public long ping() {
+        return ping;
+    }
+
+    /**
      * Formats the timestamp associated with this HistoryDocument to a formatted string representation.
      *
      * @return The formatted string representation of the timestamp.
@@ -78,9 +90,11 @@ public class HistoryDocument implements History {
     }
 
     /**
-     * Shortens the description string associated with a HistoryDocument instance if its length is greater than 50 characters.
+     * Shortens the description string associated with a HistoryDocument instance if its length is greater than 50
+     * characters.
      *
-     * @return The shortened description string if its length is greater than 50 characters, otherwise the original description string.
+     * @return The shortened description string if its length is greater than 50 characters, otherwise the original
+     * description string.
      */
     public String shortenDescription() {
         return FormatUtils.shortenString(this.description);
