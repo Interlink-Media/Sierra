@@ -200,15 +200,14 @@ public class PlayerData implements SierraUser {
      */
     private void ban() {
         Bukkit.getScheduler()
-            .runTask(
-                Sierra.getPlugin(), () -> Bukkit.dispatchCommand(
-                    Bukkit.getConsoleSender(),
-                    Sierra.getPlugin()
-                        .getSierraConfigEngine()
-                        .config()
-                        .getString("punish-command", "ban {username} Crashing")
-                        .replace("{username}", this.user.getName())
-                ));
+            .runTask(Sierra.getPlugin(), () -> Bukkit.dispatchCommand(
+                Bukkit.getConsoleSender(),
+                Sierra.getPlugin()
+                    .getSierraConfigEngine()
+                    .config()
+                    .getString("punish-command", "ban {username} Crashing")
+                    .replace("{username}", this.user.getName())
+            ));
     }
 
     /**

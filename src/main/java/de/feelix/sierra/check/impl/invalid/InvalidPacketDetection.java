@@ -844,16 +844,15 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             long delay = System.currentTimeMillis() - millis;
 
-            String format = "Interacted with: %s, but its not in his inventory. (Took: %dms)";
+            String first = "Interacted with: %s, but its not in his inventory. (Took: %dms)";
+            String second = "This is an experimental check. If there are any errors with this, please "
+                            + "report them on the Discord";
 
-            Sierra.getPlugin().getLogger().log(Level.INFO, String.format(format, itemStackType.getName(), delay));
-
-            String msg = "This is an experimental check."
-                         + " If there are any errors with this, please report them on the Discord";
-            Sierra.getPlugin().getLogger().log(Level.INFO, msg);
+            Sierra.getPlugin().getLogger().log(Level.INFO, String.format(first, itemStackType.getName(), delay));
+            Sierra.getPlugin().getLogger().log(Level.INFO, second);
 
             violation(event, ViolationDocument.builder()
-                .debugInformation("Interacted with: " + itemStackType.getName() + ", took: " + delay + "ms")
+                .debugInformation(String.format("Interacted: %s, took: %dms", itemStackType.getName(), delay))
                 .punishType(PunishType.KICK)
                 .build());
         }
@@ -909,7 +908,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      *
      * @since 1.0
      */
-    private static final int    MAX_BYTE_SIZE   = 262144;
+    private static final int MAX_BYTE_SIZE = 262144;
 
     /**
      * The WURSTCLIENT_URL constant represents the URL of the Wurst Client website.
@@ -923,8 +922,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     /**
      * Checks for an invalid container in the given ItemStack and performs necessary actions.
      *
-     * @param event      The PacketReceiveEvent.
-     * @param itemStack  The ItemStack to check.
+     * @param event     The PacketReceiveEvent.
+     * @param itemStack The ItemStack to check.
      */
     private void checkForInvalidContainer(PacketReceiveEvent event, ItemStack itemStack) {
         if (isInvalidItem(itemStack)) {
@@ -1112,8 +1111,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     /**
      * Checks for an invalid banner and handles violations.
      *
-     * @param event      The PacketReceiveEvent.
-     * @param itemStack  The ItemStack to check.
+     * @param event     The PacketReceiveEvent.
+     * @param itemStack The ItemStack to check.
      * @since 1.0.0
      */
     private void checkForInvalidBanner(PacketReceiveEvent event, ItemStack itemStack) {
@@ -1199,8 +1198,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     /**
      * Handles a PacketSendEvent and performs various checks and actions based on the packet type and player data.
      *
-     * @param event       The PacketSendEvent to handle.
-     * @param playerData  The PlayerData associated with the player.
+     * @param event      The PacketSendEvent to handle.
+     * @param playerData The PlayerData associated with the player.
      */
     @Override
     public void handle(PacketSendEvent event, PlayerData playerData) {
@@ -1257,7 +1256,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      *
      * @param user The user to check.
      * @return {@code true} if both the client version and server version are equal to or newer than version 1.19,
-     *         {@code false} otherwise.
+     * {@code false} otherwise.
      */
     private boolean isSupportedVersion(User user) {
         return user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19) && PacketEvents.getAPI()
