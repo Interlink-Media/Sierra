@@ -22,6 +22,7 @@ import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
 import org.bukkit.ChatColor;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -33,21 +34,51 @@ import java.util.Objects;
 @SierraCheckData(checkType = CheckType.BOOK)
 public class MassiveBook extends SierraDetection implements IngoingProcessor {
 
+    /**
+     * The lastContent variable stores the last content string.
+     */
     private String lastContent      = "";
+
+    /**
+     * Represents the count of the last content.
+     * <p>
+     * This variable keeps track of the count of the last content processed,
+     * which can be used for various purposes in the application.
+     * <p>
+     * Initial value: 0
+     */
     private int    lastContentCount = 0;
 
+    /**
+     * The MOJANG_CRASH_TRANSLATIONS variable represents an array of translations for Mojang crash messages.
+     * It is a public static final String[] variable.
+     * <p>
+     * Usage:
+     *   String[] translations = MOJANG_CRASH_TRANSLATIONS;
+     * <p>
+     * Example:
+     *   translations[0] = "translation.test.invalid";
+     *   translations[1] = "translation.test.invalid2";
+     */
     public static final String[] MOJANG_CRASH_TRANSLATIONS = {"translation.test.invalid", "translation.test.invalid2"};
 
-    private static final String key = "wveb54yn4y6y6hy6hb54yb5436by5346y3b4yb343yb453by45b34y5by34yb543yb54y5 "
-                                      + "h3y4h97,i567yb64t5vr2c43rc434v432tvt4tvybn4n6n57u6u57m6m6678mi68,867,79o,"
-                                      + "o97o,"
-                                      +
-                                      "978iun7yb65453v4tyv34t4t3c2cc423rc334tcvtvt43tv45tvt5t5v43tv5345tv43tv5355vt5t3tv5t533v5t45tv43vt4355t54fwveb54yn4y6y6hy6hb54yb5436by5346y3b4yb343yb453by45b34y5by34yb543yb54y5 h3y4h97,i567yb64t5vr2c43rc434v432tvt4tvybn4n6n57u6u57m6m6678mi68,867,79o,o97o,978iun7yb65453v4tyv34t4t3c2cc423rc334tcvtvt43tv45tvt5t5v43tv5345tv43tv5355vt5t3tv5t533v5t45tv43vt4355t54fwveb54yn4y6y6hy6hb54yb5436by5346y3b4yb343yb453by45b34y5by34yb543yb54y5 h3y4h97,i567yb64t5";
-
+    /**
+     * Represents a massive book.
+     * Inherits from the SierraDetection class.
+     *
+     * @param playerData The PlayerData associated with the book.
+     */
     public MassiveBook(PlayerData playerData) {
         super(playerData);
     }
 
+    /**
+     * Handles the PacketReceiveEvent and performs various checks on the event and player data.
+     * If the "prevent-book-crasher" configuration option is set to true, this method will prevent book crashers.
+     *
+     * @param event The PacketReceiveEvent to handle
+     * @param data The PlayerData associated with the event
+     */
     @Override
     public void handle(PacketReceiveEvent event, PlayerData data) {
 
@@ -88,7 +119,7 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                     ItemStack wrappedItemStack = universalWrapper.readItemStack();
 
                     if ((wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK
-                        || wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK) && blockBooks) {
+                         || wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK) && blockBooks) {
                         violation(event, ViolationDocument.builder()
                             .debugInformation("Used book while disabled (plugin message)")
                             .punishType(PunishType.BAN)
@@ -264,40 +295,35 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
         }
     }
 
+    /**
+     * Removes specific tags from an ItemStack's NBT.
+     *
+     * @param carriedItemStack The ItemStack from which to remove the tags.
+     */
     private void removeTags(ItemStack carriedItemStack) {
         Objects.requireNonNull(carriedItemStack.getNBT()).removeTag("pages");
         Objects.requireNonNull(carriedItemStack.getNBT()).removeTag("author");
         Objects.requireNonNull(carriedItemStack.getNBT()).removeTag("title");
     }
 
+    /**
+     * Validates the list of pages.
+     *
+     * @param pageList The list of pages to validate.
+     * @return The CrashDetails object if there is an issue with the pages, null otherwise.
+     * @see CrashDetails
+     */
     private CrashDetails validatePages(List<String> pageList) {
 
-        long   totalBytes            = 0;
-        double maxPageSizeMultiplier = 0.98;
-        int    maxPageSize           = 2560;
-        long   allowedBytes          = maxPageSize;
+        long totalBytes   = 0;
+        long allowedBytes = 2560;
 
-        if (pageList.size() > 50) {
-            return new CrashDetails("Too many pages", PunishType.KICK);
-        }
-
-        double  maxColorLength    = 256.0;
+        if (pageList.size() > 50) return new CrashDetails("Too many pages", PunishType.KICK);
 
         for (String pageContent : pageList) {
 
-            if ((pageContent.contains(key) || pageContent.equalsIgnoreCase(key))) {
-                return new CrashDetails("Contains invalid key", PunishType.BAN);
-            }
-
-            if (pageContent.equalsIgnoreCase(lastContent)) {
-                if (lastContentCount++ > 4) {
-                    return new CrashDetails("Too many equal pages", PunishType.KICK);
-                }
-            } else {
-                lastContentCount = 0;
-            }
-
-            lastContent = pageContent;
+            CrashDetails duplicatedContent = isDuplicatedContent(pageContent);
+            if (duplicatedContent != null) return duplicatedContent;
 
             String strippedContent = ChatColor.stripColor(pageContent.replaceAll("\\+", ""));
             //noinspection ConstantValue
@@ -305,17 +331,14 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                 return new CrashDetails("Contains invalid color code", PunishType.BAN);
             }
 
-            if (strippedContent.length() > maxColorLength) {
-                return new CrashDetails("Invalid color code signature", PunishType.BAN);
-            }
+            CrashDetails invalidColor = isInvalidColor(strippedContent);
+            if (invalidColor != null) return invalidColor;
 
-            if (pageContent.split("extra").length > 8.0) {
-                return new CrashDetails("Invalid extra frequency", PunishType.BAN);
-            }
+            CrashDetails extraFrequency = isExtraFrequency(pageContent);
+            if (extraFrequency != null) return extraFrequency;
 
-            if (FieldReader.isReadable(pageContent) && !pageContent.isEmpty()) {
-                return new CrashDetails("Field is not readable", PunishType.BAN);
-            }
+            CrashDetails fieldIsReadable = checkFieldReadable(pageContent);
+            if (fieldIsReadable != null) return fieldIsReadable;
 
             String noSpaces = pageContent.replace(" ", "");
             if (noSpaces.startsWith("{\"translate\"")) {
@@ -328,23 +351,13 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                 continue;
             }
 
-
-            int oversizedChars = 0;
-            for (int charIndex = 0; charIndex < pageContent.length(); charIndex++) {
-                char currentChar = pageContent.charAt(charIndex);
-                if (String.valueOf(currentChar).getBytes().length > 1) {
-                    oversizedChars++;
-                    if (oversizedChars > 15) {
-                        return new CrashDetails("Too many big characters", PunishType.KICK);
-                    }
-                }
-            }
+            CrashDetails invalidChars = tooManyInvalidChars(pageContent);
+            if (invalidChars != null) return invalidChars;
 
             int contentLength = pageContent.getBytes(StandardCharsets.UTF_8).length;
 
-            if (contentLength > 256 * 4) {
-                return new CrashDetails("Invalid page size", PunishType.BAN);
-            }
+            CrashDetails invalidPageSize = isInvalidPageSize(contentLength);
+            if (invalidPageSize != null) return invalidPageSize;
 
             totalBytes += contentLength;
             int length     = pageContent.length();
@@ -357,8 +370,8 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                 }
             }
 
-            allowedBytes += (long) ((maxPageSize * Math.min(1, Math.max(0.1D, (double) length / 255D)))
-                                    * maxPageSizeMultiplier);
+            allowedBytes += (long) ((2560 * Math.min(1, Math.max(0.1D, (double) length / 255D)))
+                                    * 0.98);
 
             if (multiBytes > 1) {
                 // Penalize multi-byte characters
@@ -374,7 +387,109 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
         return null;
     }
 
+    /**
+     * Determines if the given page size is invalid.
+     *
+     * @param contentLength The length of the page content.
+     * @return The CrashDetails object if the page size is invalid, null otherwise.
+     * @see CrashDetails
+     */
+    private static @Nullable CrashDetails isInvalidPageSize(int contentLength) {
+        if (contentLength > 256 * 4) {
+            return new CrashDetails("Invalid page size", PunishType.BAN);
+        }
+        return null;
+    }
 
+    /**
+     * Determines if the given page content contains too many oversized characters.
+     *
+     * @param pageContent The content of the page to check.
+     * @return The CrashDetails object if there are too many oversized characters, null otherwise.
+     */
+    private static @Nullable CrashDetails tooManyInvalidChars(String pageContent) {
+        int oversizedChars = 0;
+        for (int charIndex = 0; charIndex < pageContent.length(); charIndex++) {
+            char currentChar = pageContent.charAt(charIndex);
+            if (String.valueOf(currentChar).getBytes().length > 1) {
+                oversizedChars++;
+                if (oversizedChars > 15) {
+                    return new CrashDetails("Too many big characters", PunishType.KICK);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Checks if the given page content is readable.
+     *
+     * @param pageContent The content of the page to check.
+     * @return A CrashDetails object if the field is not readable, null otherwise.
+     * @see CrashDetails
+     */
+    private static @Nullable CrashDetails checkFieldReadable(String pageContent) {
+        if (FieldReader.isReadable(pageContent) && !pageContent.isEmpty()) {
+            return new CrashDetails("Field is not readable", PunishType.BAN);
+        }
+        return null;
+    }
+
+    /**
+     * Checks if the given page content has an extra frequency.
+     *
+     * @param pageContent The content of the page to check.
+     * @return A CrashDetails object if the page content has an extra frequency, null otherwise.
+     * @see CrashDetails
+     */
+    private static @Nullable CrashDetails isExtraFrequency(String pageContent) {
+        if (pageContent.split("extra").length > 8.0) {
+            return new CrashDetails("Invalid extra frequency", PunishType.BAN);
+        }
+        return null;
+    }
+
+    /**
+     * Checks if the given strippedContent is an invalid color code signature.
+     *
+     * @param strippedContent The stripped content to check.
+     * @return A CrashDetails object if the color code signature is invalid, null otherwise.
+     * @see CrashDetails
+     */
+    private static @Nullable CrashDetails isInvalidColor(String strippedContent) {
+        if (strippedContent.length() > 256.0) {
+            return new CrashDetails("Invalid color code signature", PunishType.BAN);
+        }
+        return null;
+    }
+
+    /**
+     * Checks if the given page content is duplicated.
+     *
+     * @param pageContent The content of the page to check.
+     * @return A CrashDetails object if the page content is duplicated too many times, null otherwise.
+     * @see CrashDetails
+     */
+    private @Nullable CrashDetails isDuplicatedContent(String pageContent) {
+        if (pageContent.equalsIgnoreCase(lastContent)) {
+            if (lastContentCount++ > 4) {
+                return new CrashDetails("Too many equal pages", PunishType.KICK);
+            }
+        } else {
+            lastContentCount = 0;
+        }
+
+        lastContent = pageContent;
+        return null;
+    }
+
+
+    /**
+     * Checks if the title or author of the given ItemStack is invalid.
+     *
+     * @param itemStack The ItemStack to check.
+     * @return {@code true} if the title or author is invalid, {@code false} otherwise.
+     */
     private boolean invalidTitleOrAuthor(ItemStack itemStack) {
         if (itemStack.getNBT() != null) {
             String title = itemStack.getNBT().getStringTagValueOrNull("title");
@@ -388,6 +503,12 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
         return false;
     }
 
+    /**
+     * Retrieves the list of pages stored in the given ItemStack.
+     *
+     * @param itemStack The ItemStack to retrieve pages from.
+     * @return A list of strings representing the pages extracted from the ItemStack.
+     */
     private List<String> getPages(ItemStack itemStack) {
         List<String> pageList = new ArrayList<>();
 

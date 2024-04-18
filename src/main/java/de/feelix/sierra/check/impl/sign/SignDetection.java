@@ -19,23 +19,33 @@ public class SignDetection extends SierraDetection implements IngoingProcessor {
         super(playerData);
     }
 
+    /**
+     * The maximum length of a sign in characters.
+     */
+    private static final int MAX_SIGN_LENGTH = 45;
+
+    /**
+     * Handles the incoming packet received event.
+     *
+     * @param event The packet receive event.
+     * @param playerData The player data associated with the event.
+     */
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
 
-        if (event.getPacketType() == PacketType.Play.Client.UPDATE_SIGN && Sierra.getPlugin()
+        boolean preventSignCrasher = Sierra.getPlugin()
             .getSierraConfigEngine()
             .config()
-            .getBoolean("prevent-sign-crasher", true)) {
+            .getBoolean("prevent-sign-crasher", true);
+
+        if (event.getPacketType() == PacketType.Play.Client.UPDATE_SIGN && preventSignCrasher) {
 
             WrapperPlayClientUpdateSign wrapper = null;
 
             try {
                 wrapper = new WrapperPlayClientUpdateSign(event);
             } catch (Exception exception) {
-                violation(event, ViolationDocument.builder()
-                    .debugInformation("Unable to wrap sign packet")
-                    .punishType(PunishType.BAN)
-                    .build());
+                violation(event, createViolation("Unable to wrap sign packet", PunishType.BAN));
             }
 
             if (wrapper == null) return;
@@ -43,20 +53,27 @@ public class SignDetection extends SierraDetection implements IngoingProcessor {
             for (String textLine : wrapper.getTextLines()) {
 
                 if (textLine.toLowerCase().contains("run_command")) {
-                    violation(event, ViolationDocument.builder()
-                        .debugInformation("Sign contains json command")
-                        .punishType(PunishType.KICK)
-                        .build());
+                    violation(event, createViolation("Sign contains json command", PunishType.KICK));
                 }
 
-                int maxSignLength = 45;
-                if (textLine.length() > maxSignLength) {
-                    violation(event, ViolationDocument.builder()
-                        .debugInformation("Sign length: " + textLine.length())
-                        .punishType(PunishType.BAN)
-                        .build());
+                if (textLine.length() > MAX_SIGN_LENGTH) {
+                    violation(event, createViolation("Sign length: " + textLine.length(), PunishType.BAN));
                 }
             }
         }
+    }
+
+    /**
+     * Creates a violation document with the given debug information and punishment type.
+     *
+     * @param debugInfo The debug information related to the violation.
+     * @param type The type of punishment to be applied.
+     * @return The created violation document.
+     */
+    private ViolationDocument createViolation(String debugInfo, PunishType type) {
+        return ViolationDocument.builder()
+            .debugInformation(debugInfo)
+            .punishType(type)
+            .build();
     }
 }

@@ -23,17 +23,73 @@ import java.util.regex.Pattern;
 @SierraCheckData(checkType = CheckType.COMMAND)
 public class BlockedCommand extends SierraDetection implements IngoingProcessor {
 
+    /**
+     * Regular expression pattern for excluding plugins in the BlockedCommand class.
+     * It is used to match a plugin prefix (e.g., "plugin:") followed by a non-whitespace character.
+     * The pattern is compiled and stored as a private static final field.
+     */
     private static final Pattern PLUGIN_EXCLUSION = java.util.regex.Pattern.compile("/(\\S+:)");
+
+    /**
+     * Regular expression pattern used to match exploit patterns in strings.
+     * An exploit pattern is defined as any string that starts with "${" and ends with "}".
+     * This pattern can be used to search for such patterns and take appropriate action.
+     */
     private static final Pattern EXPLOIT_PATTERN  = java.util.regex.Pattern.compile("\\$\\{.+}");
+
+    /**
+     * The EXPLOIT_PATTERN2 variable is a regular expression pattern that matches a specific pattern in a string.
+     * It is used to search for occurrences of "${...}" in a string, where "..." represents any characters.
+     * <p>
+     * Usage:
+     * <p>
+     * ```java
+     * private static final Pattern EXPLOIT_PATTERN2 = Pattern.compile("\\$\\{.*}");
+     * ```
+     * <p>
+     * The EXPLOIT_PATTERN2 variable is of type java.util.regex.Pattern.
+     * <p>
+     * Example usage:
+     * <p>
+     * ```java
+     * String message = "This is a ${placeholder}.";
+     * if (EXPLOIT_PATTERN2.matcher(message).find()) {
+     *     // Do something if the pattern is found in the message
+     *     ...
+     * } else {
+     *     // Do something if the pattern is not found in the message
+     *     ...
+     * }
+     * ```
+     */
     private static final Pattern EXPLOIT_PATTERN2 = Pattern.compile("\\$\\{.*}");
 
+    /**
+     * The list of disallowed commands.
+     * <p>
+     * This list is retrieved from the Sierra plugin's configuration file.
+     * It contains a collection of disallowed commands that players are not allowed to execute.
+     * </p>
+     */
     private final List<String> disallowedCommands = Sierra.getPlugin()
         .getSierraConfigEngine().config().getStringList("disallowed-commands");
 
+    /**
+     *
+     * BlockedCommand is a class representing a specific action to be taken when a blocked command is detected.
+     *
+     * @param playerData The PlayerData associated with the player
+     */
     public BlockedCommand(PlayerData playerData) {
         super(playerData);
     }
 
+    /**
+     * Handles incoming packets and performs specific actions based on the packet type.
+     *
+     * @param event      the PacketReceiveEvent that triggered the handling
+     * @param playerData the PlayerData associated with the player
+     */
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
 
@@ -77,6 +133,12 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
         }
     }
 
+    /**
+     * Checks the given message for Log4J related vulnerabilities and triggers a violation if found.
+     *
+     * @param event   the PacketReceiveEvent that triggered the check
+     * @param message the message to be checked
+     */
     private void checkForLog4J(PacketReceiveEvent event, String message) {
         message = message.toLowerCase();
 
@@ -95,6 +157,12 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
         }
     }
 
+    /**
+     * Checks for double commands in the given message and handles violations if necessary.
+     *
+     * @param event   the packet receive event
+     * @param message the message to check for double commands
+     */
     private void checkForDoubleCommands(PacketReceiveEvent event, String message) {
         for (String disallowedCommand : disallowedCommands) {
             if (message.contains(disallowedCommand)) {
@@ -117,6 +185,12 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
         }
     }
 
+    /**
+     * Checks if a player has permission to perform a certain action.
+     *
+     * @param event the packet receive event
+     * @return true if the player has permission, false otherwise
+     */
     private boolean playerHasPermission(PacketReceiveEvent event) {
         Player player = (Player) event.getPlayer();
 
@@ -127,6 +201,13 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
         return !player.isOp();
     }
 
+    /**
+     * Replaces the first occurrence of a captured group in the source string that matches the given regular expression.
+     *
+     * @param regex  the regular expression pattern to match
+     * @param source the string in which to replace the captured group
+     * @return the resulting string after replacing the captured group, or the source string if the pattern is not found
+     */
     private String replaceGroup(String regex, String source) {
 
         Matcher m = Pattern.compile(regex).matcher(source);

@@ -24,16 +24,78 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/*
- @author ZugPilot (Tobi)
+/**
+ * This class represents an item detection runner that handles the detection
+ * and processing of items for Sierra plugin.
+ * It extends the SierraDetection class and implements the IngoingProcessor interface.
  */
 @SierraCheckData(checkType = CheckType.CREATIVE)
 public class ItemDetectionRunner extends SierraDetection implements IngoingProcessor {
-    /*
-    This class is for running and handling all creative checks
+
+    /**
+     * List of ItemCheck instances used to perform item checks.
+     *
+     * <p>
+     * The checks list stores instances of classes that implement the ItemCheck interface. These classes are responsible for handling specific item checks.
+     * </p>
+     *
+     * <p>
+     * The checks list is initialized as an empty ArrayList and can be modified by adding or removing ItemCheck instances.
+     * </p>
+     *
+     * @see ItemCheck
      */
     private final List<ItemCheck> checks = new ArrayList<>();
 
+    /**
+     * The maximum number of recursion levels allowed.
+     */
+    private static final int    MAX_RECURSIONS       = 30;
+
+    /**
+     * The variable ITEMS_KEY is a private static final String that represents the key for accessing the "Items" field.
+     * <p>
+     * The "Items" field is used for storing a collection of items in a data structure, and this key is used to retrieve
+     * the value associated with this field.
+     * <p>
+     * Example usage:
+     *      String itemsKey = ITEMS_KEY;
+     *
+     * @since 1.0
+     */
+    private static final String ITEMS_KEY            = "Items";
+
+    /**
+     * Represents the key used to identify a tag.
+     * This key is used in various operations where tags are processed.
+     */
+    private static final String TAG_KEY              = "tag";
+
+    /**
+     * Represents the key used for the block entity tag in the Sierra system.
+     * The block entity tag stores additional data for a specific block entity in Minecraft.
+     */
+    private static final String BLOCK_ENTITY_TAG_KEY = "BlockEntityTag";
+
+    /**
+     * The MAX_ITEMS variable represents the maximum number of items allowed.
+     * <p>
+     * It is used in the ItemDetectionRunner class to set a limit on the number of items that can be processed.
+     * <p>
+     * The MAX_ITEMS variable is a private static final integer with a value of 54.
+     * <p>
+     * This variable is important for preventing potential crashes or exploits caused by an excessive number of items.
+     * By setting a reasonable maximum value for the number of items, it helps ensure the stability and security of the application.
+     * <p>
+     * This variable is not intended to be modified during runtime and is marked as final to prevent any accidental changes.
+     */
+    private static final int    MAX_ITEMS            = 54;
+
+    /**
+     * The ItemDetectionRunner class is responsible for running item detection checks on player data.
+     *
+     * @param playerData The PlayerData object containing the player's data
+     */
     public ItemDetectionRunner(PlayerData playerData) {
         super(playerData);
 
@@ -56,6 +118,12 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
     }
 
 
+    /**
+     * Handles the packet receive event and performs item detection checks on the player data.
+     *
+     * @param event       The packet receive event
+     * @param playerData  The player data object
+     */
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
 
@@ -112,83 +180,163 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
         }
     }
 
+    /**
+     * Performs a recursive operation on the given event, player data, clicked item, and block entity tag.
+     *
+     * @param event          The packet receive event
+     * @param data           The player data object
+     * @param clickedItem    The clicked item
+     * @param blockEntityTag The NBT compound representing the block entity tag
+     */
     private void recursion(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
                            NBTCompound blockEntityTag) {
 
-        int maxRecursions = 30;
-        //prevent recursion abuse with deeply nested items
-        if (data.recursionCount++ > maxRecursions) {
-            violation(event, ViolationDocument.builder()
-                .debugInformation("Recursions: " + data.getRecursionCount())
-                .punishType(PunishType.BAN)
-                .build());
+        if (exceededRecursionMax(data)) {
+            sendViolation(event, data.getRecursionCount(), PunishType.BAN);
+            return;
+        }
+        if (!blockEntityTag.getTags().containsKey(ITEMS_KEY)) {
             return;
         }
 
-        if (blockEntityTag.getTags().containsKey("Items")) {
-            NBTList<NBTCompound> items = blockEntityTag.getCompoundListTagOrNull("Items");
-            //This is super weird, when control + middle-clicking a chest this becomes null suddenly
-            //Is this intentional behaviour? I have no idea how to fix this
-            if (items == null) {
+        NBTList<NBTCompound> items = blockEntityTag.getCompoundListTagOrNull(ITEMS_KEY);
+        if (items == null) {
+            return;
+        }
+        if (exceededMaxItems(items)) {
+            sendViolation(event, items.size(), PunishType.BAN);
+            return;
+        }
+
+        processItems(event, data, clickedItem, items);
+    }
+
+    /**
+     * Checks if the recursion count has exceeded the maximum limit.
+     *
+     * @param data The PlayerData object containing the player's data
+     * @return true if the recursion count has exceeded the maximum limit, false otherwise
+     */
+    private boolean exceededRecursionMax(PlayerData data) {
+        return ++data.recursionCount > MAX_RECURSIONS;
+    }
+
+    /**
+     * Checks if the number of items exceeds the maximum allowed limit.
+     *
+     * @param items The list of NBT compounds representing the items
+     * @return true if the number of items exceeds the maximum limit, false otherwise
+     */
+    private boolean exceededMaxItems(NBTList<NBTCompound> items) {
+        return items.size() > MAX_ITEMS;
+    }
+
+    /**
+     * Sends a violation based on the provided event, information, and punishment type.
+     *
+     * @param event       The PacketReceiveEvent triggering the violation
+     * @param info        The information related to the violation
+     * @param punishType  The punishment type to be applied
+     */
+    private void sendViolation(PacketReceiveEvent event, int info,
+                               @SuppressWarnings("SameParameterValue") PunishType punishType) {
+        violation(event, ViolationDocument.builder()
+            .debugInformation("Violation Info: " + info)
+            .punishType(punishType)
+            .build());
+    }
+
+    /**
+     * Processes the items in the given list by checking for specific tags and performing actions accordingly.
+     *
+     * @param event        The packet receive event.
+     * @param data         The player data object.
+     * @param clickedItem  The clicked item.
+     * @param items        The list of NBT compounds representing the items.
+     */
+    private void processItems(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
+                              NBTList<NBTCompound> items) {
+        for (int i = 0; i < items.size(); i++) {
+            NBTCompound item = items.getTag(i);
+            if (item.getTags().containsKey(TAG_KEY)) {
+                if (processTaggedItem(event, data, clickedItem, item)) return;
+            } else if (callDefaultChecks(event, data, clickedItem, item)) {
                 return;
-            }
-
-            //it might be possible to send an item container via creative packets with a large amount of items in nbt
-            //however I haven't actually found an exploit doing this
-
-            int maxItems = 54;
-            if (items.size() > maxItems) {
-                violation(event, ViolationDocument.builder()
-                    .debugInformation("Too many items: " + items.size())
-                    .punishType(PunishType.BAN)
-                    .build());
-                return;
-            }
-
-            //Loop through all items
-            for (int i = 0; i < items.size(); i++) {
-                NBTCompound item = items.getTag(i);
-
-                //Check if the item has the tag "tag" meaning it got extra nbt (besides the default item data of
-                // damage, count, id etc.)
-                if (item.getTags().containsKey("tag")) {
-                    NBTCompound tag = item.getCompoundTagOrNull("tag");
-
-                    //call creative checks to check for illegal tags
-                    if (callDefaultChecks(event, data, clickedItem, tag)) return;
-
-                    //if that item has block entity tag do recursion to find potential nested/"hidden" items
-                    if (tag.getTags().containsKey("BlockEntityTag")) {
-                        NBTCompound recursionBlockEntityTag = tag.getCompoundTagOrNull("BlockEntityTag");
-                        recursion(event, data, clickedItem, recursionBlockEntityTag);
-                    }
-                } else {
-                    //this actually only needed for the crash anvil check, since the crash anvil actually works
-                    // without having "tag"
-                    //it sets the damage (legacy data) value of the item anvil to 3 which results in the client
-                    // placing it crashing
-                    //not a fan of this approach, it runs a few unnecessary checks
-                    if (callDefaultChecks(event, data, clickedItem, item)) return;
-                }
             }
         }
     }
 
+    /**
+     * Processes a tagged item by performing various checks and actions based on the item's tags.
+     *
+     * @param event        The packet receive event triggering the processing of the tagged item.
+     * @param data         The player data object.
+     * @param clickedItem  The clicked item.
+     * @param item         The NBT compound representing the tagged item.
+     * @return true if any default checks were triggered and handled, otherwise false.
+     */
+    private boolean processTaggedItem(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
+                                      NBTCompound item) {
+        NBTCompound tag = item.getCompoundTagOrNull(TAG_KEY);
+        if (callDefaultChecks(event, data, clickedItem, tag)) return true;
+        if (tag.getTags().containsKey(BLOCK_ENTITY_TAG_KEY)) {
+            NBTCompound recursionBlockEntityTag = tag.getCompoundTagOrNull(BLOCK_ENTITY_TAG_KEY);
+            recursion(event, data, clickedItem, recursionBlockEntityTag);
+        }
+        return false;
+    }
+
+    /**
+     * Calls the default checks for item detection.
+     *
+     * @param event        The packet receive event
+     * @param data         The player data object
+     * @param clickedItem  The clicked item
+     * @param tag          The NBT compound representing the item's tag
+     * @return true if any default checks were triggered and handled, otherwise false
+     */
     private boolean callDefaultChecks(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
                                       NBTCompound tag) {
         for (ItemCheck check : checks) {
             CrashDetails crashDetails = check.handleCheck(event, clickedItem, tag);
             if (crashDetails != null) {
-                violation(event, ViolationDocument.builder()
-                    .debugInformation(crashDetails.getDetails() + " | R: " + data.getRecursionCount())
-                    .punishType(PunishType.BAN)
-                    .build());
+                sendViolationDocument(event, data, crashDetails);
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * Sends a violation document based on the provided event, player data, and crash details.
+     *
+     * @param event        The PacketReceiveEvent triggering the violation
+     * @param data         The player data object containing the player's data
+     * @param crashDetails The crash details associated with the violation
+     */
+    private void sendViolationDocument(PacketReceiveEvent event, PlayerData data, CrashDetails crashDetails) {
+        violation(event, buildViolationDocument(data, crashDetails));
+    }
+
+    /**
+     * Builds a ViolationDocument object with the provided player data and crash details.
+     *
+     * @param data         The PlayerData object containing the player's data.
+     * @param crashDetails The CrashDetails object containing crash details associated with the violation.
+     * @return A ViolationDocument object with the provided player data and crash details.
+     */
+    private ViolationDocument buildViolationDocument(PlayerData data, CrashDetails crashDetails) {
+        return ViolationDocument.builder()
+            .debugInformation(crashDetails.getDetails() + " | R: " + data.getRecursionCount())
+            .punishType(PunishType.BAN)
+            .build();
+    }
+
+    /**
+     * Adds the specified item checks to the list of creative checks.
+     *
+     * @param checks The item checks to be added
+     */
     private void addCreativeChecks(ItemCheck... checks) {
         this.checks.addAll(Arrays.asList(checks));
     }

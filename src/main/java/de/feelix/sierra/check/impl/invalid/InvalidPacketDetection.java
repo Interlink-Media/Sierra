@@ -25,10 +25,7 @@ import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.MenuType;
 import de.feelix.sierra.manager.storage.PlayerData;
-import de.feelix.sierra.utilities.FieldReader;
-import de.feelix.sierra.utilities.FormatUtils;
-import de.feelix.sierra.utilities.NBTDetector;
-import de.feelix.sierra.utilities.Pair;
+import de.feelix.sierra.utilities.*;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
@@ -46,9 +43,99 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * The InvalidPacketDetection class is responsible for detecting and handling invalid packets received from players.
+ * It extends several super classes: SierraDetection, IngoingProcessor, and OutgoingProcessor.
+ * <p>
+ * Class Fields:
+ * - type: The type of the lectern packet event
+ * - lecternId: The ID of the lectern
+ * - lastSlot: The last slot clicked by the player
+ * - lastBookUse: The time stamp of the last book use
+ * - containerType: The type of the container packet event
+ * - containerId: The ID of the container
+ * - keepAliveMap: A map to store keep alive packets
+ * <p>
+ * Class Methods:
+ * <p>
+ * public InvalidPacketDetection(PlayerData playerData)
+ * - Constructor method to create a new instance of InvalidPacketDetection
+ * - Parameters:
+ * - playerData: The PlayerData object containing the player information
+ *
+ * @Override public void handle(PacketReceiveEvent event, PlayerData playerData)
+ * - Override method to handle incoming packet events
+ * - Parameters:
+ * - event: The PacketReceiveEvent object representing the received packet event
+ * - playerData: The PlayerData object containing the player information
+ * <p>
+ * private void checkForInvalidSlot(PacketReceiveEvent event, WrapperPlayClientClickWindow wrapper)
+ * - Private method to check for invalid slots in the packet event
+ * - Parameters:
+ * - event: The PacketReceiveEvent object representing the received packet event
+ * - wrapper: The WrapperPlayClientClickWindow object representing the packet wrapper
+ * <p>
+ * private void checkButtonClickPosition(PacketReceiveEvent event, WrapperPlayClientClickWindow wrapper)
+ * - Private method to perform Grim check for button click position
+ * - Parameters:
+ * - event: The PacketReceiveEvent object representing the received packet event
+ * - wrapper: The WrapperPlayClientClickWindow object representing the packet wrapper
+ * <p>
+ * private void checkIfItemIsAvailable(PacketReceiveEvent event, ItemStack itemStack)
+ * - Private method to check if the item is available
+ * - Parameters:
+ * - event: The PacketReceiveEvent object representing the received packet event
+ * - itemStack: The ItemStack object representing the item being checked
+ * <p>
+ * private void checkForInvalidShulker(PacketReceiveEvent event, ItemStack itemStack)
+ * - Private method to check for invalid shulker packets
+ * - Parameters:
+ * - event: The PacketReceiveEvent object representing the received packet event
+ * - itemStack: The ItemStack object representing the item being checked
+ * <p>
+ * private void checkForInvalidContainer(PacketReceiveEvent event, ItemStack itemStack)
+ * - Private method to check for invalid container packets
+ * - Parameters:
+ * - event: The PacketReceiveEvent object representing the received packet event
+ * - itemStack: The ItemStack object representing the item being checked
+ * <p>
+ * private void checkNbtTags(PacketReceiveEvent event, ItemStack itemStack)
+ * - Private method to check for invalid NBT tags in packets
+ * - Parameters:
+ * - event: The PacketReceiveEvent object representing the received packet event
+ * - itemStack: The ItemStack object representing the item being checked
+ * <p>
+ * private void checkForInvalidBanner(PacketReceiveEvent event, ItemStack itemStack)
+ * - Private method to check for invalid banner packets
+ * - Parameters:
+ * - event: The PacketReceiveEvent object representing the received packet event
+ * - itemStack: The ItemStack object representing the item being checked
+ * @Override public void handle(PacketSendEvent event, PlayerData playerData)
+ * - Override method to handle outgoing packet events
+ * - Parameters:
+ * - event: The PacketSendEvent object representing the outgoing packet event
+ * - playerData: The PlayerData object containing the player information
+ * <p>
+ * private boolean isSupportedVersion()
+ * - Private method to check if the server version is supported
+ * - Returns:
+ * - true if the server version is supported, false otherwise
+ * <p>
+ * private boolean isSupportedVersion(User user)
+ * - Private method to check if the server version is supported
+ * - Parameters:
+ * - user: The User object representing the player
+ * - Returns:
+ * - true if the server version is supported, false otherwise
+ */
 @SierraCheckData(checkType = CheckType.INVALID)
 public class InvalidPacketDetection extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
 
+    /**
+     * Constructs a new InvalidPacketDetection instance for a given player.
+     *
+     * @param playerData the data of the player who triggered the detection
+     */
     public InvalidPacketDetection(PlayerData playerData) {
         super(playerData);
     }
@@ -56,16 +143,78 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     // https://github.com/PaperMC/Paper/commit/ea2c81e4b9232447f9896af2aac4cd0bf62386fd
     // https://wiki.vg/Inventory
     // https://github.com/GrimAnticheat/Grim/blob/2.0/src/main/java/ac/grim/grimac/checks/impl/crash/CrashD.java
-    private MenuType type      = MenuType.UNKNOWN;
-    private int      lecternId = -1;
+    private MenuType type = MenuType.UNKNOWN;
 
-    private int  lastSlot      = -1;
-    private long lastBookUse   = 0L;
-    private int  containerType = -1;
-    private int  containerId   = -1;
+    /**
+     * The variable lecternId is a private integer that represents the ID of a lectern.
+     *
+     * @since 1.0
+     */
+    private int lecternId = -1;
 
+    /**
+     * Represents the index of the last slot in a collection or array.
+     * The initial value is set to -1 indicating that no slots have been assigned yet.
+     * <p>
+     * This variable is private and can only be accessed within the current class.
+     *
+     * @since 1.0
+     */
+    private int lastSlot = -1;
+
+    /**
+     * The variable represents the timestamp of the last usage of a book.
+     *
+     * <p>This variable is updated to the current timestamp whenever a book is used.
+     * It provides the ability to keep track of the last time a book was accessed or utilized.</p>
+     *
+     * <p>Note that the variable is only accessible within the current class.</p>
+     *
+     * @since (initial release)
+     */
+    private long lastBookUse = 0L;
+
+    /**
+     * Represents the type of container.
+     * <p>
+     * The containerType variable is an integer that represents the type of container.
+     * It is used to differentiate between different types of containers, such as inventories or chests.
+     * The default value is -1, indicating an invalid container type.
+     * </p>
+     * <p>
+     * This variable is used in the class InvalidPacketDetection of the SierraCheckData project.
+     * </p>
+     */
+    private int containerType = -1;
+
+    /**
+     * Represents the ID of the container.
+     * The container ID is used to identify a specific container instance.
+     * A negative value (-1) indicates that the container ID is invalid or uninitialized.
+     */
+    private int containerId = -1;
+
+    /**
+     * Represents a map of keep alive timestamps.
+     * <p>
+     * This map is used to store pairs of timestamps indicating the last time a keep alive packet was sent and received.
+     * The map follows a first-in-first-out (FIFO) order, meaning the oldest pair is always removed first when the
+     * capacity of the map is reached.
+     * </p>
+     * <p>
+     * The map uses a LinkedList implementation for efficient insertion and removal of elements.
+     * </p>
+     *
+     * @since 1.0
+     */
     private final Queue<Pair<Long, Long>> keepAliveMap = new LinkedList<>();
 
+    /**
+     * Handles a PacketReceiveEvent and performs various checks and actions based on the packet type and player data.
+     *
+     * @param event      The PacketReceiveEvent to handle.
+     * @param playerData The PlayerData associated with the player.
+     */
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
 
@@ -567,6 +716,12 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
     }
 
+    /**
+     * Checks for an invalid slot and handles violations.
+     *
+     * @param event   The PacketReceiveEvent.
+     * @param wrapper The WrapperPlayClientClickWindow.
+     */
     private void checkForInvalidSlot(PacketReceiveEvent event, WrapperPlayClientClickWindow wrapper) {
 
         int slot = wrapper.getSlot();
@@ -602,6 +757,12 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
     }
 
+    /**
+     * Checks the position of the button click and handles violations.
+     *
+     * @param event   The PacketReceiveEvent.
+     * @param wrapper The WrapperPlayClientClickWindow.
+     */
     // Grim check (https://github.com/GrimAnticheat/Grim/blob/2.0/src/main/java/ac/grim/grimac/checks/impl/badpackets/BadPacketsP.java)
     private void checkButtonClickPosition(PacketReceiveEvent event, WrapperPlayClientClickWindow wrapper) {
         int clickType = wrapper.getWindowClickType().ordinal();
@@ -639,6 +800,12 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
     }
 
+    /**
+     * Checks if the specified item is available in the player's inventory or open inventories.
+     *
+     * @param event     The PacketReceiveEvent.
+     * @param itemStack The item stack to check.
+     */
     private void checkIfItemIsAvailable(PacketReceiveEvent event, ItemStack itemStack) {
         ItemType itemStackType = itemStack.getType();
 
@@ -692,24 +859,14 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
     }
 
+    /**
+     * Checks for an invalid shulker and handles violations.
+     *
+     * @param event     The PacketReceiveEvent.
+     * @param itemStack The ItemStack to check.
+     */
     private void checkForInvalidShulker(PacketReceiveEvent event, ItemStack itemStack) {
-        if (itemStack.getType() == ItemTypes.BLACK_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.WHITE_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.RED_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.GREEN_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.BLUE_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.LIGHT_BLUE_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.YELLOW_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.LIME_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.BROWN_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.PINK_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.ORANGE_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.GRAY_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.LIGHT_GRAY_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.CYAN_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.PURPLE_SHULKER_BOX
-            || itemStack.getType() == ItemTypes.MAGENTA_SHULKER_BOX) {
-
+        if (isShulkerBox(itemStack)) {
             if (itemStack.getNBT() != null) {
                 String string = FormatUtils.mapToString(itemStack.getNBT().getTags());
                 if (string.getBytes(StandardCharsets.UTF_8).length > 10000) {
@@ -722,30 +879,104 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
     }
 
-    private void checkForInvalidContainer(PacketReceiveEvent event, ItemStack itemStack) {
-        if (itemStack.getType() == ItemTypes.CHEST
-            || itemStack.getType() == ItemTypes.HOPPER
-            || itemStack.getType() == ItemTypes.HOPPER_MINECART
-            || itemStack.getType() == ItemTypes.CHEST_MINECART) {
+    /**
+     * Checks if the given ItemStack represents a shulker box.
+     *
+     * @param itemStack The ItemStack to check.
+     * @return True if the ItemStack is a shulker box, false otherwise.
+     */
+    private boolean isShulkerBox(ItemStack itemStack) {
+        try {
+            ShulkerBoxType.valueOf(itemStack.getType().toString());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
 
+    /**
+     * Represents the maximum byte size for a variable.
+     *
+     * <p>
+     * The MAX_BYTE_SIZE variable is a constant that defines the maximum byte size
+     * that a variable can have.
+     * </p>
+     *
+     * <p>
+     * It is used to restrict the size of a data object or string to prevent
+     * excessive memory usage or performance issues.
+     * </p>
+     *
+     * @since 1.0
+     */
+    private static final int    MAX_BYTE_SIZE   = 262144;
+
+    /**
+     * The WURSTCLIENT_URL constant represents the URL of the Wurst Client website.
+     * It is a private static final variable.
+     * <p>
+     * Example usage:
+     * String url = InvalidPacketDetection.WURSTCLIENT_URL;
+     */
+    private static final String WURSTCLIENT_URL = "www.wurstclient.net";
+
+    /**
+     * Checks for an invalid container in the given ItemStack and performs necessary actions.
+     *
+     * @param event      The PacketReceiveEvent.
+     * @param itemStack  The ItemStack to check.
+     */
+    private void checkForInvalidContainer(PacketReceiveEvent event, ItemStack itemStack) {
+        if (isInvalidItem(itemStack)) {
             if (itemStack.getNBT() != null) {
                 String string = FormatUtils.mapToString(itemStack.getNBT().getTags());
-                if (string.getBytes(StandardCharsets.UTF_8).length > 262144) {
-                    violation(event, ViolationDocument.builder()
-                        .debugInformation("Invalid container size")
-                        .punishType(PunishType.KICK)
-                        .build());
-                }
-                if (string.contains("www.wurstclient.net")) {
-                    violation(event, ViolationDocument.builder()
-                        .debugInformation("Wurstclient container")
-                        .punishType(PunishType.BAN)
-                        .build());
-                }
+                checkForInvalidSizeAndPresence(event, string);
             }
         }
     }
 
+    /**
+     * Checks if the given ItemStack is an invalid item.
+     *
+     * @param itemStack The ItemStack to check.
+     * @return true if the item is invalid, false otherwise.
+     */
+    private boolean isInvalidItem(ItemStack itemStack) {
+        return itemStack.getType() == ItemTypes.CHEST
+               || itemStack.getType() == ItemTypes.HOPPER
+               || itemStack.getType() == ItemTypes.HOPPER_MINECART
+               || itemStack.getType() == ItemTypes.CHEST_MINECART;
+    }
+
+    /**
+     * Checks for an invalid size and presence of Wurstclient in the given string.
+     * If the byte size of the string exceeds the maximum byte size, a violation is triggered with a kick punish type.
+     * If the string contains the URL of Wurstclient, a violation is triggered with a ban punish type.
+     *
+     * @param event  The PacketReceiveEvent.
+     * @param string The string to check.
+     */
+    private void checkForInvalidSizeAndPresence(PacketReceiveEvent event, String string) {
+        if (string.getBytes(StandardCharsets.UTF_8).length > MAX_BYTE_SIZE) {
+            violation(event, ViolationDocument.builder()
+                .debugInformation("Invalid container size")
+                .punishType(PunishType.KICK)
+                .build());
+        }
+        if (string.contains(WURSTCLIENT_URL)) {
+            violation(event, ViolationDocument.builder()
+                .debugInformation("Wurstclient container")
+                .punishType(PunishType.BAN)
+                .build());
+        }
+    }
+
+    /**
+     * Check the NBT tags of an ItemStack for various violations and handle them accordingly.
+     *
+     * @param event     The PacketReceiveEvent that triggered the check.
+     * @param itemStack The ItemStack to check for NBT tags.
+     */
     private void checkNbtTags(PacketReceiveEvent event, ItemStack itemStack) {
         AtomicInteger listContent = new AtomicInteger(0);
         if (itemStack.getNBT() != null) {
@@ -878,6 +1109,13 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
     }
 
+    /**
+     * Checks for an invalid banner and handles violations.
+     *
+     * @param event      The PacketReceiveEvent.
+     * @param itemStack  The ItemStack to check.
+     * @since 1.0.0
+     */
     private void checkForInvalidBanner(PacketReceiveEvent event, ItemStack itemStack) {
 
         if (itemStack.getType() == ItemTypes.BLACK_BANNER || itemStack.getType() == ItemTypes.WHITE_BANNER
@@ -958,6 +1196,12 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
     }
 
+    /**
+     * Handles a PacketSendEvent and performs various checks and actions based on the packet type and player data.
+     *
+     * @param event       The PacketSendEvent to handle.
+     * @param playerData  The PlayerData associated with the player.
+     */
     @Override
     public void handle(PacketSendEvent event, PlayerData playerData) {
 
@@ -999,10 +1243,22 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
     }
 
+    /**
+     * Checks if the current server version is supported.
+     *
+     * @return {@code true} if the server version is equal to or newer than version 1.14, {@code false} otherwise.
+     */
     private boolean isSupportedVersion() {
         return PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_14);
     }
 
+    /**
+     * Checks if the specified user's client version and the server version are supported.
+     *
+     * @param user The user to check.
+     * @return {@code true} if both the client version and server version are equal to or newer than version 1.19,
+     *         {@code false} otherwise.
+     */
     private boolean isSupportedVersion(User user) {
         return user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19) && PacketEvents.getAPI()
             .getServerManager()

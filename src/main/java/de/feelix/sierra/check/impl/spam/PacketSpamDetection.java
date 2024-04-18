@@ -21,9 +21,15 @@ import org.bukkit.entity.Player;
 
 import java.util.HashMap;
 
+/**
+ * This class is responsible for detecting packet spamming based on various multipliers.
+ */
 @SierraCheckData(checkType = CheckType.SPAM)
 public class PacketSpamDetection extends SierraDetection implements IngoingProcessor {
 
+    /**
+     * The PacketSpamDetection class is responsible for detecting packet spamming based on various multipliers.
+     */
     public PacketSpamDetection(PlayerData playerData) {
         super(playerData);
 
@@ -36,8 +42,21 @@ public class PacketSpamDetection extends SierraDetection implements IngoingProce
         multiplierMap.put(PacketType.Play.Client.valueOf("ANIMATION"), (double) 1);
     }
 
+    /**
+     * Private final field storing a HashMap that maps PacketTypeCommon to Double values.
+     * This map is used to store multipliers for different packet types in a spam detection system.
+     * Each packet type corresponds to a specific Double value representing the multiplier.
+     *
+     * @see PacketTypeCommon
+     */
     private final HashMap<PacketTypeCommon, Double> multiplierMap = new HashMap<>();
 
+    /**
+     * Handles the packet receive event and performs various checks to detect packet spamming.
+     *
+     * @param event      The packet receive event to handle
+     * @param playerData The player data associated with the event
+     */
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
 
@@ -120,6 +139,11 @@ public class PacketSpamDetection extends SierraDetection implements IngoingProce
         }
     }
 
+    /**
+     * Checks if the current packet is considered invalid based on the last book edit tick.
+     *
+     * @return true if the packet is considered invalid, false otherwise
+     */
     private boolean invalid() {
         int currentTick = Ticker.getInstance().getCurrentTick();
         if (getPlayerData().getLastBookEditTick() + 20 > currentTick) {
