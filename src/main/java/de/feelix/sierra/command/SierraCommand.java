@@ -1,5 +1,6 @@
 package de.feelix.sierra.command;
 
+import de.feelix.events.EventManager;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.command.api.BukkitAbstractCommand;
 import de.feelix.sierra.command.api.SierraArguments;
@@ -78,8 +79,7 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
 
         AsyncSierraCommandEvent event = new AsyncSierraCommandEvent(command.getName(), label);
 
-        Bukkit.getScheduler()
-            .runTaskAsynchronously(Sierra.getPlugin(), () -> Bukkit.getPluginManager().callEvent(event));
+        Bukkit.getScheduler().runTaskAsynchronously(Sierra.getPlugin(), () -> EventManager.callEvent(event));
 
         if (!hasPermission(sender)) {
             CommandHelper.sendVersionOutput(new SierraSender(sender));

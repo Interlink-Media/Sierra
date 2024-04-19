@@ -6,6 +6,7 @@ import com.github.retrooper.packetevents.event.UserConnectEvent;
 import com.github.retrooper.packetevents.event.UserDisconnectEvent;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
+import de.feelix.events.EventManager;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierraapi.events.AsyncHistoryCreateEvent;
 import de.feelix.sierraapi.history.HistoryType;
@@ -165,7 +166,7 @@ public class DataManager implements UserRepository {
     private void throwHistory(HistoryDocument document) {
         Bukkit.getScheduler().runTaskAsynchronously(
             Sierra.getPlugin(),
-            () -> Bukkit.getPluginManager().callEvent(new AsyncHistoryCreateEvent(document))
+            () -> EventManager.callEvent(new AsyncHistoryCreateEvent(document))
         );
 
         this.histories.add(document);

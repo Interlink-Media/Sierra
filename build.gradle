@@ -34,6 +34,7 @@ dependencies {
         //exclude group: 'com.google.code.gson', module: 'gson'
     }
     implementation(project(':api'))
+    implementation(project(':events'))
     implementation "net.kyori:adventure-api:4.16.0"
 
     compileOnly 'org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT'
@@ -53,7 +54,6 @@ java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
 
 shadowJar {
-    minimize()
     minimize()
     relocate 'club.minnced', 'net.square.sierra.discord-webhooks'
     relocate 'com.google.gson', 'net.square.sierra.gson'

@@ -2,6 +2,7 @@ package de.feelix.sierra.check;
 
 import com.github.retrooper.packetevents.event.ProtocolPacketEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
+import de.feelix.events.EventManager;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
@@ -164,8 +165,8 @@ public class SierraDetection implements SierraCheck {
     private void throwDetectionEvent(ViolationDocument violationDocument) {
         Bukkit.getScheduler().runTaskAsynchronously(
             Sierra.getPlugin(),
-            () -> Bukkit.getPluginManager()
-                .callEvent(new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))
+            () -> EventManager.callEvent(
+                new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))
         );
     }
 
