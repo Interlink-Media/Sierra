@@ -126,8 +126,8 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                             .build());
                     }
 
-                    if ((wrappedItemStack.getType() != ItemTypes.WRITABLE_BOOK
-                         || wrappedItemStack.getType() != ItemTypes.WRITTEN_BOOK)) {
+                    if (wrappedItemStack.getType() != ItemTypes.WRITABLE_BOOK
+                        && wrappedItemStack.getType() != ItemTypes.WRITTEN_BOOK) {
                         return;
                     }
 
@@ -166,7 +166,7 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                 }
 
                 if (wrappedItemStack.getType() != ItemTypes.WRITABLE_BOOK
-                    || wrappedItemStack.getType() != ItemTypes.WRITTEN_BOOK) {
+                    && wrappedItemStack.getType() != ItemTypes.WRITTEN_BOOK) {
                     return;
                 }
 
@@ -196,8 +196,8 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                         .build());
                 }
 
-                if ((wrapper.getItemStack().get().getType() != ItemTypes.WRITABLE_BOOK
-                     || wrapper.getItemStack().get().getType() != ItemTypes.WRITTEN_BOOK)) {
+                if (wrapper.getItemStack().get().getType() != ItemTypes.WRITABLE_BOOK
+                     && wrapper.getItemStack().get().getType() != ItemTypes.WRITTEN_BOOK) {
                     return;
                 }
 
@@ -240,8 +240,8 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                     .build());
             }
 
-            if ((wrapper.getItemStack().getType() != ItemTypes.WRITABLE_BOOK
-                 || wrapper.getItemStack().getType() != ItemTypes.WRITTEN_BOOK)) {
+            if (wrapper.getItemStack().getType() != ItemTypes.WRITABLE_BOOK
+                && wrapper.getItemStack().getType() != ItemTypes.WRITTEN_BOOK) {
                 return;
             }
 
@@ -268,8 +268,8 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                         .build());
                 }
 
-                if ((wrapper.getCarriedItemStack().getType() != ItemTypes.WRITABLE_BOOK
-                     || wrapper.getCarriedItemStack().getType() != ItemTypes.WRITTEN_BOOK)) {
+                if (wrapper.getCarriedItemStack().getType() != ItemTypes.WRITABLE_BOOK
+                     && wrapper.getCarriedItemStack().getType() != ItemTypes.WRITTEN_BOOK) {
                     return;
                 }
 

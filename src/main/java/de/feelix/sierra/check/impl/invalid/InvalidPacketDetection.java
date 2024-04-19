@@ -261,6 +261,13 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 wrapper.setViewDistance(2);
             }
 
+            if (wrapper.getLocale() == null) {
+                violation(event, ViolationDocument.builder()
+                    .punishType(PunishType.KICK)
+                    .debugInformation("Locale is null in settings")
+                    .build());
+            }
+
         } else if (event.getPacketType() == PacketType.Play.Client.CREATIVE_INVENTORY_ACTION) {
 
             WrapperPlayClientCreativeInventoryAction wrapper   = new WrapperPlayClientCreativeInventoryAction(event);
@@ -271,18 +278,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             checkForInvalidContainer(event, itemStack);
             checkForInvalidShulker(event, itemStack);
             checkNbtTags(event, itemStack);
-
-        } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
-
-            WrapperPlayClientPlayerBlockPlacement wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
-
-            wrapper.getItemStack().ifPresent(itemStack -> {
-                if (itemStack.getType() == ItemTypes.WRITABLE_BOOK
-                    || itemStack.getType() == ItemTypes.WRITTEN_BOOK
-                    || itemStack.getType() == ItemTypes.BOOK) {
-                    this.lastBookUse = System.currentTimeMillis();
-                }
-            });
 
         } else if (event.getPacketType() == PacketType.Play.Client.ENTITY_ACTION) {
 
@@ -304,16 +299,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                         "boost=" + wrapper.getJumpBoost() + ", action=" + wrapper.getAction() + ", entity="
                         + wrapper.getEntityId())
                     .punishType(PunishType.KICK)
-                    .build());
-            }
-
-        } else if (event.getPacketType() == PacketType.Play.Client.CLIENT_SETTINGS) {
-
-            WrapperPlayClientSettings wrapper = new WrapperPlayClientSettings(event);
-            if (wrapper.getLocale() == null) {
-                violation(event, ViolationDocument.builder()
-                    .punishType(PunishType.KICK)
-                    .debugInformation("Locale is null in settings")
                     .build());
             }
 
@@ -534,7 +519,15 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
 
             if (wrapper.getItemStack().isPresent()) {
+
                 ItemStack itemStack = wrapper.getItemStack().get();
+
+                if (itemStack.getType() == ItemTypes.WRITABLE_BOOK
+                    || itemStack.getType() == ItemTypes.WRITTEN_BOOK
+                    || itemStack.getType() == ItemTypes.BOOK) {
+                    this.lastBookUse = System.currentTimeMillis();
+                }
+
                 checkInvalidNbt(event, itemStack);
                 checkIfItemIsAvailable(event, itemStack);
                 checkForInvalidBanner(event, itemStack);
@@ -601,6 +594,15 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 } while (data.getSecond() != id);
             }
 
+            WrapperPlayClientKeepAlive wrapper = new WrapperPlayClientKeepAlive(event);
+
+            if (wrapper.getId() < 0) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Invalid id: " + wrapper.getId())
+                    .punishType(PunishType.BAN)
+                    .build());
+            }
+
         } else if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
             WrapperPlayClientNameItem wrapper = new WrapperPlayClientNameItem(event);
 
@@ -624,16 +626,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 violation(event, ViolationDocument.builder()
                     .punishType(PunishType.MITIGATE)
                     .debugInformation("Name longer than 50: " + length)
-                    .build());
-            }
-
-        } else if (event.getPacketType() == PacketType.Play.Client.KEEP_ALIVE) {
-            WrapperPlayClientKeepAlive wrapper = new WrapperPlayClientKeepAlive(event);
-
-            if (wrapper.getId() < 0) {
-                violation(event, ViolationDocument.builder()
-                    .debugInformation("Invalid id: " + wrapper.getId())
-                    .punishType(PunishType.BAN)
                     .build());
             }
 
@@ -912,7 +904,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
         }
 
-
         if (!atomicBoolean.get()) {
 
             long delay = System.currentTimeMillis() - millis;
@@ -940,7 +931,9 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     private void checkForInvalidShulker(PacketReceiveEvent event, ItemStack itemStack) {
         if (isShulkerBox(itemStack)) {
             if (itemStack.getNBT() != null) {
+
                 String string = FormatUtils.mapToString(itemStack.getNBT().getTags());
+
                 if (string.getBytes(StandardCharsets.UTF_8).length > 10000) {
                     violation(event, ViolationDocument.builder()
                         .debugInformation("Invalid shulker size")
