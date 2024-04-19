@@ -1,6 +1,7 @@
 package de.feelix.sierra.utilities;
 
 import de.feelix.sierra.Sierra;
+import org.bukkit.Bukkit;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,28 +43,50 @@ public class UpdateChecker {
     private String latestReleaseVersion = "UNKNOWN";
 
     /**
+     * Represents an unknown version.
+     */
+    public static final String UNKNOWN_VERSION = "UNKNOWN";
+
+    /**
      * Retrieves the latest release version of a given repository on GitHub.
      *
      * @return the latest release version as a string, or an empty string if an error occurred
      */
     public String getLatestReleaseVersion() {
-
-        // Check for cache to prevent useless new requests. Init request is made on startup
-        if (!latestReleaseVersion.equalsIgnoreCase("UNKNOWN")) {
+        if (!latestReleaseVersion.equalsIgnoreCase(UNKNOWN_VERSION)) {
             return latestReleaseVersion;
         }
+        refreshNewVersion();
+        return this.latestReleaseVersion;
+    }
 
+    private void refreshNewVersion() {
+        String jsonResponse;
         try {
-            String jsonResponse    = getJsonResponseFromGithub();
-            String versionFromJson = getVersionFromJson(jsonResponse);
-            if (versionFromJson != null) {
-                this.latestReleaseVersion = versionFromJson;
-            }
-            return versionFromJson;
+            jsonResponse = getJsonResponseFromGithub();
         } catch (IOException e) {
-            Sierra.getPlugin().getLogger().log(Level.SEVERE, "Unable to fetch latest version: " + e.getMessage());
-            return latestReleaseVersion;
+            logError(e);
+            return;
         }
+        String versionFromJson = getVersionFromJson(jsonResponse);
+
+        if (versionFromJson != null) {
+            this.latestReleaseVersion = versionFromJson;
+        }
+    }
+
+    /**
+     * Logs a severe error message along with the exception stack trace.
+     *
+     * @param e The exception you want to log.
+     */
+    private void logError(Exception e) {
+        Sierra.getPlugin()
+            .getLogger()
+            .log(
+                Level.SEVERE,
+                String.format("%s in class UpdateChecker: %s", "Unable to fetch latest version", e.getMessage()), e
+            );
     }
 
     /**
@@ -82,6 +105,15 @@ public class UpdateChecker {
             }
         }
         return null;
+    }
+
+    /**
+     * Starts the scheduler for checking for updates asynchronously.
+     * The scheduler runs the refreshNewVersion method every 1100 ticks (55 seconds) with an initial delay of 1100 ticks (55 seconds).
+     */
+    public void startScheduler() {
+        Bukkit.getScheduler().runTaskTimerAsynchronously(Sierra.getPlugin(),
+                                                         this::refreshNewVersion, 1100, 1100);
     }
 
     /**

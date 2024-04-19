@@ -96,6 +96,9 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      */
     private PunishmentConfig punishmentConfig;
 
+    /**
+     * Represents an update checker for checking the latest release version of a given repository on GitHub.
+     */
     private UpdateChecker updateChecker;
 
     /**
@@ -159,6 +162,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
 
         );
         checkForUpdate();
+        updateChecker.startScheduler();
 
         // Enable the api
         SierraApiAccessor.setSierraApiInstance(this);
