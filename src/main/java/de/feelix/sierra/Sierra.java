@@ -7,7 +7,6 @@ import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.storage.DataManager;
 import de.feelix.sierra.utilities.Ticker;
-import de.feelix.sierra.utilities.UniqueRunnableExecutor;
 import de.feelix.sierra.utilities.UpdateChecker;
 import de.feelix.sierra.utilities.bstats.Metrics;
 import de.feelix.sierraapi.SierraApi;
@@ -101,13 +100,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * Represents an update checker for checking the latest release version of a given repository on GitHub.
      */
     private UpdateChecker updateChecker;
-
-    /**
-     * The UniqueRunnableExecutor class is responsible for executing a Runnable only once
-     * for a given key. It ensures that the Runnable is executed at most once, even if
-     * executeOnce() is called multiple times with the same key.
-     */
-    private UniqueRunnableExecutor uniqueRunnableExecutor = new UniqueRunnableExecutor();
 
     /**
      * This method is called when the plugin is being enabled.

@@ -187,15 +187,11 @@ public class PlayerData implements SierraUser {
      * @param punishType the type of punishment to be applied
      */
     public void punish(PunishType punishType) {
-
-        // Execute thread save
-        Sierra.getPlugin().getUniqueRunnableExecutor().executeTaskOnce(this.uuid(), () -> {
-            setBlocked(true);
-            if (punishType == PunishType.BAN && Sierra.getPlugin().getPunishmentConfig().isBan()) {
-                ban();
-            }
-            kick();
-        });
+        setBlocked(true);
+        if (punishType == PunishType.BAN && Sierra.getPlugin().getPunishmentConfig().isBan()) {
+            ban();
+        }
+        kick();
     }
 
     /**
