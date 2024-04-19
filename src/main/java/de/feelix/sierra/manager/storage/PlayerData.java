@@ -180,16 +180,22 @@ public class PlayerData implements SierraUser {
     }
 
     /**
-     * The punish function is used to punish a player for crashing.
+     * Executes a punishment action based on the given punish type.
+     * If the punish type is BAN and the ban feature is enabled, the player will be banned.
+     * In any case, the player will be kicked.
      *
-     * @param punishType punishType Determine what type of punishment the player should receive
+     * @param punishType the type of punishment to be applied
      */
     public void punish(PunishType punishType) {
-        setBlocked(true);
-        if (punishType == PunishType.BAN && Sierra.getPlugin().getPunishmentConfig().isBan()) {
-            ban();
-        }
-        kick();
+
+        // Execute thread save
+        Sierra.getPlugin().getUniqueRunnableExecutor().executeTaskOnce(this.uuid(), () -> {
+            setBlocked(true);
+            if (punishType == PunishType.BAN && Sierra.getPlugin().getPunishmentConfig().isBan()) {
+                ban();
+            }
+            kick();
+        });
     }
 
     /**

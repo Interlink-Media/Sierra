@@ -719,6 +719,12 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
     }
 
+    /**
+     * Checks the given ItemStack for invalid NBT tags and handles violations accordingly.
+     *
+     * @param event     The PacketReceiveEvent that triggered the check.
+     * @param itemStack The ItemStack to check for NBT tags.
+     */
     private void checkInvalidNbt(PacketReceiveEvent event, ItemStack itemStack) {
 
         if (itemStack == null || itemStack.getNBT() == null) return;
