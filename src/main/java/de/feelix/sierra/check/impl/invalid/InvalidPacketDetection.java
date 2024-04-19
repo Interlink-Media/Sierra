@@ -29,6 +29,7 @@ import de.feelix.sierra.utilities.*;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.Violation;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
@@ -265,6 +266,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             WrapperPlayClientCreativeInventoryAction wrapper   = new WrapperPlayClientCreativeInventoryAction(event);
             ItemStack                                itemStack = wrapper.getItemStack();
+            checkInvalidNbt(event, itemStack);
             checkForInvalidBanner(event, itemStack);
             checkIfItemIsAvailable(event, itemStack);
             checkForInvalidContainer(event, itemStack);
@@ -534,6 +536,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             if (wrapper.getItemStack().isPresent()) {
                 ItemStack itemStack = wrapper.getItemStack().get();
+                checkInvalidNbt(event, itemStack);
                 checkIfItemIsAvailable(event, itemStack);
                 checkForInvalidBanner(event, itemStack);
                 checkForInvalidContainer(event, itemStack);
@@ -675,6 +678,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             checkButtonClickPosition(event, wrapper);
 
             ItemStack carriedItemStack = wrapper.getCarriedItemStack();
+            checkInvalidNbt(event, carriedItemStack);
             checkIfItemIsAvailable(event, carriedItemStack);
             checkForInvalidContainer(event, carriedItemStack);
             checkForInvalidShulker(event, carriedItemStack);
@@ -714,6 +718,71 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .build());
             }
         }
+    }
+
+    private void checkInvalidNbt(PacketReceiveEvent event, ItemStack itemStack) {
+
+        if (itemStack == null || itemStack.getNBT() == null) return;
+
+        NBTCompound nbt = itemStack.getNBT();
+
+        NBTList<NBTCompound> items = nbt.getTagListOfTypeOrNull("Items", NBTCompound.class);
+        if (items != null) {
+            if (items.size() > 64) {
+                violation(event, createViolation("Too big items list", PunishType.MITIGATE));
+            }
+
+            for (NBTCompound tag : items.getTags()) {
+                if (tag.getStringTagOrNull("id") != null) {
+                    if (tag.getStringTagOrNull("id").getValue().equalsIgnoreCase("minecraft:air")) {
+                        violation(event, createViolation("Invalid item: air", PunishType.MITIGATE));
+                    } else if (tag.getStringTagOrNull("id").getValue().equalsIgnoreCase("minecraft:bundle")) {
+                        violation(event, createViolation("Invalid item: bundle", PunishType.MITIGATE));
+                    }
+                }
+            }
+        }
+
+        NBTList<NBTCompound> chargedProjectiles = nbt.getTagListOfTypeOrNull("ChargedProjectiles", NBTCompound.class);
+
+        if (chargedProjectiles != null) {
+            for (NBTCompound tag : chargedProjectiles.getTags()) {
+                NBTCompound tag1 = tag.getCompoundTagOrNull("tag");
+                if (tag1 != null) {
+                    NBTString potion = tag1.getStringTagOrNull("Potion");
+                    if (potion != null) {
+                        if (potion.getValue().endsWith("empty")) {
+                            violation(event, createViolation(
+                                "Invalid projectile: empty",
+                                PunishType.MITIGATE
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+
+        NBTInt customModelData = nbt.getTagOfTypeOrNull("CustomModelData", NBTInt.class);
+        if (customModelData != null && PacketEvents.getAPI()
+            .getServerManager()
+            .getVersion()
+            .isNewerThanOrEquals(ServerVersion.V_1_14)) {
+
+            int asInt = customModelData.getAsInt();
+
+            //noinspection ConditionCoveredByFurtherCondition
+            if (asInt == Integer.MIN_VALUE || asInt == Integer.MAX_VALUE || asInt < 0) {
+                violation(event, createViolation("Invalid custom model data: " + asInt, PunishType.MITIGATE));
+            }
+        }
+
+    }
+
+    public ViolationDocument createViolation(String debugInformation, PunishType punishType) {
+        return ViolationDocument.builder()
+            .debugInformation(debugInformation)
+            .punishType(punishType)
+            .build();
     }
 
     /**
