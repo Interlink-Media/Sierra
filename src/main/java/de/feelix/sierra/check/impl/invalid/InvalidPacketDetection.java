@@ -29,7 +29,6 @@ import de.feelix.sierra.utilities.*;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
-import de.feelix.sierraapi.violation.Violation;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
@@ -775,7 +774,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 violation(event, createViolation("Invalid custom model data: " + asInt, PunishType.MITIGATE));
             }
         }
-
     }
 
     public ViolationDocument createViolation(String debugInformation, PunishType punishType) {
