@@ -3,6 +3,7 @@ package de.feelix.sierra.utilities;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.DataManager;
 import de.feelix.sierra.manager.storage.PlayerData;
+import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
@@ -29,7 +30,6 @@ public class Ticker {
      *
      * @see Sierra#getPlugin()
      * @see Ticker#currentTick
-     * @see Ticker#task
      */
     @Getter
     private static Ticker instance;
@@ -43,22 +43,13 @@ public class Ticker {
     private int currentTick;
 
     /**
-     * This private final variable represents a Bukkit task.
-     * It holds a reference to the task created in the Ticker class which runs every second and performs certain
-     * actions.
-     *
-     * @see Ticker
-     */
-    private final BukkitTask task;
-
-    /**
      * Ticker class represents a timer that runs asynchronously and performs tasks at regular intervals.
      */
     public Ticker() {
         instance = this;
-        Bukkit.getScheduler().runTaskTimerAsynchronously(Sierra.getPlugin(), () -> currentTick++, 1, 1);
+        FoliaCompatUtil.runTaskTimerAsync(Sierra.getPlugin(), o -> currentTick++, 1, 1);
 
-        this.task = Bukkit.getScheduler().runTaskTimerAsynchronously(Sierra.getPlugin(), () -> {
+        FoliaCompatUtil.runTaskTimerAsync(Sierra.getPlugin(), o -> {
             double maxPacketsPerSecond = 1000;
             double maxPacketAllowance  = maxPacketsPerSecond * 2;
 

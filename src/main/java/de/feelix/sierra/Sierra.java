@@ -8,14 +8,13 @@ import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.storage.DataManager;
 import de.feelix.sierra.utilities.Ticker;
 import de.feelix.sierra.utilities.update.UpdateChecker;
-import de.feelix.sierra.utilities.bstats.Metrics;
 import de.feelix.sierraapi.SierraApi;
 import de.feelix.sierraapi.SierraApiAccessor;
 import de.feelix.sierraapi.user.UserRepository;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
+import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -140,7 +139,9 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         long startTime = System.currentTimeMillis();
 
         int pluginId = 21527; // https://bstats.org/plugin/bukkit/Sierra/21527
-        new Metrics(this, pluginId);
+
+        // For compatibility with folia
+        new io.github.retrooper.packetevents.bstats.Metrics(this, pluginId);
 
         PacketEvents.getAPI().getEventManager().registerListener(new PacketListener());
         setPrefix();
@@ -173,7 +174,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * Checks for updates to the Sierra plugin asynchronously.
      */
     private void checkForUpdate() {
-        Bukkit.getScheduler().runTaskAsynchronously(Sierra.getPlugin(), () -> {
+        FoliaCompatUtil.runTaskAsync(Sierra.getPlugin(), () -> {
             String localVersion         = Sierra.getPlugin().getDescription().getVersion();
             String latestReleaseVersion = updateChecker.getLatestReleaseVersion();
             if (!localVersion.equalsIgnoreCase(latestReleaseVersion)) {
@@ -215,7 +216,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     public void onDisable() {
         if (PacketEvents.getAPI() != null) {
             PacketEvents.getAPI().terminate();
-            this.ticker.getTask().cancel();
         }
     }
 

@@ -1,7 +1,7 @@
 package de.feelix.sierra.utilities.update;
 
 import de.feelix.sierra.Sierra;
-import org.bukkit.Bukkit;
+import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -109,11 +109,13 @@ public class UpdateChecker {
 
     /**
      * Starts the scheduler for checking for updates asynchronously.
-     * The scheduler runs the refreshNewVersion method every 1100 ticks (55 seconds) with an initial delay of 1100 ticks (55 seconds).
+     * The scheduler runs the refreshNewVersion method every 1100 ticks (55 seconds) with an initial delay of 1100
+     * ticks (55 seconds).
      */
     public void startScheduler() {
-        Bukkit.getScheduler().runTaskTimerAsynchronously(Sierra.getPlugin(),
-                                                         this::refreshNewVersion, 1100, 1100);
+        FoliaCompatUtil.runTaskTimerAsync(Sierra.getPlugin(),
+                                          o -> refreshNewVersion(), 5100, 5100
+        );
     }
 
     /**

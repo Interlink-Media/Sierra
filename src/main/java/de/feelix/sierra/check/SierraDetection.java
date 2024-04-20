@@ -10,6 +10,7 @@ import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.impl.SierraCheck;
+import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -165,7 +166,7 @@ public class SierraDetection implements SierraCheck {
      * @param violationDocument The ViolationDocument containing information about the violation
      */
     private void throwDetectionEvent(ViolationDocument violationDocument) {
-        Bukkit.getScheduler().runTaskAsynchronously(
+        FoliaCompatUtil.runTaskAsync(
             Sierra.getPlugin(),
             () -> EventManager.callEvent(
                 new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))

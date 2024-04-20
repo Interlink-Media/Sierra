@@ -1,9 +1,10 @@
 name: Sierra
-version: '1.0.9.1'
+version: '1.1.0'
 author: Feelix
 main: de.feelix.sierra.Sierra
 description: Packet Analysis Tool for the Minecraft Protocol
 website: https://discord.gg/squarecode
+folia-supported: true
 api-version: 1.13
 softdepend:
   - packetevents

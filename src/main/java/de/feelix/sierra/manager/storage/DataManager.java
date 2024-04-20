@@ -11,6 +11,7 @@ import de.feelix.sierra.Sierra;
 import de.feelix.sierraapi.events.AsyncHistoryCreateEvent;
 import de.feelix.sierraapi.history.HistoryType;
 import de.feelix.sierraapi.violation.PunishType;
+import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import lombok.Getter;
 import de.feelix.sierraapi.user.UserRepository;
 import de.feelix.sierraapi.user.impl.SierraUser;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Getter
 public class DataManager implements UserRepository {
@@ -83,14 +85,22 @@ public class DataManager implements UserRepository {
      * @param user The user to check for update.
      */
     private void checkForUpdate(User user) {
-        Bukkit.getScheduler().runTaskLaterAsynchronously(Sierra.getPlugin(), () -> {
+        FoliaCompatUtil.runTaskAsync(Sierra.getPlugin(), () -> {
+
+            // Sleep task for 1 second
+            try {
+                TimeUnit.MILLISECONDS.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
             if (!isVersionOutdated() || !isUserValid(user)) return;
 
             Player player = getPlayer(user);
             if (player == null || !playerCanUpdate(player)) return;
 
             sendMessage(player);
-        }, 5);
+        });
     }
 
     /**
@@ -169,7 +179,7 @@ public class DataManager implements UserRepository {
      * @param document The history document to be thrown and added.
      */
     private void throwHistory(HistoryDocument document) {
-        Bukkit.getScheduler().runTaskAsynchronously(
+        FoliaCompatUtil.runTaskAsync(
             Sierra.getPlugin(),
             () -> EventManager.callEvent(new AsyncHistoryCreateEvent(document))
         );

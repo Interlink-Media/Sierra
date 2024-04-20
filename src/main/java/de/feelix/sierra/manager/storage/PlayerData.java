@@ -9,6 +9,7 @@ import de.feelix.sierra.manager.storage.processor.BrandProcessor;
 import de.feelix.sierra.manager.storage.processor.GameModeProcessor;
 import de.feelix.sierra.manager.storage.processor.PingProcessor;
 import de.feelix.sierra.manager.storage.processor.TimingProcessor;
+import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import lombok.Data;
 import de.feelix.sierraapi.check.CheckRepository;
 import de.feelix.sierraapi.user.impl.SierraUser;
@@ -199,8 +200,7 @@ public class PlayerData implements SierraUser {
      * Then, it dispatches the command to the console sender.
      */
     private void ban() {
-        Bukkit.getScheduler()
-            .runTask(Sierra.getPlugin(), () -> Bukkit.dispatchCommand(
+        FoliaCompatUtil.runTask(Sierra.getPlugin(), o -> Bukkit.dispatchCommand(
                 Bukkit.getConsoleSender(),
                 Sierra.getPlugin()
                     .getSierraConfigEngine()
