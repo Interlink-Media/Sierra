@@ -654,7 +654,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             WrapperPlayClientClickWindow wrapper = new WrapperPlayClientClickWindow(event);
 
-            if (isSupportedVersion()) {
+            if (isSupportedVersion(ServerVersion.V_1_14)) {
                 int clickType = wrapper.getWindowClickType().ordinal();
                 int button    = wrapper.getButton();
                 int windowId  = wrapper.getWindowId();
@@ -806,8 +806,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         InventoryView openInventory = player.getOpenInventory();
 
         // Idea by someone
-        int max = PacketEvents.getAPI().getServerManager().
-            getVersion().isNewerThan(ServerVersion.V_1_9) ? 127 : openInventory.countSlots();
+        int max = isSupportedVersion(ServerVersion.V_1_10) ? 127 : openInventory.countSlots();
 
         if (openInventory.getBottomInventory().getType() == InventoryType.PLAYER
             && openInventory.getTopInventory().getType() == InventoryType.CRAFTING) {
@@ -1305,7 +1304,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             WrapperPlayServerOpenWindow window = new WrapperPlayServerOpenWindow(event);
 
-            if (isSupportedVersion()) {
+            if (isSupportedVersion(ServerVersion.V_1_14)) {
                 this.type = MenuType.getMenuType(window.getType());
                 if (type == MenuType.LECTERN) lecternId = window.getContainerId();
             }
@@ -1315,12 +1314,15 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     }
 
     /**
-     * Checks if the current server version is supported.
+     * Checks if the specified user's client version and the server version are supported.
      *
-     * @return {@code true} if the server version is equal to or newer than version 1.14, {@code false} otherwise.
+     * @param serverVersion The ServerVersion to check against.
+     * @return {@code true} if both the client version and server version are equal to or newer than the specified
+     * ServerVersion,
+     * {@code false} otherwise.
      */
-    private boolean isSupportedVersion() {
-        return PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_14);
+    private boolean isSupportedVersion(ServerVersion serverVersion) {
+        return PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(serverVersion);
     }
 
     /**
@@ -1331,10 +1333,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * {@code false} otherwise.
      */
     private boolean isSupportedVersion(User user) {
-        return user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19) && PacketEvents.getAPI()
-            .getServerManager()
-            .getVersion()
-            .isNewerThanOrEquals(
-                ServerVersion.V_1_19);
+        return user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19) && isSupportedVersion(
+            ServerVersion.V_1_19);
     }
 }
