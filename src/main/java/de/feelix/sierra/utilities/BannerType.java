@@ -17,5 +17,5 @@ public enum BannerType {
     LIGHT_GRAY_BANNER,
     CYAN_BANNER,
     PURPLE_BANNER,
-    MAGENTA_BANNER;
+    MAGENTA_BANNER
 }
