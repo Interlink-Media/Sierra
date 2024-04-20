@@ -7,7 +7,7 @@ import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.storage.DataManager;
 import de.feelix.sierra.utilities.Ticker;
-import de.feelix.sierra.utilities.UpdateChecker;
+import de.feelix.sierra.utilities.update.UpdateChecker;
 import de.feelix.sierra.utilities.bstats.Metrics;
 import de.feelix.sierraapi.SierraApi;
 import de.feelix.sierraapi.SierraApiAccessor;

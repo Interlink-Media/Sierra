@@ -26,6 +26,8 @@ import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.MenuType;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.*;
+import de.feelix.sierra.utilities.types.BannerType;
+import de.feelix.sierra.utilities.types.ShulkerBoxType;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;

@@ -1,4 +1,4 @@
-package de.feelix.sierra.utilities;
+package de.feelix.sierra.utilities.pagination;
 
 import lombok.Getter;
 

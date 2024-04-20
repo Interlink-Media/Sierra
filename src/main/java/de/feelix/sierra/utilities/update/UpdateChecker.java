@@ -1,4 +1,4 @@
-package de.feelix.sierra.utilities;
+package de.feelix.sierra.utilities.update;
 
 import de.feelix.sierra.Sierra;
 import org.bukkit.Bukkit;

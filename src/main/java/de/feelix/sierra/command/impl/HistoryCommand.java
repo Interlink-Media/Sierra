@@ -4,7 +4,7 @@ package de.feelix.sierra.command.impl;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.HistoryDocument;
 import de.feelix.sierra.utilities.FormatUtils;
-import de.feelix.sierra.utilities.Pagination;
+import de.feelix.sierra.utilities.pagination.Pagination;
 import de.feelix.sierraapi.commands.*;
 import net.md_5.bungee.api.chat.BaseComponent;
 
