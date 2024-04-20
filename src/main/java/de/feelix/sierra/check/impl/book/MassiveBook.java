@@ -16,8 +16,8 @@ import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
-import de.feelix.sierra.utilities.CrashDetails;
 import de.feelix.sierra.utilities.FieldReader;
+import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
@@ -286,10 +286,10 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
             return;
         }
 
-        CrashDetails invalid = validatePages(pageList);
+        Pair<String, PunishType> invalid = validatePages(pageList);
         if (invalid != null) {
             violation(event, ViolationDocument.builder()
-                .debugInformation(invalid.getDetails())
+                .debugInformation(invalid.getFirst())
                 .punishType(PunishType.BAN)
                 .build());
         }
@@ -311,33 +311,33 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
      *
      * @param pageList The list of pages to validate.
      * @return The CrashDetails object if there is an issue with the pages, null otherwise.
-     * @see CrashDetails
+     * @see Pair
      */
-    private CrashDetails validatePages(List<String> pageList) {
+    private Pair<String, PunishType> validatePages(List<String> pageList) {
 
         long totalBytes   = 0;
         long allowedBytes = 2560;
 
-        if (pageList.size() > 50) return new CrashDetails("Too many pages", PunishType.KICK);
+        if (pageList.size() > 50) return new Pair<>("Too many pages", PunishType.KICK);
 
         for (String pageContent : pageList) {
 
-            CrashDetails duplicatedContent = isDuplicatedContent(pageContent);
+            Pair<String, PunishType> duplicatedContent = isDuplicatedContent(pageContent);
             if (duplicatedContent != null) return duplicatedContent;
 
             String strippedContent = ChatColor.stripColor(pageContent.replaceAll("\\+", ""));
             //noinspection ConstantValue
             if (strippedContent == null || strippedContent.equals("null")) {
-                return new CrashDetails("Contains invalid color code", PunishType.BAN);
+                return new Pair<>("Contains invalid color code", PunishType.BAN);
             }
 
-            CrashDetails invalidColor = isInvalidColor(strippedContent);
+            Pair<String, PunishType> invalidColor = isInvalidColor(strippedContent);
             if (invalidColor != null) return invalidColor;
 
-            CrashDetails extraFrequency = isExtraFrequency(pageContent);
+            Pair<String, PunishType> extraFrequency = isExtraFrequency(pageContent);
             if (extraFrequency != null) return extraFrequency;
 
-            CrashDetails fieldIsReadable = checkFieldReadable(pageContent);
+            Pair<String, PunishType> fieldIsReadable = checkFieldReadable(pageContent);
             if (fieldIsReadable != null) return fieldIsReadable;
 
             String noSpaces = pageContent.replace(" ", "");
@@ -345,18 +345,18 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                 for (String crashTranslation : MOJANG_CRASH_TRANSLATIONS) {
                     String translationJson = String.format("{\"translate\":\"%s\"}", crashTranslation);
                     if (pageContent.equalsIgnoreCase(translationJson)) {
-                        return new CrashDetails("Mojang crash translation", PunishType.KICK);
+                        return new Pair<>("Mojang crash translation", PunishType.KICK);
                     }
                 }
                 continue;
             }
 
-            CrashDetails invalidChars = tooManyInvalidChars(pageContent);
+            Pair<String, PunishType> invalidChars = tooManyInvalidChars(pageContent);
             if (invalidChars != null) return invalidChars;
 
             int contentLength = pageContent.getBytes(StandardCharsets.UTF_8).length;
 
-            CrashDetails invalidPageSize = isInvalidPageSize(contentLength);
+            Pair<String, PunishType> invalidPageSize = isInvalidPageSize(contentLength);
             if (invalidPageSize != null) return invalidPageSize;
 
             totalBytes += contentLength;
@@ -381,7 +381,7 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
 
         // Check if the book size is too large
         if (totalBytes > allowedBytes) {
-            return new CrashDetails("Book size is too large", PunishType.BAN);
+            return new Pair<>("Book size is too large", PunishType.BAN);
         }
 
         return null;
@@ -392,11 +392,11 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
      *
      * @param contentLength The length of the page content.
      * @return The CrashDetails object if the page size is invalid, null otherwise.
-     * @see CrashDetails
+     * @see Pair
      */
-    private static @Nullable CrashDetails isInvalidPageSize(int contentLength) {
+    private static @Nullable Pair<String, PunishType>  isInvalidPageSize(int contentLength) {
         if (contentLength > 256 * 4) {
-            return new CrashDetails("Invalid page size", PunishType.BAN);
+            return new Pair<>("Invalid page size", PunishType.BAN);
         }
         return null;
     }
@@ -407,14 +407,14 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
      * @param pageContent The content of the page to check.
      * @return The CrashDetails object if there are too many oversized characters, null otherwise.
      */
-    private static @Nullable CrashDetails tooManyInvalidChars(String pageContent) {
+    private static @Nullable Pair<String, PunishType>  tooManyInvalidChars(String pageContent) {
         int oversizedChars = 0;
         for (int charIndex = 0; charIndex < pageContent.length(); charIndex++) {
             char currentChar = pageContent.charAt(charIndex);
             if (String.valueOf(currentChar).getBytes().length > 1) {
                 oversizedChars++;
                 if (oversizedChars > 15) {
-                    return new CrashDetails("Too many big characters", PunishType.KICK);
+                    return new Pair<>("Too many big characters", PunishType.KICK);
                 }
             }
         }
@@ -426,11 +426,11 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
      *
      * @param pageContent The content of the page to check.
      * @return A CrashDetails object if the field is not readable, null otherwise.
-     * @see CrashDetails
+     * @see Pair
      */
-    private static @Nullable CrashDetails checkFieldReadable(String pageContent) {
+    private static @Nullable Pair<String, PunishType>  checkFieldReadable(String pageContent) {
         if (FieldReader.isReadable(pageContent) && !pageContent.isEmpty()) {
-            return new CrashDetails("Field is not readable", PunishType.BAN);
+            return new Pair<>("Field is not readable", PunishType.BAN);
         }
         return null;
     }
@@ -440,11 +440,11 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
      *
      * @param pageContent The content of the page to check.
      * @return A CrashDetails object if the page content has an extra frequency, null otherwise.
-     * @see CrashDetails
+     * @see Pair
      */
-    private static @Nullable CrashDetails isExtraFrequency(String pageContent) {
+    private static @Nullable Pair<String, PunishType>  isExtraFrequency(String pageContent) {
         if (pageContent.split("extra").length > 8.0) {
-            return new CrashDetails("Invalid extra frequency", PunishType.BAN);
+            return new Pair<>("Invalid extra frequency", PunishType.BAN);
         }
         return null;
     }
@@ -454,11 +454,11 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
      *
      * @param strippedContent The stripped content to check.
      * @return A CrashDetails object if the color code signature is invalid, null otherwise.
-     * @see CrashDetails
+     * @see Pair
      */
-    private static @Nullable CrashDetails isInvalidColor(String strippedContent) {
+    private static @Nullable Pair<String, PunishType>  isInvalidColor(String strippedContent) {
         if (strippedContent.length() > 256.0) {
-            return new CrashDetails("Invalid color code signature", PunishType.BAN);
+            return new Pair<>("Invalid color code signature", PunishType.BAN);
         }
         return null;
     }
@@ -468,12 +468,12 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
      *
      * @param pageContent The content of the page to check.
      * @return A CrashDetails object if the page content is duplicated too many times, null otherwise.
-     * @see CrashDetails
+     * @see Pair
      */
-    private @Nullable CrashDetails isDuplicatedContent(String pageContent) {
+    private @Nullable Pair<String, PunishType>  isDuplicatedContent(String pageContent) {
         if (pageContent.equalsIgnoreCase(lastContent)) {
             if (lastContentCount++ > 4) {
-                return new CrashDetails("Too many equal pages", PunishType.KICK);
+                return new Pair<>("Too many equal pages", PunishType.KICK);
             }
         } else {
             lastContentCount = 0;

@@ -6,7 +6,7 @@ import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTNumber;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
-import de.feelix.sierra.utilities.CrashDetails;
+import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
 public class CreativeAnvil implements ItemCheck {
@@ -22,9 +22,9 @@ public class CreativeAnvil implements ItemCheck {
     }
 
     @Override
-    public CrashDetails handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound) {
+    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound) {
         if (invalid(clickedStack)) {
-            return new CrashDetails("Invalid anvil meta", PunishType.BAN);
+            return new Pair<>("Invalid anvil meta", PunishType.BAN);
         }
         if (nbtCompound.getTags().containsKey("id")) {
             String id = nbtCompound.getStringTagValueOrNull("id");
@@ -32,7 +32,7 @@ public class CreativeAnvil implements ItemCheck {
                 if (nbtCompound.getTags().containsKey("Damage")) {
                     NBTNumber damage = nbtCompound.getNumberTagOrNull("Damage");
                     if(damage.getAsInt() > 3 || damage.getAsInt() < 0) {
-                        return new CrashDetails("Invalid damage size", PunishType.BAN);
+                        return new Pair<>("Invalid damage size", PunishType.BAN);
                     }
                 }
             }

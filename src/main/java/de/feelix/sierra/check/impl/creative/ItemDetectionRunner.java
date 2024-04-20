@@ -15,7 +15,7 @@ import de.feelix.sierra.check.impl.creative.impl.*;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
-import de.feelix.sierra.utilities.CrashDetails;
+import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
@@ -172,11 +172,11 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
             //if this gets called, it's not a container, so we don't need to do recursion
             for (ItemCheck check : checks) {
                 //Maybe add a check result class, so that we can have more detailed verbose output...
-                CrashDetails crashDetails = check.handleCheck(event, itemStack, compound);
+                Pair<String, PunishType> crashDetails = check.handleCheck(event, itemStack, compound);
                 if (crashDetails != null) {
                     violation(event, ViolationDocument.builder()
-                        .debugInformation(crashDetails.getDetails())
-                        .punishType(crashDetails.getPunishType())
+                        .debugInformation(crashDetails.getFirst())
+                        .punishType(crashDetails.getSecond())
                         .build());
                 }
             }
@@ -303,7 +303,7 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
     private boolean callDefaultChecks(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
                                       NBTCompound tag) {
         for (ItemCheck check : checks) {
-            CrashDetails crashDetails = check.handleCheck(event, clickedItem, tag);
+            Pair<String, PunishType> crashDetails = check.handleCheck(event, clickedItem, tag);
             if (crashDetails != null) {
                 sendViolationDocument(event, data, crashDetails);
                 return true;
@@ -319,7 +319,8 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
      * @param data         The player data object containing the player's data
      * @param crashDetails The crash details associated with the violation
      */
-    private void sendViolationDocument(PacketReceiveEvent event, PlayerData data, CrashDetails crashDetails) {
+    private void sendViolationDocument(PacketReceiveEvent event, PlayerData data,
+                                       Pair<String, PunishType> crashDetails) {
         violation(event, buildViolationDocument(data, crashDetails));
     }
 
@@ -330,9 +331,9 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
      * @param crashDetails The CrashDetails object containing crash details associated with the violation.
      * @return A ViolationDocument object with the provided player data and crash details.
      */
-    private ViolationDocument buildViolationDocument(PlayerData data, CrashDetails crashDetails) {
+    private ViolationDocument buildViolationDocument(PlayerData data, Pair<String, PunishType> crashDetails) {
         return ViolationDocument.builder()
-            .debugInformation(crashDetails.getDetails() + " | R: " + data.getRecursionCount())
+            .debugInformation(crashDetails.getFirst() + " | R: " + data.getRecursionCount())
             .punishType(PunishType.BAN)
             .build();
     }

@@ -7,7 +7,7 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTList;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
-import de.feelix.sierra.utilities.CrashDetails;
+import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
 import java.util.Base64;
@@ -17,7 +17,7 @@ import java.util.UUID;
 public class CreativeSkull implements ItemCheck {
 
     @Override
-    public CrashDetails handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound) {
+    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound) {
         if (nbtCompound == null) {
             return null;
         }
@@ -28,7 +28,7 @@ public class CreativeSkull implements ItemCheck {
 
         NBTCompound skullOwner = nbtCompound.getCompoundTagOrNull("SkullOwner");
         if (skullOwner == null) {
-            return new CrashDetails("Contains invalid skull owner", PunishType.KICK);
+            return new Pair<>("Contains invalid skull owner", PunishType.KICK);
         }
 
         if (skullOwner.getTags().containsKey("Id")) {
@@ -36,29 +36,29 @@ public class CreativeSkull implements ItemCheck {
                 //noinspection unused
                 UUID uuid = UUID.fromString(skullOwner.getStringTagValueOrNull("Id"));
             } catch (Exception e) {
-                return new CrashDetails("Unable to parse uuid", PunishType.MITIGATE);
+                return new Pair<>("Unable to parse uuid", PunishType.MITIGATE);
             }
         }
 
         if (skullOwner.getTags().containsKey("Properties")) {
             NBTCompound properties = skullOwner.getCompoundTagOrNull("Properties");
             if (properties == null) {
-                return new CrashDetails("Properties doesn't exist", PunishType.KICK);
+                return new Pair<>("Properties doesn't exist", PunishType.KICK);
             }
 
             NBTList<NBTCompound> textures = properties.getCompoundListTagOrNull("textures");
             if (textures == null) {
-                return new CrashDetails("Textures doesn't exist", PunishType.KICK);
+                return new Pair<>("Textures doesn't exist", PunishType.KICK);
             }
 
             for (int i = 0; i < textures.size(); i++) {
                 NBTCompound texture = textures.getTag(i);
                 if (texture == null) {
-                    return new CrashDetails("Texture tag doesn't exist", PunishType.KICK);
+                    return new Pair<>("Texture tag doesn't exist", PunishType.KICK);
                 }
 
                 if (!texture.getTags().containsKey("Value")) {
-                    return new CrashDetails("Value tag doesn't exist", PunishType.KICK);
+                    return new Pair<>("Value tag doesn't exist", PunishType.KICK);
                 }
 
                 String value = texture.getStringTagValueOrNull("Value");
@@ -66,38 +66,38 @@ public class CreativeSkull implements ItemCheck {
                 try {
                     decoded = new String(Base64.getDecoder().decode(value));
                 } catch (Exception e) {
-                    return new CrashDetails("Unable to decode Value", PunishType.KICK);
+                    return new Pair<>("Unable to decode Value", PunishType.KICK);
                 }
 
                 JsonObject jsonObject;
                 try {
                     jsonObject = JsonParser.parseString(decoded).getAsJsonObject();
                 } catch (Exception e) {
-                    return new CrashDetails("Unable to decode JsonObject", PunishType.KICK);
+                    return new Pair<>("Unable to decode JsonObject", PunishType.KICK);
                 }
 
                 if (!jsonObject.has("textures")) {
-                    return new CrashDetails("Texture field doesn't exist after decode", PunishType.KICK);
+                    return new Pair<>("Texture field doesn't exist after decode", PunishType.KICK);
                 }
 
                 jsonObject = jsonObject.getAsJsonObject("textures");
                 if (!jsonObject.has("SKIN")) {
-                    return new CrashDetails("SKIN field doesn't exist after decode", PunishType.KICK);
+                    return new Pair<>("SKIN field doesn't exist after decode", PunishType.KICK);
                 }
 
                 jsonObject = jsonObject.getAsJsonObject("SKIN");
                 if (!jsonObject.has("url")) {
-                    return new CrashDetails("URL field doesn't exist after decode", PunishType.KICK);
+                    return new Pair<>("URL field doesn't exist after decode", PunishType.KICK);
                 }
 
                 String url = jsonObject.get("url").getAsString();
                 if (url.trim().isEmpty()) {
-                    return new CrashDetails("URL is empty", PunishType.KICK);
+                    return new Pair<>("URL is empty", PunishType.KICK);
                 }
 
                 if (!(url.startsWith("http://textures.minecraft.net/texture/") || url.startsWith(
                     "https://textures.minecraft.net/texture/"))) {
-                    return new CrashDetails("Invalid skin url", PunishType.KICK);
+                    return new Pair<>("Invalid skin url", PunishType.KICK);
                 }
             }
         }

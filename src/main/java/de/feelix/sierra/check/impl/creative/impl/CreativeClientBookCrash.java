@@ -6,7 +6,7 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTList;
 import com.github.retrooper.packetevents.protocol.nbt.NBTString;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
-import de.feelix.sierra.utilities.CrashDetails;
+import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class CreativeClientBookCrash implements ItemCheck {
     private static final Pattern PATTERN = Pattern.compile("\\s");
 
     @Override
-    public CrashDetails handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound) {
+    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound) {
         List<String> pages = getPages(nbtCompound);
         if (pages.isEmpty()) {
             return null;
@@ -32,7 +32,7 @@ public class CreativeClientBookCrash implements ItemCheck {
             String withOutSpaces = PATTERN.matcher(page).replaceAll("");
             if (withOutSpaces.toLowerCase().contains("{translate:translation.test.invalid}") || withOutSpaces.contains(
                 "{translate:translation.test.invalid2}")) {
-                return new CrashDetails("Contains invalid translation keys #2", PunishType.KICK);
+                return new Pair<>("Contains invalid translation keys #2", PunishType.KICK);
             }
         }
         return null;

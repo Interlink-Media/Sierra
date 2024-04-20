@@ -3,7 +3,8 @@ package de.feelix.sierra.check.impl.creative;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
-import de.feelix.sierra.utilities.CrashDetails;
+import de.feelix.sierra.utilities.Pair;
+import de.feelix.sierraapi.violation.PunishType;
 
 /**
  * An interface representing an item check.
@@ -18,5 +19,5 @@ public interface ItemCheck {
      * @param nbtCompound    The NBTCompound representing the NBT data of the item.
      * @return The CrashDetails representing crash details of a player.
      */
-    CrashDetails handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound);
+    Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound);
 }
