@@ -35,7 +35,8 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      * </p>
      *
      * <p>
-     * This variable is used in various methods within the InvalidMoveDetection class to handle and detect invalid moves.
+     * This variable is used in various methods within the InvalidMoveDetection class to handle and detect invalid
+     * moves.
      * </p>
      */
     private static final double HARD_CODED_BORDER = 2.9999999E7D;
@@ -56,14 +57,15 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      * Represents the timestamp of the last tick.
      *
      * <p>
-     * The lastTick variable stores the timestamp of the last tick, which is a unit of time measurement used in the game.
+     * The lastTick variable stores the timestamp of the last tick, which is a unit of time measurement used in the
+     * game.
      * The value is initialized to -1, indicating that no tick has occurred yet.
      * </p>
      *
-     * @since 1.0
      * @see InvalidMoveDetection
+     * @since 1.0
      */
-    private long   lastTick    = -1;
+    private long lastTick = -1;
 
     /**
      * Represents a private integer variable named buffer.
@@ -84,10 +86,11 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      * @see InvalidMoveDetection
      * @since 1.0
      */
-    private int    buffer      = 0;
+    private int buffer = 0;
 
     /**
-     * InvalidMoveDetection is a subclass of SierraDetection which is used to detect and handle invalid movement packets from a player.
+     * InvalidMoveDetection is a subclass of SierraDetection which is used to detect and handle invalid movement
+     * packets from a player.
      * It examines the player's movement data and checks for any suspicious or invalid values.
      *
      * @param playerData The PlayerData object containing the player's data
@@ -109,6 +112,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
             return;
         }
         if (isFlying(event)) {
+            getPlayerData().getTimingProcessor().getMovementProcessor().prepare();
             handleFlyingPacket(event);
         } else if (isVehicleMovePacket(event)) {
             handleVehicleMovePacket(event);
@@ -165,6 +169,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
 
         checkForBorder(position, event);
         sortOutExtremeValues(location, event);
+        getPlayerData().getTimingProcessor().getMovementProcessor().end();
     }
 
     /**
@@ -219,7 +224,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      * Sorts out extreme values from the given location.
      *
      * @param location the location to check for extreme values
-     * @param event the PacketReceiveEvent triggered by receiving a packet from the player
+     * @param event    the PacketReceiveEvent triggered by receiving a packet from the player
      */
     private void sortOutExtremeValues(Location location, PacketReceiveEvent event) {
         if (invalidValue(location.getX(), location.getY(), location.getZ())) {
@@ -323,7 +328,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      * Checks for invalid pitch in the given location and handles violation if necessary.
      *
      * @param location The location to check for invalid pitch
-     * @param event The PacketReceiveEvent triggered by receiving a packet from the player
+     * @param event    The PacketReceiveEvent triggered by receiving a packet from the player
      */
     private void checkInvalidPitch(Location location, PacketReceiveEvent event) {
         float pitch = location.getPitch();

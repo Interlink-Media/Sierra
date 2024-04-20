@@ -37,7 +37,7 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
     /**
      * The lastContent variable stores the last content string.
      */
-    private String lastContent      = "";
+    private String lastContent = "";
 
     /**
      * Represents the count of the last content.
@@ -47,20 +47,20 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
      * <p>
      * Initial value: 0
      */
-    private int    lastContentCount = 0;
+    private int lastContentCount = 0;
 
     /**
      * The MOJANG_CRASH_TRANSLATIONS variable represents an array of translations for Mojang crash messages.
      * It is a public static final String[] variable.
      * <p>
      * Usage:
-     *   String[] translations = MOJANG_CRASH_TRANSLATIONS;
+     * String[] translations = MOJANG_CRASH_TRANSLATIONS;
      * <p>
      * Example:
-     *   translations[0] = "translation.test.invalid";
-     *   translations[1] = "translation.test.invalid2";
+     * translations[0] = "translation.test.invalid";
+     * translations[1] = "translation.test.invalid2";
      */
-    public static final String[] MOJANG_CRASH_TRANSLATIONS = {"translation.test.invalid", "translation.test.invalid2"};
+    private static final String[] MOJANG_CRASH_TRANSLATIONS = {"translation.test.invalid", "translation.test.invalid2"};
 
     /**
      * Represents a massive book.
@@ -77,7 +77,7 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
      * If the "prevent-book-crasher" configuration option is set to true, this method will prevent book crashers.
      *
      * @param event The PacketReceiveEvent to handle
-     * @param data The PlayerData associated with the event
+     * @param data  The PlayerData associated with the event
      */
     @Override
     public void handle(PacketReceiveEvent event, PlayerData data) {
@@ -197,7 +197,7 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                 }
 
                 if (wrapper.getItemStack().get().getType() != ItemTypes.WRITABLE_BOOK
-                     && wrapper.getItemStack().get().getType() != ItemTypes.WRITTEN_BOOK) {
+                    && wrapper.getItemStack().get().getType() != ItemTypes.WRITTEN_BOOK) {
                     return;
                 }
 
@@ -269,7 +269,7 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                 }
 
                 if (wrapper.getCarriedItemStack().getType() != ItemTypes.WRITABLE_BOOK
-                     && wrapper.getCarriedItemStack().getType() != ItemTypes.WRITTEN_BOOK) {
+                    && wrapper.getCarriedItemStack().getType() != ItemTypes.WRITTEN_BOOK) {
                     return;
                 }
 

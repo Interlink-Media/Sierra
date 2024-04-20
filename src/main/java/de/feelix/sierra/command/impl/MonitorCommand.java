@@ -58,6 +58,8 @@ public class MonitorCommand implements ISierraCommand {
     private void printMonitor(PlayerData playerData, Player player) {
         sendTiming(playerData.getTimingProcessor().getPacketReceiveTiming(), "Ingoing Packets", player);
         sendTiming(playerData.getTimingProcessor().getPacketSendTiming(), "Outgoing Packets", player);
+        sendTiming(playerData.getTimingProcessor().getInventoryScanning(), "Inventory Scan", player);
+        sendTiming(playerData.getTimingProcessor().getMovementProcessor(), "Movement Task", player);
     }
 
     /**
@@ -68,7 +70,7 @@ public class MonitorCommand implements ISierraCommand {
      * @param player              the player to send the timing message to
      */
     private void sendTiming(Timing packetReceiveTiming, String title, Player player) {
-        player.sendMessage(Sierra.PREFIX + " §8- §c" + title + " §7(" + packetReceiveTiming.delay() + "ms)");
+        player.sendMessage(String.format("%s §8- §c%s §7(%.5fms)", Sierra.PREFIX, title, packetReceiveTiming.delay()));
     }
 
     /**

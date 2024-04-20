@@ -2,7 +2,6 @@ package de.feelix.sierra.utilities;
 
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.TextComponentSerializer;
 import org.bukkit.ChatColor;
 
 import java.text.SimpleDateFormat;
@@ -12,7 +11,6 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public class FormatUtils {
-
 
     /**
      * Converts a string representation of an integer to an integer value.

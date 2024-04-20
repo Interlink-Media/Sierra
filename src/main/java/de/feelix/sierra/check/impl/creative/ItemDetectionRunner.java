@@ -134,7 +134,6 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
         ItemStack itemStack = null;
         if (event.getPacketType() == PacketType.Play.Client.CREATIVE_INVENTORY_ACTION) {
             if (playerData != null && playerData.getGameMode() != GameMode.CREATIVE) {
-
                 return;
             }
 

@@ -22,11 +22,9 @@ public interface Timing {
     void end();
 
     /**
-     * Returns the delay in milliseconds between the start and end of the timed event.
-     * The delay is calculated by subtracting the start time from the end time.
+     * Returns the delay measured by the Timing object.
      *
-     * @return the delay in milliseconds
-     * @throws IllegalStateException if called before calling the {@code prepare()} method or after calling the {@code end()} method
+     * @return the delay measured by the Timing object as a double
      */
-    long delay();
+    double delay();
 }

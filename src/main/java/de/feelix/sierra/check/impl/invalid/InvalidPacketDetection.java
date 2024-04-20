@@ -873,6 +873,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      */
     private void checkIfItemIsAvailable(PacketReceiveEvent event, ItemStack itemStack) {
         ItemType itemStackType = itemStack.getType();
+        getPlayerData().getTimingProcessor().getInventoryScanning().prepare();
 
         long millis = System.currentTimeMillis();
 
@@ -903,6 +904,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 break;
             }
         }
+
+        getPlayerData().getTimingProcessor().getInventoryScanning().end();
 
         if (!atomicBoolean.get()) {
 

@@ -13,7 +13,7 @@ public class SierraTiming implements Timing {
      * The delay is calculated by subtracting the start time from the end time.
      * A value of -1 indicates that the delay has not been calculated yet.
      */
-    private long delay     = -1;
+    private double delay = -1;
 
     /**
      * The startTime variable represents the starting time of an event.
@@ -29,7 +29,7 @@ public class SierraTiming implements Timing {
      */
     @Override
     public void prepare() {
-        this.startTime = System.currentTimeMillis();
+        this.startTime = System.nanoTime();
     }
 
     /**
@@ -41,7 +41,7 @@ public class SierraTiming implements Timing {
      */
     @Override
     public void end() {
-        this.delay = System.currentTimeMillis() - startTime;
+        this.delay = System.nanoTime() - startTime;
     }
 
     /**
@@ -49,10 +49,11 @@ public class SierraTiming implements Timing {
      * The delay is calculated by subtracting the start time from the end time.
      *
      * @return the delay in milliseconds
-     * @throws IllegalStateException if called before calling the {@code prepare()} method or after calling the {@code end()} method
+     * @throws IllegalStateException if called before calling the {@code prepare()} method or after calling the
+     *                               {@code end()} method
      */
     @Override
-    public long delay() {
-        return this.delay;
+    public double delay() {
+        return (this.delay / 1000000);
     }
 }

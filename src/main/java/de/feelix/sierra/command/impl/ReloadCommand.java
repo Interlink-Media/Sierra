@@ -1,6 +1,7 @@
 package de.feelix.sierra.command.impl;
 
 import de.feelix.sierra.Sierra;
+import de.feelix.sierra.check.impl.command.BlockedCommand;
 import de.feelix.sierraapi.commands.*;
 
 import java.util.Collections;
@@ -22,8 +23,16 @@ public class ReloadCommand implements ISierraCommand {
     public void process(ISierraSender sierraSender, IBukkitAbstractCommand abstractCommand,
                         ISierraLabel sierraLabel, ISierraArguments sierraArguments) {
 
+        // Remove all cached config files
         Sierra.getPlugin().getSierraConfigEngine().invalidateCache();
+
+        // Reset prefix
         Sierra.getPlugin().setPrefix();
+
+        // Reset blocked commands in BlockedCommand check
+        BlockedCommand.disallowedCommands = Sierra.getPlugin()
+            .getSierraConfigEngine().config().getStringList("disallowed-commands");
+
         sierraSender.getSender().sendMessage(Sierra.PREFIX + " §fConfiguration reloaded §asuccessfully");
     }
 

@@ -35,7 +35,7 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      * An exploit pattern is defined as any string that starts with "${" and ends with "}".
      * This pattern can be used to search for such patterns and take appropriate action.
      */
-    private static final Pattern EXPLOIT_PATTERN  = java.util.regex.Pattern.compile("\\$\\{.+}");
+    private static final Pattern EXPLOIT_PATTERN = java.util.regex.Pattern.compile("\\$\\{.+}");
 
     /**
      * The EXPLOIT_PATTERN2 variable is a regular expression pattern that matches a specific pattern in a string.
@@ -54,11 +54,11 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      * ```java
      * String message = "This is a ${placeholder}.";
      * if (EXPLOIT_PATTERN2.matcher(message).find()) {
-     *     // Do something if the pattern is found in the message
-     *     ...
+     * // Do something if the pattern is found in the message
+     * ...
      * } else {
-     *     // Do something if the pattern is not found in the message
-     *     ...
+     * // Do something if the pattern is not found in the message
+     * ...
      * }
      * ```
      */
@@ -70,11 +70,10 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      * This list is retrieved from the Sierra plugin's configuration file.
      * It contains a collection of disallowed commands that players are not allowed to execute.
      */
-    private final List<String> disallowedCommands = Sierra.getPlugin()
+    public static List<String> disallowedCommands = Sierra.getPlugin()
         .getSierraConfigEngine().config().getStringList("disallowed-commands");
 
     /**
-     *
      * BlockedCommand is a class representing a specific action to be taken when a blocked command is detected.
      *
      * @param playerData The PlayerData associated with the player
