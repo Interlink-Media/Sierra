@@ -1187,14 +1187,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      */
     private void checkForInvalidBanner(PacketReceiveEvent event, ItemStack itemStack) {
 
-        if (itemStack.getType() == ItemTypes.BLACK_BANNER || itemStack.getType() == ItemTypes.WHITE_BANNER
-            || itemStack.getType() == ItemTypes.RED_BANNER || itemStack.getType() == ItemTypes.GREEN_BANNER
-            || itemStack.getType() == ItemTypes.BLUE_BANNER || itemStack.getType() == ItemTypes.LIGHT_BLUE_BANNER
-            || itemStack.getType() == ItemTypes.YELLOW_BANNER || itemStack.getType() == ItemTypes.LIME_BANNER
-            || itemStack.getType() == ItemTypes.BROWN_BANNER || itemStack.getType() == ItemTypes.PINK_BANNER
-            || itemStack.getType() == ItemTypes.ORANGE_BANNER || itemStack.getType() == ItemTypes.GRAY_BANNER
-            || itemStack.getType() == ItemTypes.LIGHT_GRAY_BANNER || itemStack.getType() == ItemTypes.CYAN_BANNER
-            || itemStack.getType() == ItemTypes.PURPLE_BANNER || itemStack.getType() == ItemTypes.MAGENTA_BANNER) {
+        if (isBanner(itemStack)) {
 
             if (itemStack.getNBT() != null) {
 
@@ -1262,6 +1255,15 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     }
                 }
             }
+        }
+    }
+
+    private boolean isBanner(ItemStack itemStack) {
+        try {
+            BannerType.valueOf(itemStack.getType().toString());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
         }
     }
 
