@@ -9,8 +9,7 @@ import de.feelix.sierra.manager.storage.processor.BrandProcessor;
 import de.feelix.sierra.manager.storage.processor.GameModeProcessor;
 import de.feelix.sierra.manager.storage.processor.PingProcessor;
 import de.feelix.sierra.manager.storage.processor.TimingProcessor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import de.feelix.sierraapi.check.CheckRepository;
 import de.feelix.sierraapi.user.impl.SierraUser;
 import de.feelix.sierraapi.violation.PunishType;
@@ -23,37 +22,36 @@ import java.util.UUID;
 /**
  * PlayerData is a class representing the data associated with a player.
  */
-@Getter
-@Setter
+@Data
 public class PlayerData implements SierraUser {
 
     private       User        user;
     private final Set<String> channels = new HashSet<>();
 
-    public int lastBookEditTick;
-    public int lastDropItemTick;
-    public int lastCraftRequestTick;
-    public int dropCount;
-    public int recursionCount;
-    public int bytesSent;
-    public int openWindowType;
-    public int openWindowContainer;
+    private int lastBookEditTick;
+    private int lastDropItemTick;
+    private int lastCraftRequestTick;
+    private int dropCount;
+    private int recursionCount;
+    private int bytesSent;
+    private int openWindowType;
+    private int openWindowContainer;
 
-    public double packetCount;
-    public double packetAllowance = 1000;
+    private double packetCount;
+    private double packetAllowance = 1000;
 
-    public long joinTime = System.currentTimeMillis();
+    private long joinTime = System.currentTimeMillis();
 
-    public  boolean blocked       = false;
-    public  boolean receiveAlerts = false;
-    private boolean exempt        = false;
-    private boolean hasBrand      = false;
+    private boolean receivedPunishment = false;
+    private boolean receiveAlerts      = false;
+    private boolean exempt             = false;
+    private boolean hasBrand           = false;
 
     private String brand = "vanilla";
 
-    public        ClientVersion     clientVersion;
-    public        GameMode          gameMode;
-    public final  CheckManager      checkManager      = new CheckManager(this);
+    private       ClientVersion     clientVersion;
+    private       GameMode          gameMode;
+    private final CheckManager      checkManager      = new CheckManager(this);
     private final BrandProcessor    brandProcessor    = new BrandProcessor(this);
     private final GameModeProcessor gameModeProcessor = new GameModeProcessor(this);
     private final PingProcessor     pingProcessor     = new PingProcessor(this);
@@ -187,7 +185,7 @@ public class PlayerData implements SierraUser {
      * @param punishType the type of punishment to be applied
      */
     public void punish(PunishType punishType) {
-        setBlocked(true);
+        setReceivedPunishment(true);
         if (punishType == PunishType.BAN && Sierra.getPlugin().getPunishmentConfig().isBan()) {
             ban();
         }

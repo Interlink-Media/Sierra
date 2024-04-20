@@ -227,13 +227,13 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         if (event.getConnectionState() != ConnectionState.PLAY) return;
 
-        if (playerData.clientVersion == null) {
-            playerData.clientVersion = event.getUser().getClientVersion();
+        if (playerData.getClientVersion() == null) {
+            playerData.setClientVersion(event.getUser().getClientVersion());
         }
 
         //https://netty.io/4.1/api/io/netty/buffer/ByteBuf.html//Sequential Access Indexing
         int capacity = ByteBufHelper.capacity(event.getByteBuf());
-        int maxBytes = 64000 * (playerData.clientVersion.isOlderThan(ClientVersion.V_1_8) ? 2 : 1);
+        int maxBytes = 64000 * (playerData.getClientVersion().isOlderThan(ClientVersion.V_1_8) ? 2 : 1);
         if (capacity > maxBytes) {
             violation(event, ViolationDocument.builder()
                 .debugInformation("Bytes: " + capacity + " Max Bytes: " + maxBytes)
@@ -242,8 +242,9 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
         //https://netty.io/4.1/api/io/netty/buffer/ByteBuf.html//Sequential Access Indexing
         int readableBytes     = ByteBufHelper.readableBytes(event.getByteBuf());
-        int maxBytesPerSecond = 64000 * (playerData.clientVersion.isOlderThan(ClientVersion.V_1_8) ? 2 : 1);
-        if ((playerData.bytesSent += readableBytes) > maxBytesPerSecond) {
+        int maxBytesPerSecond = 64000 * (playerData.getClientVersion().isOlderThan(ClientVersion.V_1_8) ? 2 : 1);
+        playerData.setBytesSent(playerData.getBytesSent() + readableBytes);
+        if (playerData.getBytesSent() > maxBytesPerSecond) {
             violation(event, ViolationDocument.builder()
                 .debugInformation("Bytes Sent: " + playerData.getBytesSent() + " Max Bytes/s: " + maxBytesPerSecond)
                 .punishType(PunishType.KICK)

@@ -106,7 +106,7 @@ public class PacketListener extends PacketListenerAbstract {
             event.setCancelled(false);
             return true;
         }
-        if (playerData.isBlocked()) {
+        if (playerData.isReceivedPunishment()) {
             event.setCancelled(true);
             return true;
         }

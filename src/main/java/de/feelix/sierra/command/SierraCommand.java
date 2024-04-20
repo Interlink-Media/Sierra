@@ -81,7 +81,7 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
 
         Bukkit.getScheduler().runTaskAsynchronously(Sierra.getPlugin(), () -> EventManager.callEvent(event));
 
-        if (!hasPermission(sender)) {
+        if (hasNoPermission(sender)) {
             CommandHelper.sendVersionOutput(new SierraSender(sender));
             return true;
         }
@@ -136,7 +136,7 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
         if (!isValidCommand(command)) {
             return null;
         }
-        if (!hasPermission(sender)) {
+        if (hasNoPermission(sender)) {
             return null;
         }
         List<String> keys = getGeneratedKeys(args);
@@ -159,9 +159,8 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
      * @param sender the CommandSender to check permission for
      * @return true if the sender has permission, false otherwise
      */
-    private boolean hasPermission(@NotNull CommandSender sender) {
-        String defaultBukkitPermission = "sierra.command";
-        return sender.hasPermission(defaultBukkitPermission);
+    private boolean hasNoPermission(@NotNull CommandSender sender) {
+        return !sender.hasPermission("sierra.command");
     }
 
     /**

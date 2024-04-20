@@ -3,6 +3,7 @@ package de.feelix.sierra.command.impl;
 import com.github.retrooper.packetevents.PacketEvents;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.manager.storage.processor.TimingProcessor;
 import de.feelix.sierraapi.commands.*;
 import de.feelix.sierraapi.timing.Timing;
 import org.bukkit.entity.Player;
@@ -35,7 +36,7 @@ public class MonitorCommand implements ISierraCommand {
 
         Player player = sierraSender.getSenderAsPlayer();
 
-        player.sendMessage(Sierra.PREFIX + " §fPerformance monitor");
+        player.sendMessage(Sierra.PREFIX + " §fPerformance monitor §7(Your data)");
 
         WeakReference<PlayerData> playerData = Sierra.getPlugin()
             .getDataManager()
@@ -56,10 +57,14 @@ public class MonitorCommand implements ISierraCommand {
      * @param player     the Player object representing the player
      */
     private void printMonitor(PlayerData playerData, Player player) {
-        sendTiming(playerData.getTimingProcessor().getPacketReceiveTiming(), "Ingoing Packets", player);
-        sendTiming(playerData.getTimingProcessor().getPacketSendTiming(), "Outgoing Packets", player);
-        sendTiming(playerData.getTimingProcessor().getInventoryScanning(), "Inventory Scan", player);
-        sendTiming(playerData.getTimingProcessor().getMovementProcessor(), "Movement Task", player);
+
+        TimingProcessor timingProcessor = playerData.getTimingProcessor();
+        player.sendMessage(Sierra.PREFIX + " §c§lPackets:");
+        sendTiming(timingProcessor.getPacketReceiveTiming(), "Ingoing Packets", player);
+        sendTiming(timingProcessor.getPacketSendTiming(), "Outgoing Packets", player);
+        player.sendMessage(Sierra.PREFIX + " §c§lEnvironment:");
+        sendTiming(timingProcessor.getInventoryScanning(), "Inventory Scan", player);
+        sendTiming(timingProcessor.getMovementProcessor(), "Movement Task", player);
     }
 
     /**
@@ -70,7 +75,7 @@ public class MonitorCommand implements ISierraCommand {
      * @param player              the player to send the timing message to
      */
     private void sendTiming(Timing packetReceiveTiming, String title, Player player) {
-        player.sendMessage(String.format("%s §8- §c%s §7(%.5fms)", Sierra.PREFIX, title, packetReceiveTiming.delay()));
+        player.sendMessage(String.format("%s  §8- §f%s §7(%.5fms)", Sierra.PREFIX, title, packetReceiveTiming.delay()));
     }
 
     /**

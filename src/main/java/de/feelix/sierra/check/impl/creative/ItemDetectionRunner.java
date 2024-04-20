@@ -36,11 +36,13 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
      * List of ItemCheck instances used to perform item checks.
      *
      * <p>
-     * The checks list stores instances of classes that implement the ItemCheck interface. These classes are responsible for handling specific item checks.
+     * The checks list stores instances of classes that implement the ItemCheck interface. These classes are
+     * responsible for handling specific item checks.
      * </p>
      *
      * <p>
-     * The checks list is initialized as an empty ArrayList and can be modified by adding or removing ItemCheck instances.
+     * The checks list is initialized as an empty ArrayList and can be modified by adding or removing ItemCheck
+     * instances.
      * </p>
      *
      * @see ItemCheck
@@ -50,7 +52,7 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
     /**
      * The maximum number of recursion levels allowed.
      */
-    private static final int    MAX_RECURSIONS       = 30;
+    private static final int MAX_RECURSIONS = 30;
 
     /**
      * The variable ITEMS_KEY is a private static final String that represents the key for accessing the "Items" field.
@@ -59,17 +61,17 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
      * the value associated with this field.
      * <p>
      * Example usage:
-     *      String itemsKey = ITEMS_KEY;
+     * String itemsKey = ITEMS_KEY;
      *
      * @since 1.0
      */
-    private static final String ITEMS_KEY            = "Items";
+    private static final String ITEMS_KEY = "Items";
 
     /**
      * Represents the key used to identify a tag.
      * This key is used in various operations where tags are processed.
      */
-    private static final String TAG_KEY              = "tag";
+    private static final String TAG_KEY = "tag";
 
     /**
      * Represents the key used for the block entity tag in the Sierra system.
@@ -85,11 +87,13 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
      * The MAX_ITEMS variable is a private static final integer with a value of 54.
      * <p>
      * This variable is important for preventing potential crashes or exploits caused by an excessive number of items.
-     * By setting a reasonable maximum value for the number of items, it helps ensure the stability and security of the application.
+     * By setting a reasonable maximum value for the number of items, it helps ensure the stability and security of
+     * the application.
      * <p>
-     * This variable is not intended to be modified during runtime and is marked as final to prevent any accidental changes.
+     * This variable is not intended to be modified during runtime and is marked as final to prevent any accidental
+     * changes.
      */
-    private static final int    MAX_ITEMS            = 54;
+    private static final int MAX_ITEMS = 54;
 
     /**
      * The ItemDetectionRunner class is responsible for running item detection checks on player data.
@@ -121,8 +125,8 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
     /**
      * Handles the packet receive event and performs item detection checks on the player data.
      *
-     * @param event       The packet receive event
-     * @param playerData  The player data object
+     * @param event      The packet receive event
+     * @param playerData The player data object
      */
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
@@ -162,7 +166,7 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
         if (compound != null && compound.getTags().containsKey("BlockEntityTag") && playerData != null) {
             NBTCompound blockEntityTag = compound.getCompoundTagOrNull("BlockEntityTag");
             //reset recursion count to prevent false kicks
-            playerData.recursionCount = 0;
+            playerData.setRecursionCount(0);
             recursion(event, playerData, itemStack, blockEntityTag);
         } else if (compound != null) {
             //if this gets called, it's not a container, so we don't need to do recursion
@@ -217,7 +221,9 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
      * @return true if the recursion count has exceeded the maximum limit, false otherwise
      */
     private boolean exceededRecursionMax(PlayerData data) {
-        return ++data.recursionCount > MAX_RECURSIONS;
+        int newCount = data.getRecursionCount() + 1;
+        data.setRecursionCount(newCount);
+        return newCount > MAX_RECURSIONS;
     }
 
     /**
@@ -233,9 +239,9 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
     /**
      * Sends a violation based on the provided event, information, and punishment type.
      *
-     * @param event       The PacketReceiveEvent triggering the violation
-     * @param info        The information related to the violation
-     * @param punishType  The punishment type to be applied
+     * @param event      The PacketReceiveEvent triggering the violation
+     * @param info       The information related to the violation
+     * @param punishType The punishment type to be applied
      */
     private void sendViolation(PacketReceiveEvent event, int info,
                                @SuppressWarnings("SameParameterValue") PunishType punishType) {
@@ -248,10 +254,10 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
     /**
      * Processes the items in the given list by checking for specific tags and performing actions accordingly.
      *
-     * @param event        The packet receive event.
-     * @param data         The player data object.
-     * @param clickedItem  The clicked item.
-     * @param items        The list of NBT compounds representing the items.
+     * @param event       The packet receive event.
+     * @param data        The player data object.
+     * @param clickedItem The clicked item.
+     * @param items       The list of NBT compounds representing the items.
      */
     private void processItems(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
                               NBTList<NBTCompound> items) {
@@ -268,10 +274,10 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
     /**
      * Processes a tagged item by performing various checks and actions based on the item's tags.
      *
-     * @param event        The packet receive event triggering the processing of the tagged item.
-     * @param data         The player data object.
-     * @param clickedItem  The clicked item.
-     * @param item         The NBT compound representing the tagged item.
+     * @param event       The packet receive event triggering the processing of the tagged item.
+     * @param data        The player data object.
+     * @param clickedItem The clicked item.
+     * @param item        The NBT compound representing the tagged item.
      * @return true if any default checks were triggered and handled, otherwise false.
      */
     private boolean processTaggedItem(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
@@ -288,10 +294,10 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
     /**
      * Calls the default checks for item detection.
      *
-     * @param event        The packet receive event
-     * @param data         The player data object
-     * @param clickedItem  The clicked item
-     * @param tag          The NBT compound representing the item's tag
+     * @param event       The packet receive event
+     * @param data        The player data object
+     * @param clickedItem The clicked item
+     * @param tag         The NBT compound representing the item's tag
      * @return true if any default checks were triggered and handled, otherwise false
      */
     private boolean callDefaultChecks(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,

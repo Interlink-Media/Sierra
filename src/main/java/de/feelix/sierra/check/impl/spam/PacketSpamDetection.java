@@ -86,7 +86,7 @@ public class PacketSpamDetection extends SierraDetection implements IngoingProce
             }
         } else if (event.getPacketType() == PacketType.Play.Client.CRAFT_RECIPE_REQUEST) {
             int currentTick = Ticker.getInstance().getCurrentTick();
-            if (getPlayerData().getLastCraftRequestTick() + 10 > currentTick) {
+            if (playerData.getLastCraftRequestTick() + 10 > currentTick) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Spammed recipe request")
                     .punishType(PunishType.MITIGATE)
@@ -97,7 +97,7 @@ public class PacketSpamDetection extends SierraDetection implements IngoingProce
                     player.updateInventory();
                 }
             } else {
-                getPlayerData().setLastCraftRequestTick(currentTick);
+                playerData.setLastCraftRequestTick(currentTick);
             }
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING) {
             WrapperPlayClientPlayerDigging wrapper = new WrapperPlayClientPlayerDigging(event);
@@ -106,15 +106,16 @@ public class PacketSpamDetection extends SierraDetection implements IngoingProce
 
             int currentTick = Ticker.getInstance().getCurrentTick();
 
-            if (getPlayerData().getGameMode() != GameMode.SPECTATOR) {
+            if (playerData.getGameMode() != GameMode.SPECTATOR) {
                 // limit how quickly items can be dropped
                 // If the ticks aren't the same then the count starts from 0 and we update the lastDropTick.
-                if (getPlayerData().getLastDropItemTick() != currentTick) {
-                    getPlayerData().setDropCount(0);
-                    getPlayerData().setLastDropItemTick(currentTick);
+                if (playerData.getLastDropItemTick() != currentTick) {
+                    playerData.setDropCount(0);
+                    playerData.setLastDropItemTick(currentTick);
                 } else {
                     // Else we increment the drop count and check the amount.
-                    if (getPlayerData().dropCount++ >= 20) {
+                    playerData.setDropCount(playerData.getDropCount() + 1);
+                    if (playerData.getDropCount() >= 20) {
                         violation(event, ViolationDocument.builder()
                             .debugInformation("Spammed digging")
                             .punishType(PunishType.KICK)
@@ -125,17 +126,18 @@ public class PacketSpamDetection extends SierraDetection implements IngoingProce
         }
 
         double multiplier      = multiplierMap.getOrDefault(event.getPacketType(), 1.0D);
-        double packetAllowance = getPlayerData().getPacketAllowance();
+        double packetAllowance = playerData.getPacketAllowance();
+        playerData.setPacketCount(playerData.getPacketCount() + (1 * multiplier));
 
-        if ((getPlayerData().packetCount += 1 * multiplier) > packetAllowance) {
-            double packetCount = getPlayerData().getPacketCount();
+        if (playerData.getPacketCount() > packetAllowance) {
+            double packetCount = playerData.getPacketCount();
             violation(event, ViolationDocument.builder()
                 .debugInformation("Send: " + packetCount + ", allowed: " + packetAllowance)
                 .punishType(PunishType.KICK)
                 .build()
             );
         } else {
-            getPlayerData().packetAllowance--;
+            playerData.setPacketAllowance(playerData.getPacketAllowance() - 1);
         }
     }
 

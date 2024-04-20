@@ -125,7 +125,7 @@ public class SierraDetection implements SierraCheck {
         // Cancel the packet event
         event.setCancelled(true);
 
-        if(playerData.isBlocked()) return;
+        if(playerData.isReceivedPunishment()) return;
 
         // Safety check for player data in violation document
         if (violationDocument.getPlayerData() == null) violationDocument.setPlayerData(playerData);
