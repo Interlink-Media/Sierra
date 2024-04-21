@@ -187,7 +187,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         FoliaCompatUtil.runTaskAsync(Sierra.getPlugin(), () -> {
             String localVersion         = Sierra.getPlugin().getDescription().getVersion();
             String latestReleaseVersion = updateChecker.getLatestReleaseVersion();
-            if (!localVersion.equalsIgnoreCase(latestReleaseVersion)) {
+            if (!localVersion.equalsIgnoreCase(latestReleaseVersion) && !isVersionInvalid()) {
                 logOutdatedVersionMessage(localVersion, latestReleaseVersion);
             }
         });
@@ -206,6 +206,12 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         logger.log(Level.WARNING, "Please update Sierra to the latest version!");
         String format = "Your version: %s, latest is: %s";
         logger.log(Level.WARNING, String.format(format, localVersion, latestReleaseVersion));
+    }
+
+    private boolean isVersionInvalid() {
+        return this.updateChecker
+            .getLatestReleaseVersion()
+            .equalsIgnoreCase(UpdateChecker.UNKNOWN_VERSION);
     }
 
     /**

@@ -873,6 +873,10 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * @param itemStack The item stack to check.
      */
     private void checkIfItemIsAvailable(PacketReceiveEvent event, ItemStack itemStack) {
+
+        // Deactivated cause of naming problems
+        if(true) return;
+
         ItemType itemStackType = itemStack.getType();
         getPlayerData().getTimingProcessor().getInventoryScanning().prepare();
 
@@ -911,7 +915,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         // Skip check for 1,2 seconds because of lag compensation. Some anticheat break transaction lag compensation
         // so i have to do this like this :c
-        if (!atomicBoolean.get() && System.currentTimeMillis() - getPlayerData().getSkipInvCheckTime() > 1200) {
+        if (!atomicBoolean.get() && System.currentTimeMillis() - getPlayerData().getSkipInvCheckTime() > 1200
+            && !containsIncorrectBlockTranslation(event.getUser(), itemStack)) {
 
             long delay = System.currentTimeMillis() - millis;
 
@@ -927,6 +932,13 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 .punishType(PunishType.KICK)
                 .build());
         }
+    }
+
+    private boolean containsIncorrectBlockTranslation(User user, ItemStack itemStack) {
+        return user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_12) && itemStack.getType()
+            .getName()
+            .toString()
+            .contains("bed");
     }
 
     /**

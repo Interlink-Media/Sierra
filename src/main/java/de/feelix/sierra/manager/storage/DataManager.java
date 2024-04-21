@@ -8,6 +8,7 @@ import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.events.EventManager;
 import de.feelix.sierra.Sierra;
+import de.feelix.sierra.utilities.update.UpdateChecker;
 import de.feelix.sierraapi.events.AsyncHistoryCreateEvent;
 import de.feelix.sierraapi.history.HistoryType;
 import de.feelix.sierraapi.violation.PunishType;
@@ -94,13 +95,25 @@ public class DataManager implements UserRepository {
                 throw new RuntimeException(e);
             }
 
-            if (!isVersionOutdated() || !isUserValid(user)) return;
+            if (!isVersionOutdated() || !isUserValid(user) || isVersionInvalid()) return;
 
             Player player = getPlayer(user);
             if (player == null || !playerCanUpdate(player)) return;
 
             sendMessage(player);
         });
+    }
+
+    /**
+     * Checks if the version of the plugin Sierra is invalid.
+     *
+     * @return true if the version is invalid, false otherwise
+     */
+    private boolean isVersionInvalid() {
+        return Sierra.getPlugin()
+            .getUpdateChecker()
+            .getLatestReleaseVersion()
+            .equalsIgnoreCase(UpdateChecker.UNKNOWN_VERSION);
     }
 
     /**
