@@ -36,6 +36,7 @@ dependencies {
     implementation(project(':api'))
     implementation(project(':events'))
     implementation "net.kyori:adventure-api:4.16.0"
+    implementation 'club.minnced:discord-webhooks:0.8.4'
 
     compileOnly 'org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT'
 
@@ -47,7 +48,7 @@ dependencies {
 }
 
 group = 'de.feelix.sierra'
-version = '1.1.0'
+version = '1.1.1'
 description = 'Sierra'
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8
