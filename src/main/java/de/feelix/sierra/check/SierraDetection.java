@@ -156,6 +156,8 @@ public class SierraDetection implements SierraCheck {
                     violationDocument.debugInformation()
                 );
 
+            Sierra.getPlugin().getDiscordGateway().sendAlert(playerData, this.checkType(), violationDocument, this.violations());
+
             playerData.punish(violationDocument.punishType());
         }
     }

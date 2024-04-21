@@ -41,7 +41,8 @@ public class PlayerData implements SierraUser {
     private double packetCount;
     private double packetAllowance = 1000;
 
-    private long joinTime = System.currentTimeMillis();
+    private long skipInvCheckTime = -1;
+    private long joinTime         = System.currentTimeMillis();
 
     private boolean receivedPunishment = false;
     private boolean receiveAlerts      = false;
@@ -201,13 +202,13 @@ public class PlayerData implements SierraUser {
      */
     private void ban() {
         FoliaCompatUtil.runTask(Sierra.getPlugin(), o -> Bukkit.dispatchCommand(
-                Bukkit.getConsoleSender(),
-                Sierra.getPlugin()
-                    .getSierraConfigEngine()
-                    .config()
-                    .getString("punish-command", "ban {username} Crashing")
-                    .replace("{username}", this.user.getName())
-            ));
+            Bukkit.getConsoleSender(),
+            Sierra.getPlugin()
+                .getSierraConfigEngine()
+                .config()
+                .getString("punish-command", "ban {username} Crashing")
+                .replace("{username}", this.user.getName())
+        ));
     }
 
     /**

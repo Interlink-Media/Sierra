@@ -33,6 +33,8 @@ public class ReloadCommand implements ISierraCommand {
         BlockedCommand.disallowedCommands = Sierra.getPlugin()
             .getSierraConfigEngine().config().getStringList("disallowed-commands");
 
+        Sierra.getPlugin().getDiscordGateway().setup();
+
         sierraSender.getSender().sendMessage(Sierra.PREFIX + " §fConfiguration reloaded §asuccessfully");
     }
 

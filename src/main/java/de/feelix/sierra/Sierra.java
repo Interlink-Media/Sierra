@@ -5,6 +5,7 @@ import de.feelix.sierra.command.SierraCommand;
 import de.feelix.sierra.listener.PacketListener;
 import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
+import de.feelix.sierra.manager.discord.DiscordGateway;
 import de.feelix.sierra.manager.storage.DataManager;
 import de.feelix.sierra.utilities.Ticker;
 import de.feelix.sierra.utilities.update.UpdateChecker;
@@ -101,6 +102,13 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     private UpdateChecker updateChecker;
 
     /**
+     * Represents a Discord gateway for sending alerts and messages through a webhook.
+     * The DiscordGateway class uses a webhook URL to interact with Discord.
+     * It can be used to set up the gateway, send alerts, and perform other actions related to Discord integration.
+     */
+    private DiscordGateway discordGateway = new DiscordGateway();
+
+    /**
      * This method is called when the plugin is being enabled.
      * It initializes various components of the Sierra plugin,
      * registers event listeners, and sets up the command executor.
@@ -157,6 +165,8 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         this.punishmentConfig = PunishmentConfig.valueOf(
             this.sierraConfigEngine.config().getString("internal-punishment-config", "HARD"));
 
+        this.discordGateway.setup();
+
         this.getLogger().log(
             Level.INFO,
             "Sierra is ready. (Took: " + (System.currentTimeMillis() - startTime) + "ms)"
@@ -184,7 +194,8 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     }
 
     /**
-     * Logs a warning message indicating that the local version of Sierra is outdated and suggests updating to the latest version.
+     * Logs a warning message indicating that the local version of Sierra is outdated and suggests updating to the
+     * latest version.
      *
      * @param localVersion         the current version of Sierra being used
      * @param latestReleaseVersion the latest release version of Sierra available
