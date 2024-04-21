@@ -292,10 +292,9 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .build());
             }
 
-            if (wrapper.getJumpBoost() < 0 || wrapper.getJumpBoost() > 100 || wrapper.getEntityId() != event.getUser()
-                .getEntityId()
-                || (wrapper.getAction() != WrapperPlayClientEntityAction.Action.START_JUMPING_WITH_HORSE
-                    && wrapper.getJumpBoost() != 0)) {
+            if (wrapper.getJumpBoost() < 0
+                || wrapper.getJumpBoost() > 100
+                || wrapper.getEntityId() != event.getUser().getEntityId()) {
 
                 violation(event, ViolationDocument.builder()
                     .debugInformation(
@@ -883,7 +882,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
 
-        if (player.getGameMode() == org.bukkit.GameMode.CREATIVE) {
+        if (player.getGameMode() == org.bukkit.GameMode.CREATIVE || itemStack.getType() == ItemTypes.AIR) {
+            getPlayerData().getTimingProcessor().getInventoryScanning().end();
             return;
         }
 
@@ -909,7 +909,9 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         getPlayerData().getTimingProcessor().getInventoryScanning().end();
 
-        if (!atomicBoolean.get()) {
+        // Skip check for 1,2 seconds because of lag compensation. Some anticheat break transaction lag compensation
+        // so i have to do this like this :c
+        if (!atomicBoolean.get() && System.currentTimeMillis() - getPlayerData().getSkipInvCheckTime() > 1200) {
 
             long delay = System.currentTimeMillis() - millis;
 
@@ -1297,6 +1299,10 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .punishType(PunishType.BAN)
                     .build());
             }
+        } else if (event.getPacketType() == PacketType.Play.Server.RESPAWN) {
+
+            playerData.setSkipInvCheckTime(System.currentTimeMillis());
+
         } else if (event.getPacketType() == PacketType.Play.Server.KEEP_ALIVE) {
 
             WrapperPlayServerKeepAlive packet = new WrapperPlayServerKeepAlive(event);
