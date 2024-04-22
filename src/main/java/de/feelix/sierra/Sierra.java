@@ -6,6 +6,7 @@ import de.feelix.sierra.listener.PacketListener;
 import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.discord.DiscordGateway;
+import de.feelix.sierra.manager.modules.ModuleGateway;
 import de.feelix.sierra.manager.storage.DataManager;
 import de.feelix.sierra.utilities.Ticker;
 import de.feelix.sierra.utilities.update.UpdateChecker;
@@ -19,6 +20,7 @@ import lombok.Setter;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,6 +111,17 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     private DiscordGateway discordGateway = new DiscordGateway();
 
     /**
+     * The ModuleGateway class represents the gateway for accessing different modules and their functionalities.
+     */
+    private ModuleGateway moduleGateway;
+
+    /**
+     * The moduleDir variable represents the directory where the module files are located.
+     * It is a private field of type File.
+     */
+    private File moduleDir;
+
+    /**
      * This method is called when the plugin is being enabled.
      * It initializes various components of the Sierra plugin,
      * registers event listeners, and sets up the command executor.
@@ -167,17 +180,42 @@ public final class Sierra extends JavaPlugin implements SierraApi {
 
         this.discordGateway.setup();
 
+        checkForUpdate();
+        updateChecker.startScheduler();
+
+        this.loadModules();
+
         this.getLogger().log(
             Level.INFO,
             "Sierra is ready. (Took: " + (System.currentTimeMillis() - startTime) + "ms)"
 
         );
-        checkForUpdate();
-        updateChecker.startScheduler();
 
         // Enable the api
         SierraApiAccessor.setSierraApiInstance(this);
         this.getLogger().log(Level.INFO, "API is ready");
+    }
+
+    /**
+     * Loads the modules for the Sierra plugin.
+     * The method creates a modules directory specific to the plugin, and initializes a {@link ModuleGateway} object
+     * to manage the loading of modules.
+     * <p>
+     * The modules directory is created at "./plugins/{plugin_name}/modules". If the directory already exists,
+     * no action is taken. If the directory cannot be created, a severe logging message is displayed.
+     * <p>
+     * After creating the modules directory, the {@link ModuleGateway} object is initialized with the directory
+     * and the {@link ModuleGateway#loadModules()} method is called to load the modules.
+     * <p>
+     * This method is called when the plugin is being enabled.
+     */
+    private void loadModules() {
+        this.moduleDir = new File("./plugins/" + this.getDescription().getName() + "/modules");
+        if (!this.moduleDir.mkdirs()) {
+            this.getLogger().severe("Failed to create modules directory!");
+        }
+        this.moduleGateway = new ModuleGateway(this.moduleDir);
+        this.moduleGateway.loadModules();
     }
 
     /**
