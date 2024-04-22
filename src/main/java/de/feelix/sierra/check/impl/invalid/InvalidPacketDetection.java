@@ -7,7 +7,6 @@ import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
-import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.nbt.*;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -40,7 +39,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -277,7 +275,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             ItemStack                                itemStack = wrapper.getItemStack();
             checkInvalidNbt(event, itemStack);
             checkForInvalidBanner(event, itemStack);
-            checkIfItemIsAvailable(event, itemStack);
             checkForInvalidContainer(event, itemStack);
             checkForInvalidShulker(event, itemStack);
             checkNbtTags(event, itemStack);
@@ -531,7 +528,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 }
 
                 checkInvalidNbt(event, itemStack);
-                checkIfItemIsAvailable(event, itemStack);
                 checkForInvalidBanner(event, itemStack);
                 checkForInvalidContainer(event, itemStack);
                 checkForInvalidShulker(event, itemStack);
@@ -594,15 +590,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     data = keepAliveMap.poll();
                     if (data == null) break;
                 } while (data.getSecond() != id);
-            }
-
-            WrapperPlayClientKeepAlive wrapper = new WrapperPlayClientKeepAlive(event);
-
-            if (wrapper.getId() < 0) {
-                violation(event, ViolationDocument.builder()
-                    .debugInformation("Invalid id: " + wrapper.getId())
-                    .punishType(PunishType.BAN)
-                    .build());
             }
 
         } else if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
@@ -672,7 +659,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             ItemStack carriedItemStack = wrapper.getCarriedItemStack();
             checkInvalidNbt(event, carriedItemStack);
-            checkIfItemIsAvailable(event, carriedItemStack);
             checkForInvalidContainer(event, carriedItemStack);
             checkForInvalidShulker(event, carriedItemStack);
             checkForInvalidBanner(event, carriedItemStack);
@@ -862,74 +848,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 .debugInformation("clickType=" + clickType + " button=" + button + (wrapper.getWindowId() == containerId
                     ? " container=" + containerType : ""))
                 .punishType(PunishType.MITIGATE)
-                .build());
-        }
-    }
-
-    /**
-     * Checks if the specified item is available in the player's inventory or open inventories.
-     *
-     * @param event     The PacketReceiveEvent.
-     * @param itemStack The item stack to check.
-     */
-    private void checkIfItemIsAvailable(PacketReceiveEvent event, ItemStack itemStack) {
-
-        // Deactivated cause of naming problems
-        if(true) return;
-
-        ItemType itemStackType = itemStack.getType();
-        getPlayerData().getTimingProcessor().getInventoryScanning().prepare();
-
-        long millis = System.currentTimeMillis();
-
-        Player player = (Player) event.getPlayer();
-
-        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
-
-        if (player.getGameMode() == org.bukkit.GameMode.CREATIVE || itemStack.getType() == ItemTypes.AIR) {
-            getPlayerData().getTimingProcessor().getInventoryScanning().end();
-            return;
-        }
-
-        for (org.bukkit.inventory.ItemStack content : player.getInventory().getContents()) {
-            if (SpigotConversionUtil.fromBukkitItemStack(content).getType() == itemStackType) {
-                atomicBoolean.set(true);
-                break;
-            }
-        }
-
-        for (org.bukkit.inventory.ItemStack content : player.getOpenInventory().getTopInventory()) {
-            if (SpigotConversionUtil.fromBukkitItemStack(content).getType() == itemStackType) {
-                atomicBoolean.set(true);
-                break;
-            }
-        }
-        for (org.bukkit.inventory.ItemStack content : player.getOpenInventory().getBottomInventory()) {
-            if (SpigotConversionUtil.fromBukkitItemStack(content).getType() == itemStackType) {
-                atomicBoolean.set(true);
-                break;
-            }
-        }
-
-        getPlayerData().getTimingProcessor().getInventoryScanning().end();
-
-        // Skip check for 1,2 seconds because of lag compensation. Some anticheat break transaction lag compensation
-        // so i have to do this like this :c
-        if (!atomicBoolean.get() && System.currentTimeMillis() - getPlayerData().getSkipInvCheckTime() > 1200
-            && !containsIncorrectBlockTranslation(event.getUser(), itemStack)) {
-
-            long delay = System.currentTimeMillis() - millis;
-
-            String first = "Interacted with: %s, but its not in his inventory. (Took: %dms)";
-            String second = "This is an experimental check. If there are any errors with this, please "
-                            + "report them on the Discord";
-
-            Sierra.getPlugin().getLogger().log(Level.INFO, String.format(first, itemStackType.getName(), delay));
-            Sierra.getPlugin().getLogger().log(Level.INFO, second);
-
-            violation(event, ViolationDocument.builder()
-                .debugInformation(String.format("Interacted: %s, took: %dms", itemStackType.getName(), delay))
-                .punishType(PunishType.KICK)
                 .build());
         }
     }
