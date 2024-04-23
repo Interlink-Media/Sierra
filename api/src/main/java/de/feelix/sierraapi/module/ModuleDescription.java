@@ -52,22 +52,6 @@ public class ModuleDescription {
     private final String author;
 
     /**
-     * The type of the module.
-     * <p>
-     * This field holds the type of the module, as specified in the properties file.
-     * The type is a string that represents the category or classification of the module.
-     * It can be used to differentiate between different types of modules.
-     * <p>
-     * Example usage:
-     *    ModuleDescription module = new ModuleDescription(properties);
-     *    String moduleType = module.getType();
-     * <p>
-     *    // Output: "Plugin"
-     *    System.out.println(moduleType);
-     */
-    private final String type;
-
-    /**
      * The version of the module.
      */
     private String version;
@@ -82,7 +66,6 @@ public class ModuleDescription {
         this.main = properties.getProperty("main");
         this.version = properties.getProperty("version");
         this.author = properties.getProperty("author");
-        this.type = properties.getProperty("type");
 
         if (this.version.startsWith("http://") || this.version.startsWith("https://")) {
             this.version = this.readURLString(this.version);

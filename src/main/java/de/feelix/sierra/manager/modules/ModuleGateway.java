@@ -126,27 +126,10 @@ public class ModuleGateway {
         try (InputStreamReader isr = new InputStreamReader(jarFile.getInputStream(jarEntry), StandardCharsets.UTF_8)) {
             Properties properties = new Properties();
             properties.load(isr);
-            final ModuleDescription description = new ModuleDescription(properties);
-            if (isNotSpigotModule(description)) {
-                logErr("Module '" + description.getName()
-                       + "' isn't a Spigot-module or the type isn't specified!");
-                return;
-            }
-            ClassLoader moduleClassLoader = getModuleClassLoader();
-            processModuleClassLoader(file, description, moduleClassLoader);
+            processModuleClassLoader(file, new ModuleDescription(properties), getModuleClassLoader());
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Checks if the given ModuleDescription is not a Spigot module.
-     *
-     * @param description the ModuleDescription to check
-     * @return true if the module is not a Spigot module, false otherwise
-     */
-    private boolean isNotSpigotModule(ModuleDescription description) {
-        return description.getType() == null || !description.getType().equalsIgnoreCase("Spigot");
     }
 
     /**
@@ -241,15 +224,6 @@ public class ModuleGateway {
      */
     private void logInfo(String message) {
         Sierra.getPlugin().getLogger().info(message);
-    }
-
-    /**
-     * Logs an error message to the standard error stream.
-     *
-     * @param message the error message to log
-     */
-    private void logErr(String message) {
-        System.err.println(message);
     }
 
     /**

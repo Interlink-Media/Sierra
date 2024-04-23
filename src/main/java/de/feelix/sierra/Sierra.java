@@ -272,6 +272,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         if (PacketEvents.getAPI() != null) {
             PacketEvents.getAPI().terminate();
         }
+        this.moduleGateway.disableModules();
     }
 
     /**
