@@ -290,13 +290,10 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
 
             if (wrapper.getJumpBoost() < 0
-                || wrapper.getJumpBoost() > 100
-                || wrapper.getEntityId() != event.getUser().getEntityId()) {
+                || wrapper.getJumpBoost() > 100) {
 
                 violation(event, ViolationDocument.builder()
-                    .debugInformation(
-                        "boost=" + wrapper.getJumpBoost() + ", action=" + wrapper.getAction() + ", entity="
-                        + wrapper.getEntityId())
+                    .debugInformation("boost: " + wrapper.getJumpBoost())
                     .punishType(PunishType.KICK)
                     .build());
             }
