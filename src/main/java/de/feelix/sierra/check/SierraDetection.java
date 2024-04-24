@@ -19,7 +19,6 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.events.AsyncUserDetectionEvent;
 import de.feelix.sierraapi.violation.PunishType;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import java.util.logging.Level;
@@ -128,15 +127,6 @@ public class SierraDetection implements SierraCheck {
 
         if(playerData.isReceivedPunishment()) return;
 
-        // Safety check for player data in violation document
-        if (violationDocument.getPlayerData() == null) violationDocument.setPlayerData(playerData);
-
-        if (violationDocument.getPunishType() == null) violationDocument.setPunishType(PunishType.MITIGATE);
-
-        if (violationDocument.getDebugInformation() == null || violationDocument.getDebugInformation().isEmpty()) {
-            violationDocument.setDebugInformation("No debug available");
-        }
-
         // Update violation count
         this.violations++;
 
@@ -176,88 +166,103 @@ public class SierraDetection implements SierraCheck {
     }
 
     /**
-     * Log information to console.
+     * Logs a message to the console.
      *
-     * @param user              The User object representing the player
-     * @param violationDocument The ViolationDocument containing information about the violation
+     * @param user               The User object representing the player.
+     * @param violationDocument  The ViolationDocument containing information about the violation.
      */
-    // Log information to console
     protected void consoleLog(User user, ViolationDocument violationDocument) {
-        String generalMessage = "Player " + user.getName() + " was prevented from sending an invalid packet";
-        String generalInformation = String.format(
-            "Debug information: %s", violationDocument.getDebugInformation().isEmpty()
-                ? "No debug available" : FormatUtils.shortenString(violationDocument.getDebugInformation()));
-        String generalCheck = String.format("Check Information: %s/%d - VL: %d",
-                                            this.friendlyName, this.checkId, this.violations
-        );
-
-        Logger logger = Sierra.getPlugin().getLogger();
-
-        logger.log(Level.INFO, generalMessage);
-        logger.log(Level.INFO, generalInformation);
-        logger.log(Level.INFO, generalCheck);
+        logToConsole(createGeneralMessage(user));
+        logToConsole(createGeneralInformation(violationDocument));
+        logToConsole(createGeneralCheck());
     }
 
     /**
-     * Alert staff members about the violation.
+     * Creates a general message for a violation document.
      *
-     * @param user       The User object representing the player
-     * @param details    Additional details about the violation
-     * @param punishType The type of punishment to be applied (MITIGATE, KICK, or BAN)
+     * @param user The User object representing the player.
+     * @return The general message for the violation.
      */
-    // Alert staff members about the violation
+    private String createGeneralMessage(User user) {
+        return "Player " + user.getName() + " was prevented from sending an invalid packet";
+    }
+
+    /**
+     * Creates general information for a violation document.
+     *
+     * @param violationDocument The ViolationDocument object containing information about the violation.
+     * @return A string representing the general information.
+     */
+    private String createGeneralInformation(ViolationDocument violationDocument) {
+        return String.format(
+            "Debug information: %s", violationDocument.getDebugInformation().isEmpty()
+                ? "No debug available" : FormatUtils.shortenString(violationDocument.getDebugInformation()));
+    }
+
+    /**
+     * Generates a general check message for a violation.
+     *
+     * @return A string representing the general check information.
+     */
+    private String createGeneralCheck() {
+        return String.format("Check Information: %s/%d - VL: %d", this.friendlyName, this.checkId, this.violations);
+    }
+
+    /**
+     * Logs a message to the console.
+     *
+     * @param message The message to be logged.
+     */
+    private void logToConsole(String message) {
+        Logger logger = Sierra.getPlugin().getLogger();
+        logger.log(Level.INFO, message);
+    }
+
     protected void alert(User user, String details, PunishType punishType) {
-
-        SierraConfigEngine sierraConfig = Sierra.getPlugin().getSierraConfigEngine();
-
-        // Format and send staff alert message to online users
-        String staffAlert = sierraConfig
-            .config()
-            .getString(
-                "layout.detection-message.staff-alert",
-                "{prefix} &c{username} &8┃ &f{mitigation} &c{checkname} &8┃ &cx{violations}"
-            );
-
-        staffAlert = staffAlert.replace("{prefix}", Sierra.PREFIX);
-        staffAlert = staffAlert.replace("{username}", user.getName());
-        staffAlert = staffAlert.replace("{mitigation}", punishType.friendlyMessage());
-        staffAlert = staffAlert.replace("{checkname}", this.friendlyName);
-        staffAlert = staffAlert.replace("{violations}", String.valueOf(violations));
-        staffAlert = ChatColor.translateAlternateColorCodes('&', staffAlert);
-
-        String username = this.playerData.getUser().getName();
-
-        String clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
-        int ticks = FormatUtils.convertMillisToTicks(
+        SierraConfigEngine sierraConfig  = Sierra.getPlugin().getSierraConfigEngine();
+        String             staffAlert    = formatStaffAlertMessage(user, punishType, sierraConfig);
+        String             username      = this.playerData.getUser().getName();
+        String             clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
+        int                ticks         = FormatUtils.convertMillisToTicks(
             System.currentTimeMillis() - this.playerData.getJoinTime());
-
-        String content =
-            " §7Username: §c" + username + "\n" +
-            " §7Version: §c" + clientVersion + "\n" +
-            " §7Brand: §c" + playerData.getBrand() + "\n" +
-            " §7Exist since: §c" + ticks + " ticks\n" +
-            " §7Game mode: §c" + this.playerData.getGameMode().name() + "\n" +
-            " §7Tag: §c" + this.friendlyName.toLowerCase() + "\n" +
-            " §7Debug info: §c" + FormatUtils.shortenString(details) + "\n"
-            + "\n"
-            + ChatColor.translateAlternateColorCodes('&', sierraConfig.config()
-                .getString("layout.detection-message.alert-command-note", "&fClick to teleport"));
-
-        String command = sierraConfig.config().getString(
-            "layout.detection-message.alert-command",
-            "/tp {username}"
-        );
-        command = command.replace("{username}", username);
-
+        StringBuilder content = new StringBuilder()
+            .append(" §7Username: §c").append(username).append("\n")
+            .append(" §7Version: §c").append(clientVersion).append("\n")
+            .append(" §7Brand: §c").append(playerData.getBrand()).append("\n")
+            .append(" §7Exist since: §c").append(ticks).append(" ticks\n")
+            .append(" §7Game mode: §c").append(this.playerData.getGameMode().name()).append("\n")
+            .append(" §7Tag: §c").append(this.friendlyName.toLowerCase()).append("\n")
+            .append(" §7Debug info: §c").append(FormatUtils.shortenString(details)).append("\n")
+            .append("\n")
+            .append(ChatColor.translateAlternateColorCodes(
+                '&',
+                sierraConfig.config().getString("layout.detection-message.alert-command-note", "&fClick to teleport")
+            ));
+        String command = sierraConfig.config()
+            .getString("layout.detection-message.alert-command", "/tp {username}")
+            .replace("{username}", username);
         for (PlayerData playerData : Sierra.getPlugin().getDataManager().getPlayerData().values()) {
             if (playerData.isReceiveAlerts()) {
                 playerData.getUser().sendMessage(
                     LegacyComponentSerializer.legacy('&')
                         .deserialize(staffAlert)
                         .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, command))
-                        .hoverEvent(HoverEvent.showText(Component.text(content))));
+                        .hoverEvent(HoverEvent.showText(Component.text(content.toString()))));
             }
         }
+    }
+
+    private String formatStaffAlertMessage(User user, PunishType punishType, SierraConfigEngine sierraConfig) {
+        String staffAlertTemplate = sierraConfig.config().getString(
+            "layout.detection-message.staff-alert",
+            "{prefix} &c{username} &8┃ &f{mitigation} &c{checkname} &8┃ &cx{violations}"
+        );
+        return staffAlertTemplate
+            .replace("{prefix}", Sierra.PREFIX)
+            .replace("{username}", user.getName())
+            .replace("{mitigation}", punishType.friendlyMessage())
+            .replace("{checkname}", this.friendlyName)
+            .replace("{violations}", String.valueOf(violations));
     }
 
     /**

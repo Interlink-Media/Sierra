@@ -56,15 +56,18 @@ public class Pair<A, B> {
      * Checks if this Pair is equal to the specified object.
      * Two pairs are considered equal if they have the same first and second values.
      *
-     * @param o the object to compare this Pair with
+     * @param obj the object to compare this Pair with
      * @return true if the specified object is equal to this Pair, false otherwise
      */
     @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof Pair)) {
+    public boolean equals(Object obj) {
+        // check if both objects are of the same type
+        if (this.getClass() != obj.getClass()) {
             return false;
         }
-        Pair b = (Pair) o;
-        return Objects.equals(this.first, b.first) && Objects.equals(this.second, b.second);
+        Pair<?, ?> pair = (Pair<?, ?>) obj;
+        boolean isFirstEqual = Objects.equals(this.first, pair.first);
+        boolean isSecondEqual = Objects.equals(this.second, pair.second);
+        return isFirstEqual && isSecondEqual;
     }
 }
