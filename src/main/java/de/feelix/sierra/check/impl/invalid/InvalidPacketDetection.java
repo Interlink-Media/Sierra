@@ -210,6 +210,32 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     private final Queue<Pair<Long, Long>> keepAliveMap = new LinkedList<>();
 
     /**
+     * Represents the maximum byte size for a variable.
+     *
+     * <p>
+     * The MAX_BYTE_SIZE variable is a constant that defines the maximum byte size
+     * that a variable can have.
+     * </p>
+     *
+     * <p>
+     * It is used to restrict the size of a data object or string to prevent
+     * excessive memory usage or performance issues.
+     * </p>
+     *
+     * @since 1.0
+     */
+    private static final int MAX_BYTE_SIZE = 262144;
+
+    /**
+     * The WURSTCLIENT_URL constant represents the URL of the Wurst Client website.
+     * It is a private static final variable.
+     * <p>
+     * Example usage:
+     * String url = InvalidPacketDetection.WURSTCLIENT_URL;
+     */
+    private static final String WURSTCLIENT_URL = "www.wurstclient.net";
+
+    /**
      * Handles a PacketReceiveEvent and performs various checks and actions based on the packet type and player data.
      *
      * @param event      The PacketReceiveEvent to handle.
@@ -849,13 +875,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
     }
 
-    private boolean containsIncorrectBlockTranslation(User user, ItemStack itemStack) {
-        return user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_12) && itemStack.getType()
-            .getName()
-            .toString()
-            .contains("bed");
-    }
-
     /**
      * Checks for an invalid shulker and handles violations.
      *
@@ -892,32 +911,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             return false;
         }
     }
-
-    /**
-     * Represents the maximum byte size for a variable.
-     *
-     * <p>
-     * The MAX_BYTE_SIZE variable is a constant that defines the maximum byte size
-     * that a variable can have.
-     * </p>
-     *
-     * <p>
-     * It is used to restrict the size of a data object or string to prevent
-     * excessive memory usage or performance issues.
-     * </p>
-     *
-     * @since 1.0
-     */
-    private static final int MAX_BYTE_SIZE = 262144;
-
-    /**
-     * The WURSTCLIENT_URL constant represents the URL of the Wurst Client website.
-     * It is a private static final variable.
-     * <p>
-     * Example usage:
-     * String url = InvalidPacketDetection.WURSTCLIENT_URL;
-     */
-    private static final String WURSTCLIENT_URL = "www.wurstclient.net";
 
     /**
      * Checks for an invalid container in the given ItemStack and performs necessary actions.
