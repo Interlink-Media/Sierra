@@ -125,7 +125,7 @@ public class SierraDetection implements SierraCheck {
         // Cancel the packet event
         event.setCancelled(true);
 
-        if(playerData.isReceivedPunishment()) return;
+        if (playerData.isReceivedPunishment()) return;
 
         // Update violation count
         this.violations++;
@@ -146,7 +146,9 @@ public class SierraDetection implements SierraCheck {
                     violationDocument.debugInformation()
                 );
 
-            Sierra.getPlugin().getDiscordGateway().sendAlert(playerData, this.checkType(), violationDocument, this.violations());
+            Sierra.getPlugin()
+                .getDiscordGateway()
+                .sendAlert(playerData, this.checkType(), violationDocument, this.violations());
 
             playerData.punish(violationDocument.punishType());
         }
@@ -168,8 +170,8 @@ public class SierraDetection implements SierraCheck {
     /**
      * Logs a message to the console.
      *
-     * @param user               The User object representing the player.
-     * @param violationDocument  The ViolationDocument containing information about the violation.
+     * @param user              The User object representing the player.
+     * @param violationDocument The ViolationDocument containing information about the violation.
      */
     protected void consoleLog(User user, ViolationDocument violationDocument) {
         logToConsole(createGeneralMessage(user));
@@ -219,12 +221,13 @@ public class SierraDetection implements SierraCheck {
     }
 
     protected void alert(User user, String details, PunishType punishType) {
-        SierraConfigEngine sierraConfig  = Sierra.getPlugin().getSierraConfigEngine();
-        String             staffAlert    = formatStaffAlertMessage(user, punishType, sierraConfig);
-        String             username      = this.playerData.getUser().getName();
-        String             clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
-        int                ticks         = FormatUtils.convertMillisToTicks(
-            System.currentTimeMillis() - this.playerData.getJoinTime());
+        SierraConfigEngine sierraConfig = Sierra.getPlugin().getSierraConfigEngine();
+
+        String staffAlert = formatStaffAlertMessage(user, punishType, sierraConfig);
+        String username = this.playerData.getUser().getName();
+        String clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
+        int    ticks = FormatUtils.convertMillisToTicks(System.currentTimeMillis() - this.playerData.getJoinTime());
+
         StringBuilder content = new StringBuilder()
             .append(" §7Username: §c").append(username).append("\n")
             .append(" §7Version: §c").append(clientVersion).append("\n")
@@ -238,9 +241,11 @@ public class SierraDetection implements SierraCheck {
                 '&',
                 sierraConfig.config().getString("layout.detection-message.alert-command-note", "&fClick to teleport")
             ));
+
         String command = sierraConfig.config()
             .getString("layout.detection-message.alert-command", "/tp {username}")
             .replace("{username}", username);
+
         for (PlayerData playerData : Sierra.getPlugin().getDataManager().getPlayerData().values()) {
             if (playerData.isReceiveAlerts()) {
                 playerData.getUser().sendMessage(

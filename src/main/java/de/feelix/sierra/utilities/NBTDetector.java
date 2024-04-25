@@ -2,7 +2,6 @@ package de.feelix.sierra.utilities;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class NBTDetector {
@@ -49,13 +48,7 @@ public class NBTDetector {
      * @return true if the string contains an NBT tag, false otherwise
      */
     public boolean find(String input) {
-        // Regular expression to match NBT tags
-        String  pattern = "\\{[^{}]*}";
-        Pattern p       = Pattern.compile(pattern);
-        Matcher m       = p.matcher(input);
-        // If a match is found, return true
-
-        if (m.find()) return true;
+        if (Pattern.compile("\\{[^{}]*}").matcher(input).find()) return true;
 
         for (String string : stringList) {
             if (input.contains(string)) {
