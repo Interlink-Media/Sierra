@@ -516,7 +516,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             WrapperPlayClientPlayerBlockPlacement wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
 
-            if (wrapper.getSequence() < 0 && isSupportedServerVersion(event.getUser())) {
+            if (wrapper.getSequence() < 0 && isSupportedVersion(
+                ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Invalid sequence in block place")
                     .punishType(PunishType.BAN)
@@ -625,20 +626,21 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
 
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING
-                   && isSupportedServerVersion(event.getUser())) {
+                   && isSupportedVersion(ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
 
             WrapperPlayClientPlayerDigging dig = new WrapperPlayClientPlayerDigging(event);
-            if (dig.getSequence() < 0 && isSupportedServerVersion(event.getUser())) {
+            if (dig.getSequence() < 0 && isSupportedVersion(
+                ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Invalid sequence in dig")
                     .punishType(PunishType.BAN)
                     .build());
             }
 
-        } else if (event.getPacketType() == PacketType.Play.Client.USE_ITEM && isSupportedServerVersion(
-            event.getUser())) {
+        } else if (event.getPacketType() == PacketType.Play.Client.USE_ITEM && isSupportedVersion(
+            ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
             WrapperPlayClientUseItem use = new WrapperPlayClientUseItem(event);
-            if (use.getSequence() < 0 && isSupportedServerVersion(event.getUser())) {
+            if (use.getSequence() < 0) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Invalid sequence in use item")
                     .punishType(PunishType.BAN)
@@ -1241,8 +1243,9 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * @return {@code true} if both the client version and server version are equal to or newer than version 1.19,
      * {@code false} otherwise.
      */
-    private boolean isSupportedServerVersion(User user) {
-        return user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19) && isSupportedServerVersion(
-            ServerVersion.V_1_19);
+    @SuppressWarnings("SameParameterValue")
+    private boolean isSupportedVersion(ServerVersion serverVersion, User user, ClientVersion clientVersion) {
+        return user.getClientVersion().isNewerThanOrEquals(clientVersion)
+               && isSupportedServerVersion(serverVersion);
     }
 }
