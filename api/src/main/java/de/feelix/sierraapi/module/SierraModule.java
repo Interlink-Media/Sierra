@@ -19,13 +19,13 @@ public abstract class SierraModule {
      * The data folder is specified when enabling the module using the {@link SierraModule#enable} method.
      * <p>
      * Example usage:
-     *    SierraModule module = new SierraModule();
-     *    File dataFolder = new File("path/to/data/folder");
-     *    module.enable(description, dataFolder, pluginName);
+     * SierraModule module = new SierraModule();
+     * File dataFolder = new File("path/to/data/folder");
+     * module.enable(description, dataFolder, pluginName);
      *
      * @see SierraModule#enable
      */
-    private File              dataFolder;
+    private File dataFolder;
 
     /**
      * The 'enabled' variable represents the state of a module being enabled or disabled.
@@ -45,7 +45,7 @@ public abstract class SierraModule {
      * @see SierraModule#enable(ModuleDescription, File, String)
      * @see SierraModule#disable()
      */
-    private boolean           enabled = false;
+    private boolean enabled = false;
 
     /**
      * Represents the description of a module, containing information about the module.
@@ -53,7 +53,7 @@ public abstract class SierraModule {
      * This class includes fields for the name, main class, author, type, and version of the module.
      * It also provides a method to read the content of a web page specified by a URL string.
      */
-    private ModuleDescription description;
+    private ModuleDescription moduleDescription;
 
     /**
      * The pluginName field stores the name of the plugin that owns the module.
@@ -70,7 +70,7 @@ public abstract class SierraModule {
      *
      * @see SierraModule
      */
-    private String pluginName;
+    private String moduleName;
 
     /**
      * The full path of the module, including the plugin name and the module name.
@@ -93,7 +93,8 @@ public abstract class SierraModule {
     /**
      * Disables the module.
      * <p>
-     * This method is called to disable the module. It sets the 'enabled' field to false and clears the 'dataFolder' field.
+     * This method is called to disable the module. It sets the 'enabled' field to false and clears the 'dataFolder'
+     * field.
      * Additionally, it calls the onDisable() method, which can be overridden in a subclass to perform custom logic
      * when the module is disabled.
      * <p>
@@ -116,14 +117,14 @@ public abstract class SierraModule {
      * Enables the module with the given description, data folder, and plugin name.
      *
      * @param description the ModuleDescription object representing the module
-     * @param dataFolder the folder where the module's data will be stored
-     * @param pluginName the name of the plugin that owns the module
+     * @param dataFolder  the folder where the module's data will be stored
+     * @param pluginName  the name of the plugin that owns the module
      */
     public final void enable(ModuleDescription description, File dataFolder, String pluginName) {
         enabled = true;
-        this.description = description;
+        this.moduleDescription = description;
         this.dataFolder = dataFolder;
-        this.pluginName = pluginName;
+        this.moduleName = pluginName;
         this.fullModulePath = "plugins//" + pluginName + "//modules//" + description.getName();
         onEnable();
     }

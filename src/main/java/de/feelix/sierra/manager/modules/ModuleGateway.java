@@ -65,7 +65,7 @@ public class ModuleGateway {
         Sierra.getPlugin().getLogger().info("Disabling Modules...");
         for (final String name : modules.keySet()) {
             final SierraModule      module      = modules.get(name);
-            final ModuleDescription description = module.getDescription();
+            final ModuleDescription description = module.getModuleDescription();
             Sierra.getPlugin()
                 .getLogger()
                 .info(String.format("Disabling Module %s v%s by %s...", description.getName(), description.getVersion(),
