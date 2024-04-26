@@ -1,8 +1,11 @@
 package de.feelix.sierra.manager.modules;
 
 import de.feelix.sierra.Sierra;
+import de.feelix.sierra.manager.modules.impl.SierraModuleDescription;
+import de.feelix.sierra.manager.modules.impl.SierraModule;
+import de.feelix.sierraapi.module.Module;
 import de.feelix.sierraapi.module.ModuleDescription;
-import de.feelix.sierraapi.module.SierraModule;
+import de.feelix.sierraapi.module.ModuleGateway;
 import lombok.Getter;
 
 import java.io.File;
@@ -20,13 +23,13 @@ import java.util.jar.JarFile;
  * The ModuleGateway class is responsible for managing the loading and disabling of modules.
  */
 @Getter
-public class ModuleGateway {
+public class SierraModuleGateway implements ModuleGateway {
 
     /**
      * The ModuleGateway class represents a gateway for accessing and managing modules in the Sierra system.
      * It provides methods for loading, enabling, and disabling modules.
      */
-    public static final Map<String, SierraModule> modules = new HashMap<>();
+    public static final Map<String, Module> modules = new HashMap<>();
 
     /**
      * The directory where the module files are located.
@@ -43,7 +46,7 @@ public class ModuleGateway {
      *
      * @param moduleDir the directory where the modules are located
      */
-    public ModuleGateway(File moduleDir) {
+    public SierraModuleGateway(File moduleDir) {
         this.moduleDir = moduleDir;
 
         if (!moduleDir.exists()) {
@@ -64,12 +67,12 @@ public class ModuleGateway {
     public void disableModules() {
         Sierra.getPlugin().getLogger().info("Disabling Modules...");
         for (final String name : modules.keySet()) {
-            final SierraModule      module      = modules.get(name);
-            final ModuleDescription description = module.getModuleDescription();
+            final SierraModule      module      = (SierraModule) modules.get(name);
+            final ModuleDescription description = module.moduleDescription();
             Sierra.getPlugin()
                 .getLogger()
-                .info(String.format("Disabling Module %s v%s by %s...", description.getName(), description.getVersion(),
-                                    description.getAuthor()
+                .info(String.format("Disabling Module %s v%s by %s...", description.name(), description.version(),
+                                    description.author()
                 ));
             module.disable();
         }
@@ -127,7 +130,7 @@ public class ModuleGateway {
         try (InputStreamReader isr = new InputStreamReader(jarFile.getInputStream(jarEntry), StandardCharsets.UTF_8)) {
             Properties properties = new Properties();
             properties.load(isr);
-            processModuleClassLoader(file, new ModuleDescription(properties), getModuleClassLoader());
+            processModuleClassLoader(file, new SierraModuleDescription(properties), getModuleClassLoader());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -154,7 +157,7 @@ public class ModuleGateway {
      * @throws MalformedURLException  If the URL of the file is invalid.
      * @throws ClassNotFoundException If the main class specified in the description cannot be found.
      */
-    private void processModuleClassLoader(File file, ModuleDescription description, ClassLoader moduleClassLoader)
+    private void processModuleClassLoader(File file, SierraModuleDescription description, ClassLoader moduleClassLoader)
         throws MalformedURLException, ClassNotFoundException {
         final URLClassLoader loader = new URLClassLoader(new URL[]{file.toURI().toURL()}, moduleClassLoader);
         final Class<?>       main   = Class.forName(description.getMain(), false, loader);
@@ -185,7 +188,7 @@ public class ModuleGateway {
      * @param main        the Class object representing the main class of the Sierra module
      * @param description the ModuleDescription object representing the description of the Sierra module
      */
-    private void processSierraModule(Class<?> main, ModuleDescription description) {
+    private void processSierraModule(Class<?> main, SierraModuleDescription description) {
         try {
             final SierraModule module    = (SierraModule) main.getDeclaredConstructors()[0].newInstance();
             String             rawString = "Enabling Module %s (version=%s, by=%s)";
@@ -212,7 +215,7 @@ public class ModuleGateway {
      *
      * @param description the {@code ModuleDescription} object representing the module to process the data directory for
      */
-    private void processDataDirectory(ModuleDescription description) {
+    private void processDataDirectory(SierraModuleDescription description) {
         final File dataDir = new File(moduleDir, description.getName());
         if (!dataDir.mkdir()) {
             logSevere("Failed to create data directory: " + dataDir);
@@ -266,5 +269,83 @@ public class ModuleGateway {
      */
     private boolean isValidModuleFile(File file) {
         return !file.isDirectory();
+    }
+
+    /**
+     * Returns the directory where the modules are located.
+     *
+     * @return the directory where the modules are located
+     */
+    @Override
+    public File moduleDirectory() {
+        return this.moduleDir;
+    }
+
+    /**
+     * Returns the map of modules.
+     *
+     * @return a map of modules, where the module name is the key and the Module object is the value
+     */
+    @Override
+    public Map<String, Module> modules() {
+        return modules;
+    }
+
+    /**
+     * Checks if a module is activated.
+     *
+     * @param moduleName the name of the module to check
+     * @return true if the module is activated, false otherwise
+     */
+    @Override
+    public boolean moduleActivated(String moduleName) {
+        for (Module value : modules.values()) {
+            if (value.moduleName().equalsIgnoreCase(moduleName)) {
+                return value.enabled();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Deactivates the module with the specified module name.
+     *
+     * @param moduleName the name of the module to deactivate
+     * @return true if the module is successfully deactivated, false if the module is not found
+     * @throws RuntimeException if the module is already deactivated
+     */
+    @Override
+    public boolean deactivateModule(String moduleName) {
+        for (Module value : modules.values()) {
+            if (value.moduleName().equalsIgnoreCase(moduleName)) {
+
+                if (!value.enabled()) throw new RuntimeException("Module " + moduleName + " is already deactivated");
+
+                ((SierraModule) value).disable();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Activates a module with the given module name.
+     *
+     * @param moduleName the name of the module to activate
+     * @return true if the module is successfully activated, false if the module is not found or is already activated
+     * @throws RuntimeException if the module is already activated
+     */
+    @Override
+    public boolean activateModule(String moduleName) {
+        for (Module value : modules.values()) {
+            if (value.moduleName().equalsIgnoreCase(moduleName)) {
+
+                if (value.enabled()) throw new RuntimeException("Module " + moduleName + " is already activated");
+
+                ((SierraModule) value).onEnable();
+                return true;
+            }
+        }
+        return false;
     }
 }

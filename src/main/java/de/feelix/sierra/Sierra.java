@@ -6,12 +6,13 @@ import de.feelix.sierra.listener.PacketListener;
 import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.discord.DiscordGateway;
-import de.feelix.sierra.manager.modules.ModuleGateway;
+import de.feelix.sierra.manager.modules.SierraModuleGateway;
 import de.feelix.sierra.manager.storage.DataManager;
 import de.feelix.sierra.utilities.Ticker;
 import de.feelix.sierra.utilities.update.UpdateChecker;
 import de.feelix.sierraapi.SierraApi;
 import de.feelix.sierraapi.SierraApiAccessor;
+import de.feelix.sierraapi.module.ModuleGateway;
 import de.feelix.sierraapi.user.UserRepository;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import io.github.retrooper.packetevents.util.FoliaCompatUtil;
@@ -113,7 +114,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     /**
      * The ModuleGateway class represents the gateway for accessing different modules and their functionalities.
      */
-    private ModuleGateway moduleGateway;
+    private SierraModuleGateway sierraModuleGateway;
 
     /**
      * The moduleDir variable represents the directory where the module files are located.
@@ -192,14 +193,14 @@ public final class Sierra extends JavaPlugin implements SierraApi {
 
     /**
      * Loads the modules for the Sierra plugin.
-     * The method creates a modules directory specific to the plugin, and initializes a {@link ModuleGateway} object
+     * The method creates a modules directory specific to the plugin, and initializes a {@link SierraModuleGateway} object
      * to manage the loading of modules.
      * <p>
      * The modules directory is created at "./plugins/{plugin_name}/modules". If the directory already exists,
      * no action is taken. If the directory cannot be created, a severe logging message is displayed.
      * <p>
-     * After creating the modules directory, the {@link ModuleGateway} object is initialized with the directory
-     * and the {@link ModuleGateway#loadModules()} method is called to load the modules.
+     * After creating the modules directory, the {@link SierraModuleGateway} object is initialized with the directory
+     * and the {@link SierraModuleGateway#loadModules()} method is called to load the modules.
      * <p>
      * This method is called when the plugin is being enabled.
      */
@@ -208,8 +209,8 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         if (!this.moduleDir.mkdirs()) {
             this.getLogger().severe("Failed to create modules directory!");
         }
-        this.moduleGateway = new ModuleGateway(this.moduleDir);
-        this.moduleGateway.loadModules();
+        this.sierraModuleGateway = new SierraModuleGateway(this.moduleDir);
+        this.sierraModuleGateway.loadModules();
     }
 
     /**
@@ -266,7 +267,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         if (PacketEvents.getAPI() != null) {
             PacketEvents.getAPI().terminate();
         }
-        this.moduleGateway.disableModules();
+        this.sierraModuleGateway.disableModules();
     }
 
     /**
@@ -278,5 +279,17 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     @Override
     public UserRepository userRepository() {
         return this.dataManager;
+    }
+
+    /**
+     * The {@code moduleGateway()} method returns an instance of ModuleGateway.
+     *
+     * @return An instance of ModuleGateway.
+     * @see ModuleGateway
+     * @see Sierra#sierraModuleGateway
+     */
+    @Override
+    public ModuleGateway moduleGateway() {
+        return this.sierraModuleGateway;
     }
 }

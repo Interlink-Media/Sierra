@@ -1,6 +1,7 @@
-package de.feelix.sierraapi.module;
+package de.feelix.sierra.manager.modules.impl;
 
-import lombok.Getter;
+import de.feelix.sierraapi.module.Module;
+import de.feelix.sierraapi.module.ModuleDescription;
 
 import java.io.File;
 
@@ -8,8 +9,7 @@ import java.io.File;
  * SierraModule is an abstract class that represents a module in the Sierra system.
  * It provides basic functionality for enabling and disabling modules, as well as storing relevant module information.
  */
-@Getter
-public abstract class SierraModule {
+public abstract class SierraModule implements Module {
 
     /**
      * Represents the folder where the module's data will be stored.
@@ -42,7 +42,7 @@ public abstract class SierraModule {
      * System.out.println(isEnabled);
      * }</pre>
      *
-     * @see SierraModule#enable(ModuleDescription, File, String)
+     * @see SierraModule#enable(SierraModuleDescription, File, String)
      * @see SierraModule#disable()
      */
     private boolean enabled = false;
@@ -53,7 +53,7 @@ public abstract class SierraModule {
      * This class includes fields for the name, main class, author, type, and version of the module.
      * It also provides a method to read the content of a web page specified by a URL string.
      */
-    private ModuleDescription moduleDescription;
+    private SierraModuleDescription sierraModuleDescription;
 
     /**
      * The pluginName field stores the name of the plugin that owns the module.
@@ -85,8 +85,8 @@ public abstract class SierraModule {
      * System.out.println(modulePath);
      * }</pre>
      *
-     * @see SierraModule#enable(ModuleDescription, File, String)
-     * @see ModuleDescription#getName()
+     * @see SierraModule#enable(SierraModuleDescription, File, String)
+     * @see SierraModuleDescription#getName()
      */
     private String fullModulePath;
 
@@ -120,9 +120,9 @@ public abstract class SierraModule {
      * @param dataFolder  the folder where the module's data will be stored
      * @param pluginName  the name of the plugin that owns the module
      */
-    public final void enable(ModuleDescription description, File dataFolder, String pluginName) {
+    public final void enable(SierraModuleDescription description, File dataFolder, String pluginName) {
         enabled = true;
-        this.moduleDescription = description;
+        this.sierraModuleDescription = description;
         this.dataFolder = dataFolder;
         this.moduleName = pluginName;
         this.fullModulePath = "plugins//" + pluginName + "//modules//" + description.getName();
@@ -155,4 +155,54 @@ public abstract class SierraModule {
      * @see SierraModule
      */
     public abstract void onDisable();
+
+    /**
+     * Retrieves the module description.
+     *
+     * @return the module description
+     */
+    @Override
+    public ModuleDescription moduleDescription() {
+        return sierraModuleDescription;
+    }
+
+    /**
+     * Retrieves the name of the module.
+     *
+     * @return the name of the module
+     */
+    @Override
+    public String moduleName() {
+        return this.moduleName;
+    }
+
+    /**
+     * Retrieves the data folder for the module.
+     *
+     * @return the data folder for the module
+     */
+    @Override
+    public File dataFolder() {
+        return this.dataFolder;
+    }
+
+    /**
+     * Returns the current enabled state of the module.
+     *
+     * @return true if the module is enabled, false otherwise
+     */
+    @Override
+    public boolean enabled() {
+        return this.enabled;
+    }
+
+    /**
+     * Retrieves the full path of the module.
+     *
+     * @return the full path of the module
+     */
+    @Override
+    public String fullModulePath() {
+        return this.fullModulePath;
+    }
 }
