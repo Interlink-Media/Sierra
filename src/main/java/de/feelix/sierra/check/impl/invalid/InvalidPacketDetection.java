@@ -460,21 +460,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .build());
             }
 
-            if (wrapper.getData().length == 0) {
-                violation(event, ViolationDocument.builder()
-                    .debugInformation("Send empty data")
-                    .punishType(PunishType.KICK)
-                    .build());
-            }
-
             String payload = new String(wrapper.getData(), StandardCharsets.UTF_8);
-
-            if (payload.isEmpty()) {
-                violation(event, ViolationDocument.builder()
-                    .debugInformation("String is empty")
-                    .punishType(PunishType.KICK)
-                    .build());
-            }
 
             if (channelName.equalsIgnoreCase("MC|PickItem")
                 || channelName.equalsIgnoreCase("MC|TrSel")) {

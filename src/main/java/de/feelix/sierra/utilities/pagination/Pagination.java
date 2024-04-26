@@ -34,7 +34,7 @@ public class Pagination<T> {
      * In the above example, the itemsPerPage variable is set to 10, which means each page will display 10 items.
      * The itemsForPage method is then called with the page number 1, which returns a sublist of items for that page.
      */
-    private final int     itemsPerPage;
+    private final int itemsPerPage;
 
     /**
      * The Pagination class represents a utility for paginating a list of items.
