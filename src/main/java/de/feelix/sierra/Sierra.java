@@ -132,19 +132,13 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         sierraConfigEngine = new SierraConfigEngine();
         updateChecker = new UpdateChecker();
 
-        boolean kickOnPacketException = sierraConfigEngine.config().getBoolean(
-            "kick-on-packet-exception",
-            true
-        );
-
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
         PacketEvents.getAPI().getSettings()
             .fullStackTrace(true)
+            .kickOnPacketException(sierraConfigEngine.config().getBoolean("kick-on-packet-exception", true))
             .reEncodeByDefault(false)
             .checkForUpdates(false)
             .bStats(true);
-
-        if (kickOnPacketException) PacketEvents.getAPI().getSettings().kickOnPacketException(true);
 
         PacketEvents.getAPI().load();
     }
