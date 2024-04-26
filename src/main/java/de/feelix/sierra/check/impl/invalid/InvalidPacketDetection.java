@@ -416,10 +416,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .build());
             }
 
-            if ((text.equals("/") || text.trim().isEmpty()) && PacketEvents.getAPI()
-                .getServerManager()
-                .getVersion()
-                .isNewerThanOrEquals(ServerVersion.V_1_13)) {
+            if ((text.equals("/") || text.trim().isEmpty()) && isSupportedServerVersion(ServerVersion.V_1_13)) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Trimmed empty tab to zero")
                     .punishType(PunishType.KICK)
@@ -519,7 +516,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             WrapperPlayClientPlayerBlockPlacement wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
 
-            if (wrapper.getSequence() < 0 && isSupportedVersion(event.getUser())) {
+            if (wrapper.getSequence() < 0 && isSupportedServerVersion(event.getUser())) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Invalid sequence in block place")
                     .punishType(PunishType.BAN)
@@ -628,20 +625,20 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
 
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING
-                   && isSupportedVersion(event.getUser())) {
+                   && isSupportedServerVersion(event.getUser())) {
 
             WrapperPlayClientPlayerDigging dig = new WrapperPlayClientPlayerDigging(event);
-            if (dig.getSequence() < 0 && isSupportedVersion(event.getUser())) {
+            if (dig.getSequence() < 0 && isSupportedServerVersion(event.getUser())) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Invalid sequence in dig")
                     .punishType(PunishType.BAN)
                     .build());
             }
 
-        } else if (event.getPacketType() == PacketType.Play.Client.USE_ITEM && isSupportedVersion(
+        } else if (event.getPacketType() == PacketType.Play.Client.USE_ITEM && isSupportedServerVersion(
             event.getUser())) {
             WrapperPlayClientUseItem use = new WrapperPlayClientUseItem(event);
-            if (use.getSequence() < 0 && isSupportedVersion(event.getUser())) {
+            if (use.getSequence() < 0 && isSupportedServerVersion(event.getUser())) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Invalid sequence in use item")
                     .punishType(PunishType.BAN)
@@ -651,7 +648,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             WrapperPlayClientClickWindow wrapper = new WrapperPlayClientClickWindow(event);
 
-            if (isSupportedVersion(ServerVersion.V_1_14)) {
+            if (isSupportedServerVersion(ServerVersion.V_1_14)) {
                 int clickType = wrapper.getWindowClickType().ordinal();
                 int button    = wrapper.getButton();
                 int windowId  = wrapper.getWindowId();
@@ -757,10 +754,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
 
         NBTInt customModelData = nbt.getTagOfTypeOrNull("CustomModelData", NBTInt.class);
-        if (customModelData != null && PacketEvents.getAPI()
-            .getServerManager()
-            .getVersion()
-            .isNewerThanOrEquals(ServerVersion.V_1_14)) {
+
+        if (customModelData != null && isSupportedServerVersion(ServerVersion.V_1_14)) {
 
             int asInt = customModelData.getAsInt();
 
@@ -802,7 +797,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         InventoryView openInventory = player.getOpenInventory();
 
         // Idea by someone
-        int max = isSupportedVersion(ServerVersion.V_1_10) ? 127 : openInventory.countSlots();
+        int max = isSupportedServerVersion(ServerVersion.V_1_10) ? 127 : openInventory.countSlots();
 
         if (openInventory.getBottomInventory().getType() == InventoryType.PLAYER
             && openInventory.getTopInventory().getType() == InventoryType.CRAFTING) {
@@ -1218,7 +1213,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             WrapperPlayServerOpenWindow window = new WrapperPlayServerOpenWindow(event);
 
-            if (isSupportedVersion(ServerVersion.V_1_14)) {
+            if (isSupportedServerVersion(ServerVersion.V_1_14)) {
                 this.type = MenuType.getMenuType(window.getType());
                 if (type == MenuType.LECTERN) lecternId = window.getContainerId();
             }
@@ -1235,7 +1230,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * ServerVersion,
      * {@code false} otherwise.
      */
-    private boolean isSupportedVersion(ServerVersion serverVersion) {
+    private boolean isSupportedServerVersion(ServerVersion serverVersion) {
         return PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(serverVersion);
     }
 
@@ -1246,8 +1241,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * @return {@code true} if both the client version and server version are equal to or newer than version 1.19,
      * {@code false} otherwise.
      */
-    private boolean isSupportedVersion(User user) {
-        return user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19) && isSupportedVersion(
+    private boolean isSupportedServerVersion(User user) {
+        return user.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19) && isSupportedServerVersion(
             ServerVersion.V_1_19);
     }
 }
