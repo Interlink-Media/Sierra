@@ -68,8 +68,9 @@ public class ModuleGateway {
             final ModuleDescription description = module.getDescription();
             Sierra.getPlugin()
                 .getLogger()
-                .info("Disabling Module " + description.getName() + " v" + description.getVersion() + " by "
-                      + description.getAuthor() + "...");
+                .info(String.format("Disabling Module %s v%s by %s...", description.getName(), description.getVersion(),
+                                    description.getAuthor()
+                ));
             module.disable();
         }
         modules.clear();
@@ -87,7 +88,7 @@ public class ModuleGateway {
                 jarFile = new JarFile(file);
                 JarEntry jarEntry = jarFile.getJarEntry("module.properties");
                 if (jarEntry == null) {
-                    logSevere("File '" + file.getName() + "' does not contains Module.properties file!");
+                    logSevere(String.format("File '%s' does not contains module.properties file!", file.getName()));
                     return;
                 }
                 processJarEntry(jarFile, jarEntry, file);
@@ -158,9 +159,10 @@ public class ModuleGateway {
         final URLClassLoader loader = new URLClassLoader(new URL[]{file.toURI().toURL()}, moduleClassLoader);
         final Class<?>       main   = Class.forName(description.getMain(), false, loader);
         if (main.getSuperclass() == SierraModule.class) {
-            processSierraModule(main, description, file);
+            processSierraModule(main, description);
         } else {
-            logSevere("Class " + description.getMain() + " in Module " + file.getName() + " does not extend 'Module'!");
+            String rawString = "Class %s in Module %s does not extend 'Module'!";
+            logSevere(String.format(rawString, description.getMain(), file.getName()));
         }
     }
 
@@ -182,13 +184,13 @@ public class ModuleGateway {
      *
      * @param main        the Class object representing the main class of the Sierra module
      * @param description the ModuleDescription object representing the description of the Sierra module
-     * @param file        the File object representing the module file
      */
-    private void processSierraModule(Class<?> main, ModuleDescription description, File file) {
+    private void processSierraModule(Class<?> main, ModuleDescription description) {
         try {
-            final SierraModule module = (SierraModule) main.getDeclaredConstructors()[0].newInstance();
-            logInfo("Enabling Module " + description.getName() + " (version=" + description.getVersion() + " by="
-                    + description.getAuthor() + ")");
+            final SierraModule module    = (SierraModule) main.getDeclaredConstructors()[0].newInstance();
+            String             rawString = "Enabling Module %s (version=%s, by=%s)";
+
+            logInfo(String.format(rawString, description.getName(), description.getVersion(), description.getAuthor()));
             modules.put(description.getName(), module);
             processDataDirectory(description);
             module.enable(
