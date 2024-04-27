@@ -48,7 +48,7 @@ public class AlertsCommand implements ISierraCommand {
      * @return the PlayerData object associated with the player
      */
     private PlayerData getPlayerData(Player playerSender) {
-        return Sierra.getPlugin().getDataManager().getPlayerData(
+        return Sierra.getPlugin().getSierraDataManager().getPlayerData(
             PacketEvents.getAPI().getPlayerManager().getUser(playerSender)
         ).get();
     }

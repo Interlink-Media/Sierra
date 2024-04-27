@@ -5,9 +5,9 @@ import de.feelix.sierra.command.SierraCommand;
 import de.feelix.sierra.listener.PacketListener;
 import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
-import de.feelix.sierra.manager.discord.DiscordGateway;
+import de.feelix.sierra.manager.discord.SierraDiscordGateway;
 import de.feelix.sierra.manager.modules.SierraModuleGateway;
-import de.feelix.sierra.manager.storage.DataManager;
+import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.utilities.Ticker;
 import de.feelix.sierra.utilities.update.UpdateChecker;
 import de.feelix.sierraapi.SierraApi;
@@ -89,9 +89,9 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * <p>
      * This variable is an instance of the DataManager class, used to manage player data in the application.
      *
-     * @see DataManager
+     * @see SierraDataManager
      */
-    private DataManager dataManager;
+    private SierraDataManager sierraDataManager;
 
     /**
      * The PunishmentConfig enum represents the configuration options for punishments in a system.
@@ -109,7 +109,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * The DiscordGateway class uses a webhook URL to interact with Discord.
      * It can be used to set up the gateway, send alerts, and perform other actions related to Discord integration.
      */
-    private DiscordGateway discordGateway = new DiscordGateway();
+    private SierraDiscordGateway sierraDiscordGateway = new SierraDiscordGateway();
 
     /**
      * The ModuleGateway class represents the gateway for accessing different modules and their functionalities.
@@ -163,7 +163,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         setPrefix();
 
         this.ticker = new Ticker();
-        this.dataManager = new DataManager();
+        this.sierraDataManager = new SierraDataManager();
 
         Objects.requireNonNull(this.getCommand("sierra")).setExecutor(new SierraCommand());
 
@@ -173,7 +173,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         this.punishmentConfig = PunishmentConfig.valueOf(
             this.sierraConfigEngine.config().getString("internal-punishment-config", "HARD"));
 
-        this.discordGateway.setup();
+        this.sierraDiscordGateway.setup();
 
         checkForUpdate();
         updateChecker.startScheduler();
@@ -206,7 +206,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      */
     private void loadModules() {
         this.moduleDir = new File("./plugins/" + this.getDescription().getName() + "/modules");
-        if (!this.moduleDir.mkdirs()) {
+        if (!this.moduleDir.mkdirs() && !this.moduleDir.exists()) {
             this.getLogger().severe("Failed to create modules directory!");
         }
         this.sierraModuleGateway = new SierraModuleGateway(this.moduleDir);
@@ -278,7 +278,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      */
     @Override
     public UserRepository userRepository() {
-        return this.dataManager;
+        return this.sierraDataManager;
     }
 
     /**

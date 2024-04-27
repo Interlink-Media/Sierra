@@ -140,14 +140,14 @@ public class SierraDetection implements SierraCheck {
 
         if (violationDocument.punishType() != PunishType.MITIGATE) {
             Sierra.getPlugin()
-                .getDataManager()
+                .getSierraDataManager()
                 .createPunishmentHistory(
                     playerData.username(), violationDocument.punishType(), playerData.getPingProcessor().getPing(),
                     violationDocument.debugInformation()
                 );
 
             Sierra.getPlugin()
-                .getDiscordGateway()
+                .getSierraDiscordGateway()
                 .sendAlert(playerData, this.checkType(), violationDocument, this.violations());
 
             playerData.punish(violationDocument.punishType());
@@ -246,7 +246,7 @@ public class SierraDetection implements SierraCheck {
             .getString("layout.detection-message.alert-command", "/tp {username}")
             .replace("{username}", username);
 
-        for (PlayerData playerData : Sierra.getPlugin().getDataManager().getPlayerData().values()) {
+        for (PlayerData playerData : Sierra.getPlugin().getSierraDataManager().getPlayerData().values()) {
             if (playerData.isReceiveAlerts()) {
                 playerData.getUser().sendMessage(
                     LegacyComponentSerializer.legacy('&')

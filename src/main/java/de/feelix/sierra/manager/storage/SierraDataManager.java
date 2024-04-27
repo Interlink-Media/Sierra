@@ -28,14 +28,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Getter
-public class DataManager implements UserRepository {
+public class SierraDataManager implements UserRepository {
 
     /**
      * DataManager class represents a singleton instance that manages player data in the application.
      * It provides methods to manipulate and retrieve player data from the underlying data structures.
      */
     @Getter
-    private static DataManager           instance;
+    private static SierraDataManager     instance;
     /**
      * This variable represents a map of User objects to PlayerData objects.
      */
@@ -49,7 +49,7 @@ public class DataManager implements UserRepository {
     /**
      * The DataManager function initializes the packet listeners.
      */
-    public DataManager() {
+    public SierraDataManager() {
         instance = this;
 
         this.initializePacketListeners();

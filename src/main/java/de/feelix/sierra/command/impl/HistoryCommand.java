@@ -75,7 +75,7 @@ public class HistoryCommand implements ISierraCommand {
      */
     private Pagination<HistoryDocument> setupPagination() {
         return new Pagination<>(Sierra.getPlugin()
-                                    .getDataManager()
+                                    .getSierraDataManager()
                                     .getHistories()
                                     .stream()
                                     .sorted(Comparator.comparing(HistoryDocument::timestamp).reversed())

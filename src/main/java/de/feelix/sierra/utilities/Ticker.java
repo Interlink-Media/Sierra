@@ -1,12 +1,10 @@
 package de.feelix.sierra.utilities;
 
 import de.feelix.sierra.Sierra;
-import de.feelix.sierra.manager.storage.DataManager;
+import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.PlayerData;
 import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.scheduler.BukkitTask;
 
 /**
  * The {@code Ticker} class represents a timer that runs asynchronously and performs tasks at regular intervals.
@@ -53,7 +51,7 @@ public class Ticker {
             double maxPacketsPerSecond = 1000;
             double maxPacketAllowance  = maxPacketsPerSecond * 2;
 
-            for (PlayerData value : DataManager.getInstance().getPlayerData().values()) {
+            for (PlayerData value : SierraDataManager.getInstance().getPlayerData().values()) {
                 value.setPacketAllowance(maxPacketAllowance);
                 value.setPacketCount(0);
                 value.setBytesSent(0);

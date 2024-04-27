@@ -13,7 +13,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.awt.*;
 import java.time.Instant;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +22,7 @@ import java.util.regex.Pattern;
  */
 // General class taken from: https://github.com/GrimAnticheat/Grim/blob/2.0/src/main/java/ac/grim/grimac/manager/DiscordManager.java
 @Data
-public class DiscordGateway {
+public class SierraDiscordGateway {
 
     /**
      * The WebhookClient class represents a client object used to interact with a Discord webhook.
@@ -86,10 +85,9 @@ public class DiscordGateway {
         if (!config.getBoolean("discord-webhook", false)) return;
 
         String url = config.getString("discord-webhook-url", "");
-        Logger logger = Sierra.getPlugin().getLogger();
 
         if (url.isEmpty()) {
-            logger.log(Level.SEVERE, "Discord is enabled, but webhook url is empty!");
+            Sierra.getPlugin().getLogger().log(Level.SEVERE, "Discord is enabled, but webhook url is empty!");
             return;
         }
 
@@ -100,7 +98,7 @@ public class DiscordGateway {
         client = WebhookClient.withId(Long.parseUnsignedLong(matcher.group(1)), matcher.group(2));
         client.setTimeout(15000); // Requests expire after 15 seconds
 
-        logger.log(Level.INFO, "Discord gateway is enabled");
+        Sierra.getPlugin().getLogger().log(Level.INFO, "Discord gateway is enabled");
     }
 
     public void sendAlert(PlayerData playerData, CheckType checkType, ViolationDocument violationDocument,
@@ -115,7 +113,7 @@ public class DiscordGateway {
                 .setThumbnailUrl("https://crafthead.net/helm/" + playerData.uuid())
                 .setColor(new Color(255, 30, 30).getRGB())
                 .setTitle(new WebhookEmbed.EmbedTitle("**Sierra Report**", null))
-                .setDescription("This is a report about player " + playerData.username())
+                .setDescription("This is a report about player `" + playerData.username()+"`")
 
                 .addField(new WebhookEmbed.EmbedField(true, "Check",
                                                       checkType.getFriendlyName() + "/" + violationDocument.punishType()

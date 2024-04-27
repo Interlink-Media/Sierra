@@ -40,15 +40,6 @@ public class TimingProcessor {
     private final Timing packetSendTiming = new SierraTiming();
 
     /**
-     * The inventoryScanning variable is a timing object used to measure and track the delay of inventory scanning.
-     * It is of type Timing, which is an interface for objects that can measure and track the timing of events.
-     * The inventoryScanning variable is declared as private and final, indicating that it cannot be reassigned once
-     * initialized.
-     * The object is instantiated as a SierraTiming, which is an implementation of the Timing interface.
-     */
-    private final Timing inventoryScanning = new SierraTiming();
-
-    /**
      * The movementProcessor variable represents the timing object used to measure and track the delay of movement processing.
      * It is of type Timing, which is an interface for objects that can measure and track the timing of events.
      * The movementProcessor variable is declared as private and final, indicating that it cannot be reassigned once initialized.

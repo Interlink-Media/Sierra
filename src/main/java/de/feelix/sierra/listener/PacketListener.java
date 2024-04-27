@@ -4,7 +4,7 @@ import com.github.retrooper.packetevents.event.*;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
-import de.feelix.sierra.manager.storage.DataManager;
+import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierraapi.check.impl.SierraCheck;
 
@@ -74,7 +74,7 @@ public class PacketListener extends PacketListenerAbstract {
      * @return the PlayerData object associated with the event
      */
     private PlayerData getPlayerData(ProtocolPacketEvent<Object> event) {
-        return DataManager.getInstance().getPlayerData(event.getUser()).get();
+        return SierraDataManager.getInstance().getPlayerData(event.getUser()).get();
     }
 
     /**

@@ -39,7 +39,7 @@ public class MonitorCommand implements ISierraCommand {
         player.sendMessage(Sierra.PREFIX + " §fPerformance monitor §7(Your data)");
 
         WeakReference<PlayerData> playerData = Sierra.getPlugin()
-            .getDataManager()
+            .getSierraDataManager()
             .getPlayerData(PacketEvents.getAPI().getPlayerManager().getUser(player));
 
         if (playerData == null || playerData.get() == null) {
@@ -63,7 +63,6 @@ public class MonitorCommand implements ISierraCommand {
         sendTiming(timingProcessor.getPacketReceiveTiming(), "Ingoing Packets", player);
         sendTiming(timingProcessor.getPacketSendTiming(), "Outgoing Packets", player);
         player.sendMessage(Sierra.PREFIX + " §c§lEnvironment:");
-        sendTiming(timingProcessor.getInventoryScanning(), "Inventory Scan", player);
         sendTiming(timingProcessor.getMovementProcessor(), "Movement Task", player);
     }
 
