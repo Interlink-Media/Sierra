@@ -48,6 +48,14 @@ public enum MenuType {
     STONECUTTER(24),
     UNKNOWN(-1);
 
+    /**
+     * The id variable represents the ID of the menu type.
+     *
+     * <p>Each menu type in the game is associated with a specific ID. This variable stores the ID
+     * of the menu type represented by the MenuType enum.</p>
+     *
+     * @see MenuType
+     */
     private final int id;
 
     /**

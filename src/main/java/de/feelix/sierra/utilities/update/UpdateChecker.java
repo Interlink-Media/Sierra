@@ -60,6 +60,10 @@ public class UpdateChecker {
         return this.latestReleaseVersion;
     }
 
+    /**
+     * Refreshes the new version by retrieving the latest release version from the GitHub API.
+     * If an error occurs while retrieving the version, it logs the error and returns.
+     */
     private void refreshNewVersion() {
         String jsonResponse;
         try {

@@ -27,6 +27,10 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The SierraDataManager class represents a singleton instance that manages player data in the application.
+ * It provides methods to manipulate and retrieve player data from the underlying data structures.
+ */
 @Getter
 public class SierraDataManager implements UserRepository {
 

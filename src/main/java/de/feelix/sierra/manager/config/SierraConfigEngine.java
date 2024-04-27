@@ -12,8 +12,17 @@ import java.nio.file.Files;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * The SierraConfigEngine class is responsible for managing the configuration files in the Sierra plugin.
+ * It provides methods to load the main configuration file and messages file into memory, and retrieve them as YamlConfiguration objects.
+ * The loaded files are cached for efficient access.
+ */
 public class SierraConfigEngine {
 
+    /**
+     * The cache variable is a concurrent map that stores the loaded YAML configurations.
+     * Each configuration is mapped to a string key representing the name of the configuration file.
+     */
     private static final Map<String, YamlConfiguration> cache = new ConcurrentHashMap<>();
 
     /**

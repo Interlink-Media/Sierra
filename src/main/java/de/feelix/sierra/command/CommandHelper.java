@@ -4,6 +4,9 @@ import de.feelix.sierra.Sierra;
 import de.feelix.sierraapi.commands.ISierraSender;
 import org.bukkit.command.CommandSender;
 
+/**
+ * The CommandHelper class provides helper methods for processing and sending commands related to the Sierra plugin.
+ */
 public class CommandHelper {
 
     /**

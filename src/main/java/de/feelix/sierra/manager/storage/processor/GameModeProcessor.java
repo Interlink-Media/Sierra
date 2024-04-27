@@ -10,6 +10,9 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerRe
 import de.feelix.sierra.manager.storage.PlayerData;
 import lombok.Getter;
 
+/**
+ * The GameModeProcessor class processes different packet events related to the game mode of a player.
+ */
 @Getter
 public class GameModeProcessor {
 

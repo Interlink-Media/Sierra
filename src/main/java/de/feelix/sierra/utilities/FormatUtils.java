@@ -9,6 +9,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Utility class for formatting strings, numbers, and collections.
+ */
 @SuppressWarnings("unused")
 public class FormatUtils {
 

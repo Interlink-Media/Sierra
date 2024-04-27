@@ -1,5 +1,8 @@
 package de.feelix.sierra.utilities.types;
 
+/**
+ * Enum representing different types of banners.
+ */
 public enum BannerType {
 
     BLACK_BANNER,

@@ -6,6 +6,10 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 import de.feelix.sierra.manager.storage.PlayerData;
 import lombok.Getter;
 
+/**
+ * The BrandProcessor class represents a processor that handles plugin messages related to the player's brand.
+ * It processes packet events and extracts brand information from the received messages.
+ */
 @Getter
 public class BrandProcessor {
 

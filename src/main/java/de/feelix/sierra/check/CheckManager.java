@@ -17,9 +17,34 @@ import de.feelix.sierraapi.check.CheckRepository;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The CheckManager class is responsible for managing packet checks for a player.
+ */
 @Getter
 public class CheckManager implements CheckRepository {
 
+    /**
+     * The `packetChecks` variable is a `ClassToInstanceMap` that stores instances of `SierraDetection` classes.
+     * It is a private final variable in the `CheckManager` class.
+     * <p>
+     * This map is used to manage packet checks for a player. The keys in the map represent the types of packet checks, while the values are the corresponding instances of `Sierra
+     * Detection` classes.
+     * <p>
+     * Example usage:
+     * <p>
+     * // Create a new packet check manager for a specific player
+     * PlayerData playerData = new PlayerData();
+     * CheckManager checkManager = new CheckManager(playerData);
+     * <p>
+     * // Get the available checks
+     * List<SierraCheck> availableChecks = checkManager.availableChecks();
+     * <p>
+     * // Iterate over the available checks
+     * for (SierraCheck check : availableChecks) {
+     *     // Perform checks on player's packets
+     *     check.performCheck();
+     * }
+     */
     private final ClassToInstanceMap<SierraDetection> packetChecks;
 
     /**

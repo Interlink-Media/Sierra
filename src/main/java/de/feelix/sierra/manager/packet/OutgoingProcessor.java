@@ -3,6 +3,9 @@ package de.feelix.sierra.manager.packet;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import de.feelix.sierra.manager.storage.PlayerData;
 
+/**
+ * The OutgoingProcessor interface represents a processor for handling outgoing packets.
+ */
 public interface OutgoingProcessor {
 
     /**

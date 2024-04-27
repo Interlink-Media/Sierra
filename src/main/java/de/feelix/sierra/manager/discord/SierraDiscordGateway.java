@@ -101,6 +101,14 @@ public class SierraDiscordGateway {
         Sierra.getPlugin().getLogger().log(Level.INFO, "Discord gateway is enabled");
     }
 
+    /**
+     * Sends an alert with the given player data, check type, violation document, and violations count to a Discord channel via webhook.
+     *
+     * @param playerData        the player data containing information about the player
+     * @param checkType         the type of check that triggered the alert
+     * @param violationDocument the violation document associated with the alert
+     * @param violations        the number of violations recorded by the check
+     */
     public void sendAlert(PlayerData playerData, CheckType checkType, ViolationDocument violationDocument,
                           double violations) {
         if (client != null) {

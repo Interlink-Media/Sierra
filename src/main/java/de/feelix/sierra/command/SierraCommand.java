@@ -25,6 +25,12 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+/**
+ * SierraCommand represents a command that can be executed in-game.
+ * It initializes various sub-commands such as AlertsCommand, VersionCommand, ReloadCommand, and HistoryCommand.
+ * These sub-commands are registered with Bukkit's command manager so that they can be executed when the
+ * corresponding command is entered in-game.
+ */
 public class SierraCommand implements CommandExecutor, TabExecutor {
 
     /**
@@ -74,6 +80,15 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
         this.commands.put("history", new HistoryCommand());
     }
 
+    /**
+     * Executes the Sierra command.
+     *
+     * @param sender the command sender
+     * @param command the command being executed
+     * @param label the alias of the command used
+     * @param args the arguments provided for the command
+     * @return true if the command was executed successfully, false otherwise
+     */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label,
                              String[] args) {

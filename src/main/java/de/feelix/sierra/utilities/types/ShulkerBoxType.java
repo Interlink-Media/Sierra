@@ -1,5 +1,8 @@
 package de.feelix.sierra.utilities.types;
 
+/**
+ * Enumeration representing different types of shulker boxes.
+ */
 public enum ShulkerBoxType {
 
     BLACK_SHULKER_BOX,

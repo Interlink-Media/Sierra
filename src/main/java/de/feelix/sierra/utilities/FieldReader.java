@@ -1,7 +1,9 @@
 package de.feelix.sierra.utilities;
 
+/**
+ * Utility class for determining the readability of a given input string.
+ */
 public class FieldReader {
-
 
     /**
      * Determines if the given input string is readable.

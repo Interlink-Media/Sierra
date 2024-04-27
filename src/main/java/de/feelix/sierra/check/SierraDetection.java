@@ -220,6 +220,13 @@ public class SierraDetection implements SierraCheck {
         logger.log(Level.INFO, message);
     }
 
+    /**
+     * Sends an alert message to all players who have enabled receiving alerts.
+     *
+     * @param user      The User object representing the player.
+     * @param details   Additional details about the alert.
+     * @param punishType The type of punishment associated with the alert.
+     */
     protected void alert(User user, String details, PunishType punishType) {
         SierraConfigEngine sierraConfig = Sierra.getPlugin().getSierraConfigEngine();
 
@@ -257,6 +264,14 @@ public class SierraDetection implements SierraCheck {
         }
     }
 
+    /**
+     * Formats the staff alert message with the given user, punish type, and SierraConfigEngine.
+     *
+     * @param user          The User object representing the player.
+     * @param punishType    The PunishType enum representing the type of punishment.
+     * @param sierraConfig  The SierraConfigEngine object for accessing configuration options.
+     * @return The formatted staff alert message.
+     */
     private String formatStaffAlertMessage(User user, PunishType punishType, SierraConfigEngine sierraConfig) {
         String staffAlertTemplate = sierraConfig.config().getString(
             "layout.detection-message.staff-alert",

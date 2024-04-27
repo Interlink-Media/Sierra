@@ -5,6 +5,12 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The Pagination class represents a utility for paginating a list of items.
+ * It allows retrieving a sublist of items for a given page number and calculating the total number of pages.
+ *
+ * @param <T> The type of items in the Pagination
+ */
 @Getter
 public class Pagination<T> {
 
