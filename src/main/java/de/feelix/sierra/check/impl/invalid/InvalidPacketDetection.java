@@ -315,8 +315,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .build());
             }
 
-            if (wrapper.getJumpBoost() < 0
-                || wrapper.getJumpBoost() > 100) {
+            if (wrapper.getJumpBoost() < 0 || wrapper.getJumpBoost() > 100) {
 
                 violation(event, ViolationDocument.builder()
                     .debugInformation("boost: " + wrapper.getJumpBoost())
@@ -516,8 +515,9 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             WrapperPlayClientPlayerBlockPlacement wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
 
-            if (wrapper.getSequence() < 0 && isSupportedVersion(
-                ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
+            if (wrapper.getSequence() < 0 && isSupportedVersion(ServerVersion.V_1_19, event.getUser(),
+                                                                ClientVersion.V_1_19
+            )) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Invalid sequence in block place")
                     .punishType(PunishType.BAN)
@@ -549,14 +549,14 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             if (forward > 0.98f || forward < -0.98f) {
                 violation(event, ViolationDocument.builder()
-                    .punishType(PunishType.BAN)
+                    .punishType(PunishType.KICK)
                     .debugInformation(String.format("forward: %.2f", forward))
                     .build());
             }
 
             if (sideways > 0.98f || sideways < -0.98f) {
                 violation(event, ViolationDocument.builder()
-                    .punishType(PunishType.BAN)
+                    .punishType(PunishType.KICK)
                     .debugInformation(String.format("sideways: %.2f", sideways))
                     .build());
             }
@@ -618,9 +618,10 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .build());
             }
 
+            // General minecraft limit
             if (length > 50) {
                 violation(event, ViolationDocument.builder()
-                    .punishType(PunishType.MITIGATE)
+                    .punishType(PunishType.KICK)
                     .debugInformation("Name longer than 50: " + length)
                     .build());
             }

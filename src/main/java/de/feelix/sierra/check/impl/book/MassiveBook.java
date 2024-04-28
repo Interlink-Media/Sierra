@@ -430,7 +430,7 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
      */
     private static @Nullable Pair<String, PunishType>  checkFieldReadable(String pageContent) {
         if (FieldReader.isReadable(pageContent) && !pageContent.isEmpty()) {
-            return new Pair<>("Field is not readable", PunishType.BAN);
+            return new Pair<>("Field is not readable", PunishType.KICK);
         }
         return null;
     }

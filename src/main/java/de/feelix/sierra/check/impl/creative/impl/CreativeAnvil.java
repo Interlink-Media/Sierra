@@ -13,7 +13,6 @@ public class CreativeAnvil implements ItemCheck {
 
     //This prevents the creation of buggy anvils that crash the client when placed
     //https://bugs.mojang.com/browse/MC-82677
-
     private boolean invalid(ItemStack itemStack) {
         if (itemStack.getType() == ItemTypes.ANVIL) {
             return itemStack.getLegacyData() < 0 || itemStack.getLegacyData() > 2;

@@ -22,7 +22,7 @@ public class PotionLimit implements ItemCheck {
         int maxPotionEffects = 5;
         //Limit how many custom potion effects a potion can have
         if (potionEffects.size() >= maxPotionEffects) {
-            return new Pair<>("Too big potion size", PunishType.BAN);
+            return new Pair<>("Too big potion size", PunishType.KICK);
         }
 
         for (int i = 0; i < potionEffects.size(); i++) {
@@ -33,7 +33,7 @@ public class PotionLimit implements ItemCheck {
                 if (nbtNumber != null) {
                     int maxEffectDuration = 9600;
                     if (nbtNumber.getAsInt() >= maxEffectDuration) {
-                        return new Pair<>("Invalid potion duration", PunishType.BAN);
+                        return new Pair<>("Invalid potion duration", PunishType.KICK);
                     }
                 }
             }
@@ -49,7 +49,7 @@ public class PotionLimit implements ItemCheck {
                     }
                     int maxPotionEffectAmplifier = 10;
                     if (nbtNumber.getAsInt() > maxPotionEffectAmplifier) {
-                        return new Pair<>("Invalid Amplifier: MAX", PunishType.BAN);
+                        return new Pair<>("Invalid Amplifier: MAX", PunishType.KICK);
                     }
                 }
             }
