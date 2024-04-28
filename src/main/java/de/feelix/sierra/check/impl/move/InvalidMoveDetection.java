@@ -335,7 +335,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
         if (Math.abs(pitch) > 90.01) {
             violation(event, ViolationDocument.builder()
                 .debugInformation(String.format("Pitch at %.2f", Math.abs(pitch)))
-                .punishType(PunishType.BAN)
+                .punishType(PunishType.KICK)
                 .build());
         }
     }
