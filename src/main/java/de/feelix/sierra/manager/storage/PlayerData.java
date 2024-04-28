@@ -48,6 +48,7 @@ public class PlayerData implements SierraUser {
     private boolean receiveAlerts      = false;
     private boolean exempt             = false;
     private boolean hasBrand           = false;
+    private boolean nameChecked        = false;
 
     private String brand = "vanilla";
 

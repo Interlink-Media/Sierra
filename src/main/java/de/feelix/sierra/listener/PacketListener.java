@@ -9,6 +9,7 @@ import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierraapi.check.impl.SierraCheck;
 
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 /**
  * The PacketListener class represents a packet listener that receives and sends packets events.
@@ -39,6 +40,8 @@ public class PacketListener extends PacketListenerAbstract {
 
         playerData.getTimingProcessor().getPacketReceiveTiming().prepare();
 
+        checkHandling(playerData, event);
+
         if (handleExemptOrBlockedPlayer(playerData, event)) return;
 
         playerData.getBrandProcessor().process(event);
@@ -46,6 +49,28 @@ public class PacketListener extends PacketListenerAbstract {
 
         processAvailableChecksReceive(playerData, event);
         playerData.getTimingProcessor().getPacketReceiveTiming().end();
+    }
+
+    /**
+     * Checks the handling of a packet for the given player data and event.
+     * If the player data is not null, has a valid user, and the name has not been checked yet,
+     * it validates the username of the event's user. If the username is invalid, it cancels the event and kicks the player.
+     * Finally, it sets the nameChecked flag in the player data to true.
+     *
+     * @param playerData the PlayerData object representing the data associated with the player
+     * @param event the PacketReceiveEvent representing the packet receive event
+     */
+    private void checkHandling(PlayerData playerData, PacketReceiveEvent event) {
+        if (playerData != null
+            && playerData.getUser() != null
+            && playerData.getUser().getName() != null
+            && !playerData.isNameChecked()) {
+            if (!isValidUsername(event.getUser().getName())) {
+                event.setCancelled(true);
+                playerData.kick();
+            }
+            playerData.setNameChecked(true);
+        }
     }
 
     /**
@@ -65,6 +90,17 @@ public class PacketListener extends PacketListenerAbstract {
         playerData.getPingProcessor().handle(event);
         processAvailableChecksSend(playerData, event);
         playerData.getTimingProcessor().getPacketSendTiming().end();
+    }
+
+    /**
+     * Checks if a username is valid.
+     *
+     * @param username The username to be checked.
+     * @return true if the username is valid, false otherwise.
+     */
+    public static boolean isValidUsername(String username) {
+        String pattern = "^[a-zA-Z0-9_\\-.]{3,16}$";
+        return Pattern.matches(pattern, username);
     }
 
     /**
