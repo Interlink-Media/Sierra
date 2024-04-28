@@ -174,19 +174,21 @@ public class SierraDetection implements SierraCheck {
      * @param violationDocument The ViolationDocument containing information about the violation.
      */
     protected void consoleLog(User user, ViolationDocument violationDocument) {
-        logToConsole(createGeneralMessage(user));
+        logToConsole(createGeneralMessage(user, violationDocument.getPunishType()));
         logToConsole(createGeneralInformation(violationDocument));
         logToConsole(createGeneralCheck());
     }
 
     /**
-     * Creates a general message for a violation document.
+     * Creates a general message for a given user and punish type.
+     * The message is formatted as "Player [username] got [friendlyMessage] sending an invalid packet".
      *
-     * @param user The User object representing the player.
-     * @return The general message for the violation.
+     * @param user       The User object representing the player.
+     * @param punishType The PunishType enum representing the type of punishment.
+     * @return A string representing the general message.
      */
-    private String createGeneralMessage(User user) {
-        return "Player " + user.getName() + " was prevented from sending an invalid packet";
+    private String createGeneralMessage(User user, PunishType punishType) {
+        return "Player " + user.getName() + " got " + punishType.friendlyMessage() + " sending an invalid packet";
     }
 
     /**
@@ -223,8 +225,8 @@ public class SierraDetection implements SierraCheck {
     /**
      * Sends an alert message to all players who have enabled receiving alerts.
      *
-     * @param user      The User object representing the player.
-     * @param details   Additional details about the alert.
+     * @param user       The User object representing the player.
+     * @param details    Additional details about the alert.
      * @param punishType The type of punishment associated with the alert.
      */
     protected void alert(User user, String details, PunishType punishType) {
@@ -267,9 +269,9 @@ public class SierraDetection implements SierraCheck {
     /**
      * Formats the staff alert message with the given user, punish type, and SierraConfigEngine.
      *
-     * @param user          The User object representing the player.
-     * @param punishType    The PunishType enum representing the type of punishment.
-     * @param sierraConfig  The SierraConfigEngine object for accessing configuration options.
+     * @param user         The User object representing the player.
+     * @param punishType   The PunishType enum representing the type of punishment.
+     * @param sierraConfig The SierraConfigEngine object for accessing configuration options.
      * @return The formatted staff alert message.
      */
     private String formatStaffAlertMessage(User user, PunishType punishType, SierraConfigEngine sierraConfig) {
