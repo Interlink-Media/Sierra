@@ -197,8 +197,11 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
      * @return a List of String containing the names of all online players.
      */
     private List<String> getOnlinePlayerNames() {
-        return Bukkit.getOnlinePlayers().stream()
-            .map(Player::getName)
-            .collect(Collectors.toList());
+        List<String> list = new ArrayList<>();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            String name = player.getName();
+            list.add(name);
+        }
+        return list;
     }
 }
