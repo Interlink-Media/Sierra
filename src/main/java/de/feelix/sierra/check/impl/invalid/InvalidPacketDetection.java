@@ -379,7 +379,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             if (slot == lastSlot) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Selected slot twice: " + wrapper.getSlot())
-                    .punishType(PunishType.KICK)
+                    .punishType(PunishType.MITIGATE)
                     .build());
             }
 

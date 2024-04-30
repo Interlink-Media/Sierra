@@ -17,6 +17,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Logger;
 
 /**
  * The ModuleGateway class is responsible for managing the loading and disabling of modules.
@@ -64,15 +65,14 @@ public class SierraModuleGateway implements ModuleGateway {
      * </p>
      */
     public void disableModules() {
-        Sierra.getPlugin().getLogger().info("Disabling Modules...");
+        Logger logger = Sierra.getPlugin().getLogger();
+        logger.info("Disabling Modules...");
         for (final String name : modules.keySet()) {
             final SierraModule            module      = modules.get(name);
             final SierraModuleDescription description = module.getSierraModuleDescription();
-            Sierra.getPlugin()
-                .getLogger()
-                .info(String.format("Disabling Module %s v%s by %s...", description.getName(), description.getVersion(),
-                                    description.getAuthor()
-                ));
+            String                        format      = "Disabling Module %s v%s by %s...";
+            logger
+                .info(String.format(format, description.getName(), description.getVersion(), description.getAuthor()));
             module.disable();
         }
         modules.clear();
