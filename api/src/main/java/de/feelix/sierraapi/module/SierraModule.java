@@ -1,14 +1,19 @@
 package de.feelix.sierraapi.module;
 
+import de.feelix.sierraapi.SierraApi;
+import de.feelix.sierraapi.SierraApiAccessor;
+import de.feelix.sierraapi.exceptions.impl.SierraNotLoadedException;
 import lombok.Getter;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.logging.Logger;
 
 /**
  * SierraModule is an abstract class that represents a module in the Sierra system.
  * It provides basic functionality for enabling and disabling modules, as well as storing relevant module information.
  */
+@SuppressWarnings("unused")
 @Getter
 public abstract class SierraModule {
 
@@ -29,22 +34,9 @@ public abstract class SierraModule {
     private File dataFolder;
 
     /**
-     * The 'enabled' variable represents the state of a module being enabled or disabled.
+     * Represents the enabled state of a module.
      * <p>
-     * By default, the 'enabled' variable is set to false, which means the module is disabled.
-     * When the 'enabled' variable is set to true, it means the module is enabled.
-     * <p>
-     * Example usage:
-     * <pre>{@code
-     * SierraModule module = new SierraModule();
-     * boolean isEnabled = module.isEnabled();
-     *
-     * // Output: false
-     * System.out.println(isEnabled);
-     * }</pre>
-     *
-     * @see SierraModule#enable(SierraModuleDescription, File, String)
-     * @see SierraModule#disable()
+     * The enabled state determines whether a module is active or not.
      */
     private boolean enabled = false;
 
@@ -80,20 +72,14 @@ public abstract class SierraModule {
     private String moduleName;
 
     /**
-     * The full path of the module, including the plugin name and the module name.
-     * <p>
-     * This field stores the full path of the module, which is constructed using the plugin name and the module name.
-     * It is used to identify the location of the module within the file system.
-     * <p>
-     * Example usage:
-     * <pre>{@code
-     * String modulePath = fullModulePath;
-     * // Output: "plugins//MyPlugin//modules//MyModule"
-     * System.out.println(modulePath);
-     * }</pre>
-     *
-     * @see SierraModule#enable(SierraModuleDescription, File, String)
-     * @see SierraModuleDescription#getName()
+     * The fullModulePath is a private instance variable of type String that stores the full path of a module.
+     * It represents the location of the module's files or resources on the filesystem.
+     * The fullModulePath is used internally within the SierraModule class and is not meant to be accessed directly from outside the class.
+     * The value of the fullModulePath variable should be set when the module is enabled and may be cleared when the module is disabled.
+     * The fullModulePath variable is initialized by the enable() method of the SierraModule class, which takes in a SierraModuleDescription object, a dataFolder File object, a plugin
+     * Name String, and a logger Logger object as parameters.
+     * The value of the fullModulePath variable may be modified or used by other methods within the SierraModule class, depending on the specific functionality of the module.
+     * The fullModulePath variable is declared as private, indicating that it can only be accessed within the same class (SierraModule).
      */
     private String fullModulePath;
 
@@ -111,7 +97,7 @@ public abstract class SierraModule {
      * module.disable();
      * }</pre>
      */
-    public final void disable() {
+    public void disable() {
         this.onDisable();
 
         enabled = false;
@@ -125,7 +111,7 @@ public abstract class SierraModule {
      * @param dataFolder  the folder where the module's data will be stored
      * @param pluginName  the name of the plugin that owns the module
      */
-    public final void enable(SierraModuleDescription description, File dataFolder, String pluginName, Logger logger) {
+    public void enable(SierraModuleDescription description, File dataFolder, String pluginName, Logger logger) {
         enabled = true;
         this.sierraModuleDescription = description;
         this.dataFolder = dataFolder;
@@ -135,7 +121,43 @@ public abstract class SierraModule {
         this.onEnable();
     }
 
+    /**
+     * This method returns a WeakReference to the instance of SierraApi.
+     *
+     * @return a WeakReference to the SierraApi instance
+     * @throws SierraNotLoadedException if SierraApi is not loaded
+     */
+    public WeakReference<SierraApi> sierraApi() {
+        return SierraApiAccessor.access();
+    }
+
+    /**
+     * This method is called when the module is enabled. It should be overridden in a subclass to perform custom logic
+     * when the module is enabled.
+     * <p>
+     * Note: This method is called automatically from the enable() method in the SierraModule class.
+     * <p>
+     * Example usage:
+     * <pre>{@code
+     * public class MyModule extends SierraModule {
+     *     public void onEnable() {
+     *         // Perform custom logic when the module is enabled
+     *     }
+     * }
+     * }</pre>
+     */
     public abstract void onEnable();
 
+    /**
+     * Disables the module.
+     * <p>
+     * This method is called to disable the module. It should be overridden in a subclass to perform custom logic
+     * when the module is disabled.
+     * <p>
+     * Example usage:
+     * <p>
+     *     MyModule module = new MyModule();
+     *     module.disable();
+     */
     public abstract void onDisable();
 }

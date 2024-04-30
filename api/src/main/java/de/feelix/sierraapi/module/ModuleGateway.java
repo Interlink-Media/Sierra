@@ -2,6 +2,7 @@ package de.feelix.sierraapi.module;
 
 import java.io.File;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * ModuleGateway is an interface for managing modules in the Sierra plugin.
@@ -21,6 +22,14 @@ public interface ModuleGateway {
      * @return A map of module names to module objects.
      */
     Map<String, SierraModule> modules();
+
+    /**
+     * Retrieves a SierraModule object with the given name.
+     *
+     * @param name The name of the module to retrieve.
+     * @return The SierraModule object with the given name, or null if not found.
+     */
+    AtomicReference<SierraModule> getModule(String name);
 
     /**
      * Checks if a module with the given name is activated.

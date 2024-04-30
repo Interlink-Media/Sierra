@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -289,6 +290,24 @@ public class SierraModuleGateway implements ModuleGateway {
     @Override
     public Map<String, SierraModule> modules() {
         return modules;
+    }
+
+    /**
+     * Retrieves a module by its name.
+     *
+     * @param name the name of the module to retrieve
+     * @return an AtomicReference of SierraModule representing the module with the specified name, or null if not found
+     */
+    @Override
+    public AtomicReference<SierraModule> getModule(String name) {
+        AtomicReference<SierraModule> moduleRef = new AtomicReference<>();
+
+        modules.forEach((s, sierraModule) -> {
+            if (s.equalsIgnoreCase(name)) {
+                moduleRef.set(sierraModule);
+            }
+        });
+        return moduleRef;
     }
 
     /**
