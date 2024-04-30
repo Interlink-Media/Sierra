@@ -245,7 +245,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
     private ViolationDocument buildExtValueBanViolation(String debugInfo) {
         return ViolationDocument.builder()
             .debugInformation(debugInfo)
-            .punishType(PunishType.BAN)
+            .punishType(PunishType.KICK)
             .build();
     }
 
