@@ -108,9 +108,8 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
     @Override
     public void handle(PacketReceiveEvent event, PlayerData data) {
 
-        if (isPreventInvalidMoveDisabled()) {
-            return;
-        }
+        if (isPreventInvalidMoveDisabled()) return;
+
         if (isFlying(event)) {
             getPlayerData().getTimingProcessor().getMovementProcessor().prepare();
             handleFlyingPacket(event);
@@ -314,7 +313,8 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      * @param event    The event triggered by receiving a packet from the player
      */
     private void checkForBorder(Vector3d position, PacketReceiveEvent event) {
-        if (Math.abs(position.getX()) > HARD_CODED_BORDER || Math.abs(position.getY()) > HARD_CODED_BORDER
+        if (Math.abs(position.getX()) > HARD_CODED_BORDER
+            || Math.abs(position.getY()) > HARD_CODED_BORDER
             || Math.abs(position.getZ()) > HARD_CODED_BORDER) {
 
             violation(event, ViolationDocument.builder()

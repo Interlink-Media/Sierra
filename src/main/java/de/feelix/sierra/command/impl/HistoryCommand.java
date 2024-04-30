@@ -8,10 +8,10 @@ import de.feelix.sierra.utilities.pagination.Pagination;
 import de.feelix.sierraapi.commands.*;
 import net.md_5.bungee.api.chat.BaseComponent;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class HistoryCommand implements ISierraCommand {
 
@@ -74,12 +74,11 @@ public class HistoryCommand implements ISierraCommand {
      * @return A Pagination object containing the sorted history documents.
      */
     private Pagination<HistoryDocument> setupPagination() {
-        return new Pagination<>(Sierra.getPlugin()
-                                    .getSierraDataManager()
-                                    .getHistories()
-                                    .stream()
-                                    .sorted(Comparator.comparing(HistoryDocument::timestamp).reversed())
-                                    .collect(Collectors.toList()), 10);
+        List<HistoryDocument> list = new ArrayList<>(Sierra.getPlugin()
+                                                         .getSierraDataManager()
+                                                         .getHistories());
+        list.sort(Comparator.comparing(HistoryDocument::timestamp).reversed());
+        return new Pagination<>(list, 10);
     }
 
     /**
