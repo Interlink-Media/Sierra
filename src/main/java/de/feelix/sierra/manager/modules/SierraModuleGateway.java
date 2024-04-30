@@ -1,11 +1,9 @@
 package de.feelix.sierra.manager.modules;
 
 import de.feelix.sierra.Sierra;
-import de.feelix.sierra.manager.modules.impl.SierraModuleDescription;
-import de.feelix.sierra.manager.modules.impl.SierraModule;
-import de.feelix.sierraapi.module.Module;
-import de.feelix.sierraapi.module.ModuleDescription;
 import de.feelix.sierraapi.module.ModuleGateway;
+import de.feelix.sierraapi.module.SierraModule;
+import de.feelix.sierraapi.module.SierraModuleDescription;
 import lombok.Getter;
 
 import java.io.File;
@@ -29,7 +27,7 @@ public class SierraModuleGateway implements ModuleGateway {
      * The ModuleGateway class represents a gateway for accessing and managing modules in the Sierra system.
      * It provides methods for loading, enabling, and disabling modules.
      */
-    public static final Map<String, Module> modules = new HashMap<>();
+    public static final Map<String, SierraModule> modules = new HashMap<>();
 
     /**
      * The directory where the module files are located.
@@ -67,12 +65,12 @@ public class SierraModuleGateway implements ModuleGateway {
     public void disableModules() {
         Sierra.getPlugin().getLogger().info("Disabling Modules...");
         for (final String name : modules.keySet()) {
-            final SierraModule      module      = (SierraModule) modules.get(name);
-            final ModuleDescription description = module.moduleDescription();
+            final SierraModule            module      = modules.get(name);
+            final SierraModuleDescription description = module.getSierraModuleDescription();
             Sierra.getPlugin()
                 .getLogger()
-                .info(String.format("Disabling Module %s v%s by %s...", description.name(), description.version(),
-                                    description.author()
+                .info(String.format("Disabling Module %s v%s by %s...", description.getName(), description.getVersion(),
+                                    description.getAuthor()
                 ));
             module.disable();
         }
@@ -191,13 +189,15 @@ public class SierraModuleGateway implements ModuleGateway {
     private void processSierraModule(Class<?> main, SierraModuleDescription description) {
         try {
             final SierraModule module    = (SierraModule) main.getDeclaredConstructors()[0].newInstance();
-            String             rawString = "Enabling Module %s (version=%s, by=%s)";
+            String             rawString = "Enabling Module %s version=%s, by=%s";
 
             logInfo(String.format(rawString, description.getName(), description.getVersion(), description.getAuthor()));
             modules.put(description.getName(), module);
             processDataDirectory(description);
             module.enable(
-                description, new File(moduleDir, description.getName()), Sierra.getPlugin().getDescription().getName());
+                description, new File(moduleDir, description.getName()), Sierra.getPlugin().getDescription().getName(),
+                Sierra.getPlugin().getLogger()
+            );
         } catch (final Exception e) {
             e.printStackTrace();
         }
@@ -287,7 +287,7 @@ public class SierraModuleGateway implements ModuleGateway {
      * @return a map of modules, where the module name is the key and the Module object is the value
      */
     @Override
-    public Map<String, Module> modules() {
+    public Map<String, SierraModule> modules() {
         return modules;
     }
 
@@ -299,9 +299,9 @@ public class SierraModuleGateway implements ModuleGateway {
      */
     @Override
     public boolean moduleActivated(String moduleName) {
-        for (Module value : modules.values()) {
-            if (value.moduleName().equalsIgnoreCase(moduleName)) {
-                return value.enabled();
+        for (SierraModule value : modules.values()) {
+            if (value.getModuleName().equalsIgnoreCase(moduleName)) {
+                return value.isEnabled();
             }
         }
         return false;
@@ -316,12 +316,12 @@ public class SierraModuleGateway implements ModuleGateway {
      */
     @Override
     public boolean deactivateModule(String moduleName) {
-        for (Module value : modules.values()) {
-            if (value.moduleName().equalsIgnoreCase(moduleName)) {
+        for (SierraModule value : modules.values()) {
+            if (value.getModuleName().equalsIgnoreCase(moduleName)) {
 
-                if (!value.enabled()) throw new RuntimeException("Module " + moduleName + " is already deactivated");
+                if (!value.isEnabled()) throw new RuntimeException("Module " + moduleName + " is already deactivated");
 
-                ((SierraModule) value).disable();
+                value.disable();
                 return true;
             }
         }
@@ -337,12 +337,11 @@ public class SierraModuleGateway implements ModuleGateway {
      */
     @Override
     public boolean activateModule(String moduleName) {
-        for (Module value : modules.values()) {
-            if (value.moduleName().equalsIgnoreCase(moduleName)) {
+        for (SierraModule value : modules.values()) {
+            if (value.getModuleName().equalsIgnoreCase(moduleName)) {
 
-                if (value.enabled()) throw new RuntimeException("Module " + moduleName + " is already activated");
-
-                ((SierraModule) value).onEnable();
+                if (value.isEnabled()) throw new RuntimeException("Module " + moduleName + " is already activated");
+                value.onEnable();
                 return true;
             }
         }

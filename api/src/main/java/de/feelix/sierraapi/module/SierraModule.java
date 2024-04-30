@@ -1,15 +1,16 @@
-package de.feelix.sierra.manager.modules.impl;
+package de.feelix.sierraapi.module;
 
-import de.feelix.sierraapi.module.Module;
-import de.feelix.sierraapi.module.ModuleDescription;
+import lombok.Getter;
 
 import java.io.File;
+import java.util.logging.Logger;
 
 /**
  * SierraModule is an abstract class that represents a module in the Sierra system.
  * It provides basic functionality for enabling and disabling modules, as well as storing relevant module information.
  */
-public abstract class SierraModule implements Module {
+@Getter
+public abstract class SierraModule {
 
     /**
      * Represents the folder where the module's data will be stored.
@@ -54,6 +55,12 @@ public abstract class SierraModule implements Module {
      * It also provides a method to read the content of a web page specified by a URL string.
      */
     private SierraModuleDescription sierraModuleDescription;
+
+    /**
+     * The logger variable is an instance of the Logger class.
+     * It is used to log messages and events for debugging and error reporting.
+     */
+    private Logger logger;
 
     /**
      * The pluginName field stores the name of the plugin that owns the module.
@@ -103,11 +110,9 @@ public abstract class SierraModule implements Module {
      * MyModule module = new MyModule();
      * module.disable();
      * }</pre>
-     *
-     * @see SierraModule#onDisable()
      */
     public final void disable() {
-        onDisable();
+        this.onDisable();
 
         enabled = false;
         dataFolder = null;
@@ -120,89 +125,17 @@ public abstract class SierraModule implements Module {
      * @param dataFolder  the folder where the module's data will be stored
      * @param pluginName  the name of the plugin that owns the module
      */
-    public final void enable(SierraModuleDescription description, File dataFolder, String pluginName) {
+    public final void enable(SierraModuleDescription description, File dataFolder, String pluginName, Logger logger) {
         enabled = true;
         this.sierraModuleDescription = description;
         this.dataFolder = dataFolder;
+        this.logger = logger;
         this.moduleName = pluginName;
         this.fullModulePath = "plugins//" + pluginName + "//modules//" + description.getName();
-        onEnable();
+        this.onEnable();
     }
 
-    /**
-     * Called when the module is enabled.
-     * <p>
-     * This method is called when a module is enabled. Override this method in your module class to implement
-     */
     public abstract void onEnable();
 
-    /**
-     * Called when the module is disabled.
-     * <p>
-     * This method is called when a module is disabled. Override this method in your module class to implement
-     * custom logic that should be performed when the module is disabled.
-     * <p>
-     * Example usage:
-     * <pre>{@code
-     * public class MyModule extends SierraModule {
-     *     {@literal @}Override
-     *     public void onDisable() {
-     *         // Custom logic here
-     *     }
-     * }
-     * }</pre>
-     *
-     * @see SierraModule
-     */
     public abstract void onDisable();
-
-    /**
-     * Retrieves the module description.
-     *
-     * @return the module description
-     */
-    @Override
-    public ModuleDescription moduleDescription() {
-        return sierraModuleDescription;
-    }
-
-    /**
-     * Retrieves the name of the module.
-     *
-     * @return the name of the module
-     */
-    @Override
-    public String moduleName() {
-        return this.moduleName;
-    }
-
-    /**
-     * Retrieves the data folder for the module.
-     *
-     * @return the data folder for the module
-     */
-    @Override
-    public File dataFolder() {
-        return this.dataFolder;
-    }
-
-    /**
-     * Returns the current enabled state of the module.
-     *
-     * @return true if the module is enabled, false otherwise
-     */
-    @Override
-    public boolean enabled() {
-        return this.enabled;
-    }
-
-    /**
-     * Retrieves the full path of the module.
-     *
-     * @return the full path of the module
-     */
-    @Override
-    public String fullModulePath() {
-        return this.fullModulePath;
-    }
 }

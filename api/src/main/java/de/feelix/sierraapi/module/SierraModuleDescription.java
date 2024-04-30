@@ -1,6 +1,5 @@
-package de.feelix.sierra.manager.modules.impl;
+package de.feelix.sierraapi.module;
 
-import de.feelix.sierraapi.module.ModuleDescription;
 import lombok.Getter;
 
 import java.io.BufferedReader;
@@ -17,7 +16,7 @@ import java.util.Properties;
  * It also provides a method to read a URL string.
  */
 @Getter
-public class SierraModuleDescription implements ModuleDescription {
+public class SierraModuleDescription {
 
     /**
      * ModuleDescription class represents a module description, containing information about a module.
@@ -104,45 +103,5 @@ public class SierraModuleDescription implements ModuleDescription {
             }
         }
         return null;
-    }
-
-    /**
-     * Returns the name of the module.
-     *
-     * @return the name of the module
-     */
-    @Override
-    public String name() {
-        return this.name;
-    }
-
-    /**
-     * Returns the value of the main method of the module.
-     *
-     * @return the value of the main method
-     */
-    @Override
-    public String main() {
-        return this.main;
-    }
-
-    /**
-     * Returns the author of the module.
-     *
-     * @return the author of the module
-     */
-    @Override
-    public String author() {
-        return this.author;
-    }
-
-    /**
-     * Returns the version of the module.
-     *
-     * @return the version of the module
-     */
-    @Override
-    public String version() {
-        return this.version;
     }
 }

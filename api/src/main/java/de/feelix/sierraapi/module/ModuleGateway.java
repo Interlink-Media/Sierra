@@ -20,7 +20,7 @@ public interface ModuleGateway {
      *
      * @return A map of module names to module objects.
      */
-    Map<String, Module> modules();
+    Map<String, SierraModule> modules();
 
     /**
      * Checks if a module with the given name is activated.

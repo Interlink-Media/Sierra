@@ -180,11 +180,8 @@ public final class Sierra extends JavaPlugin implements SierraApi {
 
         this.loadModules();
 
-        this.getLogger().log(
-            Level.INFO,
-            "Sierra is ready. (Took: " + (System.currentTimeMillis() - startTime) + "ms)"
-
-        );
+        long delay = System.currentTimeMillis() - startTime;
+        this.getLogger().log(Level.INFO, "Sierra is ready. (Took: " + delay + "ms)");
 
         // Enable the api
         SierraApiAccessor.setSierraApiInstance(this);
@@ -193,7 +190,8 @@ public final class Sierra extends JavaPlugin implements SierraApi {
 
     /**
      * Loads the modules for the Sierra plugin.
-     * The method creates a modules directory specific to the plugin, and initializes a {@link SierraModuleGateway} object
+     * The method creates a modules directory specific to the plugin, and initializes a {@link SierraModuleGateway}
+     * object
      * to manage the loading of modules.
      * <p>
      * The modules directory is created at "./plugins/{plugin_name}/modules". If the directory already exists,
@@ -241,10 +239,13 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         logger.log(Level.WARNING, String.format(format, localVersion, latestReleaseVersion));
     }
 
+    /**
+     * Checks if the version of the plugin is invalid.
+     *
+     * @return true if the version is invalid, false otherwise
+     */
     private boolean isVersionInvalid() {
-        return this.updateChecker
-            .getLatestReleaseVersion()
-            .equalsIgnoreCase(UpdateChecker.UNKNOWN_VERSION);
+        return this.updateChecker.getLatestReleaseVersion().equalsIgnoreCase(UpdateChecker.UNKNOWN_VERSION);
     }
 
     /**
