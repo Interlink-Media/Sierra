@@ -7,6 +7,7 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTList;
 import com.github.retrooper.packetevents.protocol.nbt.NBTType;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
+import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
@@ -14,7 +15,8 @@ import de.feelix.sierraapi.violation.PunishType;
 public class CreativeMap implements ItemCheck {
 
     @Override
-    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound) {
+    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                NBTCompound nbtCompound, PlayerData playerData) {
         if (nbtCompound.getTags().containsKey("Decorations")) {
             NBTList<NBTCompound> decorations = nbtCompound.getCompoundListTagOrNull("Decorations");
             for (int i = 0; i < decorations.size(); i++) {
@@ -23,7 +25,7 @@ public class CreativeMap implements ItemCheck {
                     NBTByte nbtByte = decoration.getTagOfTypeOrNull("type", NBTType.BYTE.getNBTClass());
                     if (nbtByte == null) {
                         return new Pair<>("Contains invalid nbt type field", PunishType.BAN);
-                    } else if(nbtByte.getAsByte() < 0) {
+                    } else if (nbtByte.getAsByte() < 0) {
                         return new Pair<>("Invalid byte size in map", PunishType.BAN);
                     }
                 }

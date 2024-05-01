@@ -2,15 +2,13 @@ package de.feelix.sierra.check.impl.command;
 
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientChatCommand;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientChatMessage;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientNameItem;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientUpdateCommandBlock;
+import com.github.retrooper.packetevents.wrapper.play.client.*;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
@@ -109,20 +107,39 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
 
         if (event.getPacketType() == PacketType.Play.Client.UPDATE_COMMAND_BLOCK) {
 
-            WrapperPlayClientUpdateCommandBlock wrapper = new WrapperPlayClientUpdateCommandBlock(event);
+            WrapperPlayClientUpdateCommandBlock wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientUpdateCommandBlock(event),
+                playerData::exceptionDisconnect
+            );
+
             checkDisallowedCommand(event, wrapper.getCommand());
+
         } else if (event.getPacketType() == PacketType.Play.Client.CHAT_MESSAGE) {
-            WrapperPlayClientChatMessage wrapper = new WrapperPlayClientChatMessage(event);
-            String                       message = wrapper.getMessage().toLowerCase().replaceAll("\\s+", " ");
+
+            WrapperPlayClientChatMessage wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientChatMessage(event),
+                playerData::exceptionDisconnect
+            );
+
+            String message = wrapper.getMessage().toLowerCase().replaceAll("\\s+", " ");
             checkForDoubleCommands(event, message);
             checkDisallowedCommand(event, message);
             checkForLog4J(event, message);
         } else if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
-            WrapperPlayClientNameItem wrapper = new WrapperPlayClientNameItem(event);
+
+            WrapperPlayClientNameItem wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientNameItem(event),
+                playerData::exceptionDisconnect
+            );
             checkForLog4J(event, wrapper.getItemName());
         } else if (event.getPacketType() == PacketType.Play.Client.CHAT_COMMAND) {
-            WrapperPlayClientChatCommand wrapper = new WrapperPlayClientChatCommand(event);
-            String                       message = wrapper.getCommand().toLowerCase().replaceAll("\\s+", " ");
+
+            WrapperPlayClientChatCommand wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientChatCommand(event),
+                playerData::exceptionDisconnect
+            );
+
+            String message = wrapper.getCommand().toLowerCase().replaceAll("\\s+", " ");
             checkForDoubleCommands(event, message);
             checkDisallowedCommand(event, wrapper.getCommand());
             checkForLog4J(event, message);
@@ -152,7 +169,7 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
         if (MVC_PATTERN.matcher(string).find()) {
             violation(event, ViolationDocument.builder()
                 .punishType(PunishType.KICK)
-                .debugInformation("MVC Pattern: "+string)
+                .debugInformation("MVC Pattern: " + string)
                 .build());
         }
     }

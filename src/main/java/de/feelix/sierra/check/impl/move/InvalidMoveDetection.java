@@ -11,6 +11,7 @@ import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.violation.PunishType;
@@ -112,9 +113,9 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
 
         if (isFlying(event)) {
             getPlayerData().getTimingProcessor().getMovementProcessor().prepare();
-            handleFlyingPacket(event);
+            handleFlyingPacket(event, data);
         } else if (isVehicleMovePacket(event)) {
-            handleVehicleMovePacket(event);
+            handleVehicleMovePacket(event, data);
         }
     }
 
@@ -152,8 +153,10 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      *
      * @param event the PacketReceiveEvent triggered by receiving a packet from the player
      */
-    private void handleFlyingPacket(PacketReceiveEvent event) {
-        WrapperPlayClientPlayerFlying wrapper = new WrapperPlayClientPlayerFlying(event);
+    private void handleFlyingPacket(PacketReceiveEvent event, PlayerData playerData) {
+
+        WrapperPlayClientPlayerFlying wrapper = CastUtil.getSupplierValue(
+            () -> new WrapperPlayClientPlayerFlying(event), playerData::exceptionDisconnect);
 
         sortOutInvalidRotation(wrapper, event);
 
@@ -248,13 +251,19 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
             .build();
     }
 
+
     /**
-     * Handles a vehicle move packet received from the player.
+     * This method handles a vehicle move packet received from the player.
+     * It checks for invalid movement values and takes appropriate actions.
      *
-     * @param event The PacketReceiveEvent triggered by receiving a packet from the player.
+     * @param event The PacketReceiveEvent triggered by receiving the vehicle move packet from the player
+     * @param playerData The PlayerData object containing the player's data
      */
-    private void handleVehicleMovePacket(PacketReceiveEvent event) {
-        WrapperPlayClientVehicleMove wrapper  = new WrapperPlayClientVehicleMove(event);
+    private void handleVehicleMovePacket(PacketReceiveEvent event, PlayerData playerData) {
+
+        WrapperPlayClientVehicleMove wrapper  = CastUtil.getSupplierValue(
+            () -> new WrapperPlayClientVehicleMove(event), playerData::exceptionDisconnect);
+
         Vector3d                     location = wrapper.getPosition();
 
         if (invalidValue(location.getX(), location.getY(), location.getZ())) {

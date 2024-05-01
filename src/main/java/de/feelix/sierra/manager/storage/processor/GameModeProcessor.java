@@ -8,6 +8,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCh
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerJoinGame;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerRespawn;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.utilities.CastUtil;
 import lombok.Getter;
 
 /**
@@ -37,7 +38,10 @@ public class GameModeProcessor {
         PacketTypeCommon typeCommon = event.getPacketType();
 
         if (typeCommon == PacketType.Play.Server.CHANGE_GAME_STATE) {
-            WrapperPlayServerChangeGameState packet = new WrapperPlayServerChangeGameState(event);
+            WrapperPlayServerChangeGameState packet = CastUtil.getSupplierValue(
+                () -> new WrapperPlayServerChangeGameState(event),
+                playerData::exceptionDisconnect
+            );
 
             if (packet.getReason() == WrapperPlayServerChangeGameState.Reason.CHANGE_GAME_MODE) {
 
@@ -53,12 +57,18 @@ public class GameModeProcessor {
         }
 
         if (typeCommon == PacketType.Play.Server.JOIN_GAME) {
-            WrapperPlayServerJoinGame joinGame = new WrapperPlayServerJoinGame(event);
+            WrapperPlayServerJoinGame joinGame = CastUtil.getSupplierValue(
+                () -> new WrapperPlayServerJoinGame(event),
+                playerData::exceptionDisconnect
+            );
             playerData.setGameMode(joinGame.getGameMode());
         }
 
         if (typeCommon == PacketType.Play.Server.RESPAWN) {
-            WrapperPlayServerRespawn respawn = new WrapperPlayServerRespawn(event);
+            WrapperPlayServerRespawn respawn = CastUtil.getSupplierValue(
+                () -> new WrapperPlayServerRespawn(event),
+                playerData::exceptionDisconnect
+            );
             playerData.setGameMode(respawn.getGameMode());
         }
     }

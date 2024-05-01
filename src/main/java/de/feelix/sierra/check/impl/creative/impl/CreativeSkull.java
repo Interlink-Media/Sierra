@@ -7,6 +7,7 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTList;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
+import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
@@ -17,7 +18,8 @@ import java.util.UUID;
 public class CreativeSkull implements ItemCheck {
 
     @Override
-    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound) {
+    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                NBTCompound nbtCompound, PlayerData playerData) {
         if (nbtCompound == null) {
             return null;
         }

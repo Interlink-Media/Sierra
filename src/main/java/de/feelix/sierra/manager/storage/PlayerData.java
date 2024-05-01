@@ -19,6 +19,7 @@ import org.bukkit.Bukkit;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * PlayerData is a class representing the data associated with a player.
@@ -178,6 +179,12 @@ public class PlayerData implements SierraUser {
     public boolean setAlerts(boolean b) {
         this.receiveAlerts = b;
         return this.receiveAlerts;
+    }
+
+    public void exceptionDisconnect(Exception exception) {
+        Sierra.getPlugin().getLogger().log(Level.INFO, "We disconnect " + this.username() + " for security purpose");
+        Sierra.getPlugin().getLogger().log(Level.INFO, "Exception: " + exception.getMessage());
+        this.kick();
     }
 
     /**

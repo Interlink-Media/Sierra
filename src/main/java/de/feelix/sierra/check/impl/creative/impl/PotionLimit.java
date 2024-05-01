@@ -6,13 +6,15 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTList;
 import com.github.retrooper.packetevents.protocol.nbt.NBTNumber;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
+import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
 public class PotionLimit implements ItemCheck {
 
     @Override
-    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound) {
+    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                NBTCompound nbtCompound, PlayerData playerData) {
         if (!nbtCompound.getTags().containsKey("CustomPotionEffects")) {
             return null;
         }

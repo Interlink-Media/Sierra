@@ -8,6 +8,8 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
+import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
@@ -18,7 +20,7 @@ public class InvalidPlainNbt implements ItemCheck {
         NBTCompound tag = itemStack.getNBT();
 
         if (tag != null) {
-            Pair<String, PunishType>  crashDetails = checkForSpawner(tag);
+            Pair<String, PunishType> crashDetails = checkForSpawner(tag);
             if (crashDetails != null) {
                 return crashDetails;
             }
@@ -27,7 +29,7 @@ public class InvalidPlainNbt implements ItemCheck {
         return null;
     }
 
-    private Pair<String, PunishType>  checkValidMap(NBTCompound nbtTag) {
+    private Pair<String, PunishType> checkValidMap(NBTCompound nbtTag) {
         NBTNumber range       = nbtTag.getNumberTagOrNull("range");
         int       maxMapRange = 15;
         if (range != null && (range.getAsInt() > maxMapRange || range.getAsInt() < 0)) {
@@ -36,7 +38,7 @@ public class InvalidPlainNbt implements ItemCheck {
         return null;
     }
 
-    private Pair<String, PunishType>  checkForSpawner(NBTCompound tag) {
+    private Pair<String, PunishType> checkForSpawner(NBTCompound tag) {
 
         NBTNumber spawnRange          = tag.getNumberTagOrNull("SpawnRange");
         NBTNumber requiredPlayerRange = tag.getNumberTagOrNull("RequiredPlayerRange");
@@ -86,14 +88,22 @@ public class InvalidPlainNbt implements ItemCheck {
     }
 
     @Override
-    public Pair<String, PunishType>  handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound) {
+    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                NBTCompound nbtCompound, PlayerData playerData) {
+
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
-            WrapperPlayClientPlayerBlockPlacement wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
+            WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientPlayerBlockPlacement(event),
+                playerData::exceptionDisconnect
+            );
             if (wrapper.getItemStack().isPresent()) {
                 return invalidNbt(wrapper.getItemStack().get());
             }
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
-            WrapperPlayClientClickWindow wrapper      = new WrapperPlayClientClickWindow(event);
+            WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientClickWindow(event),
+                playerData::exceptionDisconnect
+            );
             return invalidNbt(wrapper.getCarriedItemStack());
         }
         return null;

@@ -15,6 +15,7 @@ import de.feelix.sierra.check.impl.creative.impl.*;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
@@ -135,23 +136,38 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
             return;
         }
 
+        if (playerData == null) return;
+
         ItemStack itemStack = null;
+
         if (event.getPacketType() == PacketType.Play.Client.CREATIVE_INVENTORY_ACTION) {
-            if (playerData != null && playerData.getGameMode() != GameMode.CREATIVE) {
+            if (playerData.getGameMode() != GameMode.CREATIVE) {
                 return;
             }
 
-            WrapperPlayClientCreativeInventoryAction wrapper = new WrapperPlayClientCreativeInventoryAction(event);
+            WrapperPlayClientCreativeInventoryAction wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientCreativeInventoryAction(event), playerData::exceptionDisconnect);
+
             itemStack = wrapper.getItemStack();
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
-            WrapperPlayClientClickWindow wrapper = new WrapperPlayClientClickWindow(event);
+
+            WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientClickWindow(event),
+                playerData::exceptionDisconnect
+            );
+
             if (wrapper.getCarriedItemStack() == null) {
                 return;
             }
 
             itemStack = wrapper.getCarriedItemStack();
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
-            WrapperPlayClientPlayerBlockPlacement wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
+
+            WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientPlayerBlockPlacement(event),
+                playerData::exceptionDisconnect
+            );
+
             if (!wrapper.getItemStack().isPresent()) {
                 return;
             }
@@ -163,7 +179,7 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
 
         NBTCompound compound = itemStack.getNBT();
         //when the compound has block entity tag, do recursion to find nested/hidden items
-        if (compound != null && compound.getTags().containsKey("BlockEntityTag") && playerData != null) {
+        if (compound != null && compound.getTags().containsKey("BlockEntityTag")) {
             NBTCompound blockEntityTag = compound.getCompoundTagOrNull("BlockEntityTag");
             //reset recursion count to prevent false kicks
             playerData.setRecursionCount(0);
@@ -172,7 +188,7 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
             //if this gets called, it's not a container, so we don't need to do recursion
             for (ItemCheck check : checks) {
                 //Maybe add a check result class, so that we can have more detailed verbose output...
-                Pair<String, PunishType> crashDetails = check.handleCheck(event, itemStack, compound);
+                Pair<String, PunishType> crashDetails = check.handleCheck(event, itemStack, compound, playerData);
                 if (crashDetails != null) {
                     violation(event, ViolationDocument.builder()
                         .debugInformation(crashDetails.getFirst())
@@ -303,7 +319,7 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
     private boolean callDefaultChecks(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
                                       NBTCompound tag) {
         for (ItemCheck check : checks) {
-            Pair<String, PunishType> crashDetails = check.handleCheck(event, clickedItem, tag);
+            Pair<String, PunishType> crashDetails = check.handleCheck(event, clickedItem, tag, data);
             if (crashDetails != null) {
                 sendViolationDocument(event, data, crashDetails);
                 return true;

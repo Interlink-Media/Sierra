@@ -8,6 +8,7 @@ import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
@@ -27,7 +28,7 @@ public class SignDetection extends SierraDetection implements IngoingProcessor {
     /**
      * Handles the incoming packet received event.
      *
-     * @param event The packet receive event.
+     * @param event      The packet receive event.
      * @param playerData The player data associated with the event.
      */
     @Override
@@ -40,13 +41,8 @@ public class SignDetection extends SierraDetection implements IngoingProcessor {
 
         if (event.getPacketType() == PacketType.Play.Client.UPDATE_SIGN && preventSignCrasher) {
 
-            WrapperPlayClientUpdateSign wrapper = null;
-
-            try {
-                wrapper = new WrapperPlayClientUpdateSign(event);
-            } catch (Exception exception) {
-                violation(event, createViolation("Unable to wrap sign packet", PunishType.BAN));
-            }
+            WrapperPlayClientUpdateSign wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientUpdateSign(event), playerData::exceptionDisconnect);
 
             if (wrapper == null) return;
 
@@ -67,7 +63,7 @@ public class SignDetection extends SierraDetection implements IngoingProcessor {
      * Creates a violation document with the given debug information and punishment type.
      *
      * @param debugInfo The debug information related to the violation.
-     * @param type The type of punishment to be applied.
+     * @param type      The type of punishment to be applied.
      * @return The created violation document.
      */
     private ViolationDocument createViolation(String debugInfo, PunishType type) {

@@ -9,6 +9,7 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTNumber;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
+import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
@@ -19,7 +20,8 @@ public class EnchantLimit implements ItemCheck {
         .toClientVersion();
 
     @Override
-    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound) {
+    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                NBTCompound nbtCompound, PlayerData playerData) {
         //This is "version safe", since we check both the older 'ench' and the newer 'Enchantments' tag
         //Not a very clean approach. A way to get items within pe itemstacks would certainly be helpful
         if (nbtCompound.getTags().containsKey(clickedStack.getEnchantmentsTagName(CLIENT_VERSION))) {

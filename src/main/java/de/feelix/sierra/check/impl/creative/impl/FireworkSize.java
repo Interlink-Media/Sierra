@@ -8,6 +8,8 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
+import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
@@ -15,9 +17,13 @@ import de.feelix.sierraapi.violation.PunishType;
 public class FireworkSize implements ItemCheck {
 
     @Override
-    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound) {
+    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
-            WrapperPlayClientPlayerBlockPlacement wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
+
+            WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientPlayerBlockPlacement(event),
+                playerData::exceptionDisconnect
+            );
 
             if (wrapper.getItemStack().isPresent()) {
                 if (this.invalid(wrapper.getItemStack().get())) {
@@ -25,7 +31,10 @@ public class FireworkSize implements ItemCheck {
                 }
             }
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
-            WrapperPlayClientClickWindow wrapper = new WrapperPlayClientClickWindow(event);
+            WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientClickWindow(event),
+                playerData::exceptionDisconnect
+            );
             if (wrapper.getCarriedItemStack() != null) {
                 if (this.invalid(wrapper.getCarriedItemStack())) {
                     return new Pair<>("Invalid explosion size in firework (click)", PunishType.BAN);

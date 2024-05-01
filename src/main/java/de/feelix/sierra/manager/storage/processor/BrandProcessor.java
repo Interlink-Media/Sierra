@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPluginMessage;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.utilities.CastUtil;
 import lombok.Getter;
 
 /**
@@ -38,7 +39,10 @@ public class BrandProcessor {
      */
     public void process(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
-            WrapperPlayClientPluginMessage wrapper = new WrapperPlayClientPluginMessage(event);
+            WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientPluginMessage(event),
+                playerData::exceptionDisconnect
+            );
             handleChannelMessage(playerData, wrapper.getChannelName(), wrapper.getData());
         }
     }

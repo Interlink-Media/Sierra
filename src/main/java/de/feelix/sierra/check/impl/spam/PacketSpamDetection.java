@@ -7,11 +7,13 @@ import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPluginMessage;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientUpdateSign;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.Ticker;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
@@ -72,7 +74,10 @@ public class PacketSpamDetection extends SierraDetection implements IngoingProce
                     .build());
             }
         } else if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
-            WrapperPlayClientPluginMessage wrapper = new WrapperPlayClientPluginMessage(event);
+
+            WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientPluginMessage(event), playerData::exceptionDisconnect);
+
             // Make sure it's a book payload
             if (!(wrapper.getChannelName().contains("MC|BEdit") || wrapper.getChannelName().contains("MC|BSign"))) {
                 return;
@@ -100,7 +105,9 @@ public class PacketSpamDetection extends SierraDetection implements IngoingProce
                 playerData.setLastCraftRequestTick(currentTick);
             }
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING) {
-            WrapperPlayClientPlayerDigging wrapper = new WrapperPlayClientPlayerDigging(event);
+
+            WrapperPlayClientPlayerDigging wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientPlayerDigging(event), playerData::exceptionDisconnect);
 
             if (wrapper.getAction() != DiggingAction.DROP_ITEM) return;
 

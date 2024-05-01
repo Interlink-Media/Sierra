@@ -6,6 +6,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientKeepAlive;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerKeepAlive;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierraapi.user.impl.SierraUser;
 import lombok.Data;
 
@@ -73,7 +74,10 @@ public class PingProcessor {
      */
     public void handle(PacketSendEvent event) {
         if (event.getPacketType() == PacketType.Play.Server.KEEP_ALIVE) {
-            WrapperPlayServerKeepAlive wrapper = new WrapperPlayServerKeepAlive(event);
+            WrapperPlayServerKeepAlive wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayServerKeepAlive(event),
+                playerData::exceptionDisconnect
+            );
 
             this.lastId = wrapper.getId();
             this.lastTime = System.currentTimeMillis();
@@ -89,7 +93,10 @@ public class PingProcessor {
      */
     public void handle(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.KEEP_ALIVE) {
-            WrapperPlayClientKeepAlive wrapper = new WrapperPlayClientKeepAlive(event);
+            WrapperPlayClientKeepAlive wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientKeepAlive(event),
+                playerData::exceptionDisconnect
+            );
 
             if (wrapper.getId() == this.lastId) {
                 this.ping = System.currentTimeMillis() - this.lastTime;

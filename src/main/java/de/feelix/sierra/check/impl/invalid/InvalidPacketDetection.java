@@ -279,7 +279,10 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         // https://github.com/PaperMC/Paper/commit/e3997543203bc1d86b58b6f1e751b0593228ca7b
         if (event.getPacketType() == PacketType.Play.Client.CLIENT_SETTINGS) {
 
-            WrapperPlayClientSettings wrapper = new WrapperPlayClientSettings(event);
+            WrapperPlayClientSettings wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientSettings(event),
+                playerData::exceptionDisconnect
+            );
 
             if (wrapper.getViewDistance() < 2) {
                 String format = "Adjusting %s's view distance from %d to 2";
@@ -297,8 +300,13 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         } else if (event.getPacketType() == PacketType.Play.Client.CREATIVE_INVENTORY_ACTION) {
 
-            WrapperPlayClientCreativeInventoryAction wrapper   = new WrapperPlayClientCreativeInventoryAction(event);
-            ItemStack                                itemStack = wrapper.getItemStack();
+            WrapperPlayClientCreativeInventoryAction wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientCreativeInventoryAction(event),
+                playerData::exceptionDisconnect
+            );
+
+            ItemStack itemStack = wrapper.getItemStack();
+
             checkInvalidNbt(event, itemStack);
             checkForInvalidBanner(event, itemStack);
             checkForInvalidContainer(event, itemStack);
@@ -307,7 +315,11 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         } else if (event.getPacketType() == PacketType.Play.Client.ENTITY_ACTION) {
 
-            WrapperPlayClientEntityAction wrapper = new WrapperPlayClientEntityAction(event);
+            WrapperPlayClientEntityAction wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientEntityAction(event),
+                playerData::exceptionDisconnect
+            );
+
             if (wrapper.getEntityId() < 0) {
                 violation(event, ViolationDocument.builder()
                     .punishType(PunishType.BAN)
@@ -334,7 +346,11 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW_BUTTON) {
 
-            WrapperPlayClientClickWindowButton wrapper = new WrapperPlayClientClickWindowButton(event);
+            WrapperPlayClientClickWindowButton wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientClickWindowButton(event),
+                playerData::exceptionDisconnect
+            );
+
             if (wrapper.getButtonId() < 0 || wrapper.getWindowId() < 0) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Invalid click slot: " + wrapper.getWindowId() + "/" + wrapper.getButtonId())
@@ -344,7 +360,11 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         } else if (event.getPacketType() == PacketType.Play.Client.CHAT_MESSAGE) {
 
-            WrapperPlayClientChatMessage wrapper = new WrapperPlayClientChatMessage(event);
+            WrapperPlayClientChatMessage wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientChatMessage(event),
+                playerData::exceptionDisconnect
+            );
+
             if (wrapper.getMessage().contains("${")) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Send log4j exploit")
@@ -354,8 +374,12 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         } else if (event.getPacketType() == PacketType.Play.Client.HELD_ITEM_CHANGE) {
 
-            WrapperPlayClientHeldItemChange wrapper = new WrapperPlayClientHeldItemChange(event);
-            int                             slot    = wrapper.getSlot();
+            WrapperPlayClientHeldItemChange wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientHeldItemChange(event),
+                playerData::exceptionDisconnect
+            );
+
+            int slot = wrapper.getSlot();
 
             if (slot > 36 || slot < 0) {
                 violation(event, ViolationDocument.builder()
@@ -387,7 +411,10 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         } else if (event.getPacketType() == PacketType.Play.Client.TAB_COMPLETE) {
 
-            WrapperPlayClientTabComplete wrapper = new WrapperPlayClientTabComplete(event);
+            WrapperPlayClientTabComplete wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientTabComplete(event),
+                playerData::exceptionDisconnect
+            );
 
             if (wrapper.getText() == null) {
                 violation(event, ViolationDocument.builder()
@@ -432,7 +459,11 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
 
         } else if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
-            WrapperPlayClientPluginMessage wrapper = new WrapperPlayClientPluginMessage(event);
+
+            WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientPluginMessage(event),
+                playerData::exceptionDisconnect
+            );
 
             String channelName = wrapper.getChannelName();
 
@@ -513,7 +544,10 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
 
-            WrapperPlayClientPlayerBlockPlacement wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
+            WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientPlayerBlockPlacement(event),
+                playerData::exceptionDisconnect
+            );
 
             if (wrapper.getSequence() < 0 && isSupportedVersion(ServerVersion.V_1_19, event.getUser(),
                                                                 ClientVersion.V_1_19
@@ -542,7 +576,11 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
 
         } else if (event.getPacketType() == PacketType.Play.Client.STEER_VEHICLE) {
-            WrapperPlayClientSteerVehicle wrapper = new WrapperPlayClientSteerVehicle(event);
+
+            WrapperPlayClientSteerVehicle wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientSteerVehicle(event),
+                playerData::exceptionDisconnect
+            );
 
             float forward  = wrapper.getForward();
             float sideways = wrapper.getSideways();
@@ -562,7 +600,10 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
         } else if (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY) {
 
-            WrapperPlayClientInteractEntity wrapper = new WrapperPlayClientInteractEntity(event);
+            WrapperPlayClientInteractEntity wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientInteractEntity(event),
+                playerData::exceptionDisconnect
+            );
 
             if (wrapper.getEntityId() < 0 || event.getUser().getEntityId() == wrapper.getEntityId()) {
                 violation(event, ViolationDocument.builder()
@@ -574,7 +615,10 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         } else if (event.getPacketType() == PacketType.Play.Client.KEEP_ALIVE) {
 
             // Check original by https://github.com/GrimAnticheat/Grim/blob/2.0/src/main/java/ac/grim/grimac/checks/impl/badpackets/BadPacketsO.java
-            WrapperPlayClientKeepAlive packet = new WrapperPlayClientKeepAlive(event);
+            WrapperPlayClientKeepAlive packet = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientKeepAlive(event),
+                playerData::exceptionDisconnect
+            );
 
             long    id    = packet.getId();
             boolean hasID = false;
@@ -600,7 +644,11 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
 
         } else if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
-            WrapperPlayClientNameItem wrapper = new WrapperPlayClientNameItem(event);
+
+            WrapperPlayClientNameItem wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientNameItem(event),
+                playerData::exceptionDisconnect
+            );
 
             if (wrapper.getItemName().contains("${")) {
                 violation(event, ViolationDocument.builder()
@@ -629,7 +677,11 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING
                    && isSupportedVersion(ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
 
-            WrapperPlayClientPlayerDigging dig = new WrapperPlayClientPlayerDigging(event);
+            WrapperPlayClientPlayerDigging dig = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientPlayerDigging(event),
+                playerData::exceptionDisconnect
+            );
+
             if (dig.getSequence() < 0 && isSupportedVersion(
                 ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
                 violation(event, ViolationDocument.builder()
@@ -640,7 +692,12 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         } else if (event.getPacketType() == PacketType.Play.Client.USE_ITEM && isSupportedVersion(
             ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
-            WrapperPlayClientUseItem use = new WrapperPlayClientUseItem(event);
+
+            WrapperPlayClientUseItem use = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientUseItem(event),
+                playerData::exceptionDisconnect
+            );
+
             if (use.getSequence() < 0) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Invalid sequence in use item")
@@ -649,17 +706,10 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
 
-            WrapperPlayClientClickWindow wrapper = null;
-            try {
-                wrapper = new WrapperPlayClientClickWindow(event);
-            } catch (ArrayIndexOutOfBoundsException exception) {
-                violation(event, ViolationDocument.builder()
-                    .punishType(PunishType.KICK)
-                    .debugInformation("Cant build window wrapper")
-                    .build());
-            }
-
-            if(wrapper == null) return;
+            WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientClickWindow(event),
+                playerData::exceptionDisconnect
+            );
 
             if (isSupportedServerVersion(ServerVersion.V_1_14)) {
                 int clickType = wrapper.getWindowClickType().ordinal();
@@ -1201,7 +1251,10 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
 
         if (event.getPacketType() == PacketType.Play.Server.SET_EXPERIENCE) {
-            WrapperPlayServerSetExperience wrapper = new WrapperPlayServerSetExperience(event);
+            WrapperPlayServerSetExperience wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayServerSetExperience(event),
+                playerData::exceptionDisconnect
+            );
 
             if (wrapper.getLevel() < 0 || wrapper.getExperienceBar() < 0 || wrapper.getTotalExperience() < 0) {
 
@@ -1219,12 +1272,18 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         } else if (event.getPacketType() == PacketType.Play.Server.KEEP_ALIVE) {
 
-            WrapperPlayServerKeepAlive packet = new WrapperPlayServerKeepAlive(event);
+            WrapperPlayServerKeepAlive packet = CastUtil.getSupplierValue(
+                () -> new WrapperPlayServerKeepAlive(event),
+                playerData::exceptionDisconnect
+            );
             keepAliveMap.add(new Pair<>(packet.getId(), System.nanoTime()));
 
         } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
 
-            WrapperPlayServerOpenWindow window = new WrapperPlayServerOpenWindow(event);
+            WrapperPlayServerOpenWindow window = CastUtil.getSupplierValue(
+                () -> new WrapperPlayServerOpenWindow(event),
+                playerData::exceptionDisconnect
+            );
 
             if (isSupportedServerVersion(ServerVersion.V_1_14)) {
                 this.type = MenuType.getMenuType(window.getType());

@@ -16,6 +16,7 @@ import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.FieldReader;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.check.SierraCheckData;
@@ -101,12 +102,19 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                 return;
             }
 
-            WrapperPlayClientEditBook wrapper = new WrapperPlayClientEditBook(event);
+            WrapperPlayClientEditBook wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientEditBook(event),
+                data::exceptionDisconnect
+            );
+
             pageList.addAll(wrapper.getPages());
 
         } else if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
 
-            WrapperPlayClientPluginMessage wrapper = new WrapperPlayClientPluginMessage(event);
+            WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientPluginMessage(event),
+                data::exceptionDisconnect
+            );
 
             // Make sure it's a book payload
             if (wrapper.getChannelName().contains("MC|BEdit") || wrapper.getChannelName().contains("MC|BSign")) {
@@ -147,7 +155,10 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
 
         } else if (event.getPacketType() == PacketType.Play.Client.PICK_ITEM) {
 
-            WrapperPlayClientPickItem wrapper = new WrapperPlayClientPickItem(event);
+            WrapperPlayClientPickItem wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientPickItem(event),
+                data::exceptionDisconnect
+            );
 
             Object buffer = null;
             try {
@@ -184,7 +195,10 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
             }
 
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
-            WrapperPlayClientPlayerBlockPlacement wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
+            WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientPlayerBlockPlacement(event),
+                data::exceptionDisconnect
+            );
 
             if (wrapper.getItemStack().isPresent()) {
 
@@ -221,7 +235,10 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                 return;
             }
 
-            WrapperPlayClientCreativeInventoryAction wrapper = new WrapperPlayClientCreativeInventoryAction(event);
+            WrapperPlayClientCreativeInventoryAction wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientCreativeInventoryAction(event),
+                data::exceptionDisconnect
+            );
 
             int slot = wrapper.getSlot();
             if (slot >= 100 || slot < -1) {
@@ -255,7 +272,12 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
             pageList.addAll(this.getPages(wrapper.getItemStack()));
 
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
-            WrapperPlayClientClickWindow wrapper = new WrapperPlayClientClickWindow(event);
+
+            WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientClickWindow(event),
+                data::exceptionDisconnect
+            );
+
             if (wrapper.getCarriedItemStack() != null) {
 
                 if ((wrapper.getCarriedItemStack().getType() == ItemTypes.WRITTEN_BOOK
@@ -282,8 +304,6 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
                 }
                 pageList.addAll(this.getPages(wrapper.getCarriedItemStack()));
             }
-        } else {
-            return;
         }
 
         Pair<String, PunishType> invalid = validatePages(pageList);
