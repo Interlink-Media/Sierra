@@ -102,6 +102,10 @@ disallowed-commands:
   - "//solve" # WorldEdit
   - "//asc" # WorldEdit
   - "//ascend" # WorldEdit
+  - "solve for(i=0" # WorldEdit
+  - "calc for(i=0" # WorldEdit
+  - "eval for(i=0" # WorldEdit
+  - "evaluate for(i=0" # WorldEdit
   - "//desc" # WorldEdit
   - "//descend" # WorldEdit
   - "/to" #FastAsyncWorldEdit
@@ -115,6 +119,9 @@ disallowed-commands:
   - "/execute" # PermissionsEx
   - "/mv ^(.*." # MultiverseCore
   - "/mv ^" # MultiverseCore
+  - "mvh .*{9999}.*{9999}.*{9999}.*{9999}.$%" # MultiverseCore
+  - "/mvh ('.'""+.+.+.+.+.+.+" # MultiverseCore
+  - "/mv ^(.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*" # MultiverseCore
   - "/mv help ^" # MultiverseCore
   - "/mvhelp ^" # MultiverseCore
   - "/$" # MultiverseCore

@@ -649,7 +649,17 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
 
-            WrapperPlayClientClickWindow wrapper = new WrapperPlayClientClickWindow(event);
+            WrapperPlayClientClickWindow wrapper = null;
+            try {
+                wrapper = new WrapperPlayClientClickWindow(event);
+            } catch (ArrayIndexOutOfBoundsException exception) {
+                violation(event, ViolationDocument.builder()
+                    .punishType(PunishType.KICK)
+                    .debugInformation("Cant build window wrapper")
+                    .build());
+            }
+
+            if(wrapper == null) return;
 
             if (isSupportedServerVersion(ServerVersion.V_1_14)) {
                 int clickType = wrapper.getWindowClickType().ordinal();

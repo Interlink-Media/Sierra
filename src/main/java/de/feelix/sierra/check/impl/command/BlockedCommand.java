@@ -37,6 +37,9 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      */
     private static final Pattern EXPLOIT_PATTERN = java.util.regex.Pattern.compile("\\$\\{.+}");
 
+
+    private static final Pattern MVC_PATTERN = java.util.regex.Pattern.compile("/mv \\((\\w\\?\\{\\d+\\})\\)%");
+
     /**
      * The EXPLOIT_PATTERN2 variable is a regular expression pattern that matches a specific pattern in a string.
      * It is used to search for occurrences of "${...}" in a string, where "..." represents any characters.
@@ -73,6 +76,9 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
     public static List<String> disallowedCommands = Sierra.getPlugin()
         .getSierraConfigEngine().config().getStringList("disallowed-commands");
 
+    private double count       = 0;
+    private String lastCommand = "";
+
     /**
      * BlockedCommand is a class representing a specific action to be taken when a blocked command is detected.
      *
@@ -101,11 +107,12 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
         if (event.getPacketType() == PacketType.Play.Client.UPDATE_COMMAND_BLOCK) {
 
             WrapperPlayClientUpdateCommandBlock wrapper = new WrapperPlayClientUpdateCommandBlock(event);
-            checkDisallowedCommand(event, wrapper);
+            checkDisallowedCommand(event, wrapper.getCommand());
         } else if (event.getPacketType() == PacketType.Play.Client.CHAT_MESSAGE) {
             WrapperPlayClientChatMessage wrapper = new WrapperPlayClientChatMessage(event);
             String                       message = wrapper.getMessage().toLowerCase().replaceAll("\\s+", " ");
             checkForDoubleCommands(event, message);
+            checkDisallowedCommand(event, message);
             checkForLog4J(event, message);
         } else if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
             WrapperPlayClientNameItem wrapper = new WrapperPlayClientNameItem(event);
@@ -114,6 +121,7 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
             WrapperPlayClientChatCommand wrapper = new WrapperPlayClientChatCommand(event);
             String                       message = wrapper.getCommand().toLowerCase().replaceAll("\\s+", " ");
             checkForDoubleCommands(event, message);
+            checkDisallowedCommand(event, wrapper.getCommand());
             checkForLog4J(event, message);
         }
     }
@@ -124,8 +132,8 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      * @param event   the PacketReceiveEvent that triggered the check
      * @param wrapper the WrapperPlayClientUpdateCommandBlock containing the command to be checked
      */
-    private void checkDisallowedCommand(PacketReceiveEvent event, WrapperPlayClientUpdateCommandBlock wrapper) {
-        String string = wrapper.getCommand().toLowerCase().replaceAll("\\s+", " ");
+    private void checkDisallowedCommand(PacketReceiveEvent event, String wrapper) {
+        String string = wrapper.toLowerCase().replaceAll("\\s+", " ");
 
         for (String disallowedCommand : disallowedCommands) {
             if (string.contains(disallowedCommand)) {
@@ -136,6 +144,11 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
                         .build());
                 }
             }
+        }
+
+        if (MVC_PATTERN.matcher(string).find()) {
+            System.out.println("MATCHES!!");
+            event.setCancelled(true);
         }
     }
 
@@ -189,6 +202,21 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
                 }
             }
         }
+
+        if (this.lastCommand.equalsIgnoreCase(message)) {
+            this.count++;
+            if (this.count > 5) {
+                event.setCancelled(true);
+                violation(event, ViolationDocument.builder()
+                    .punishType(PunishType.KICK)
+                    .debugInformation(String.format("Typed same command %s times", this.count))
+                    .build());
+            }
+        } else {
+            this.count = 0;
+        }
+
+        this.lastCommand = message;
     }
 
     /**
