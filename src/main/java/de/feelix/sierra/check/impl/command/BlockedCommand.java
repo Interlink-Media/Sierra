@@ -37,8 +37,11 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      */
     private static final Pattern EXPLOIT_PATTERN = java.util.regex.Pattern.compile("\\$\\{.+}");
 
-
-    private static final Pattern MVC_PATTERN = java.util.regex.Pattern.compile("/mv \\((\\w\\?\\{\\d+\\})\\)%");
+    /**
+     * Regular expression pattern used to match a specific command pattern in the format "/mv ({letter?{number}})%".
+     * The pattern is used to detect blocked commands.
+     */
+    private static final Pattern MVC_PATTERN = java.util.regex.Pattern.compile("/mv \\((\\w\\?\\{\\d+})\\)%");
 
     /**
      * The EXPLOIT_PATTERN2 variable is a regular expression pattern that matches a specific pattern in a string.
@@ -147,8 +150,10 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
         }
 
         if (MVC_PATTERN.matcher(string).find()) {
-            System.out.println("MATCHES!!");
-            event.setCancelled(true);
+            violation(event, ViolationDocument.builder()
+                .punishType(PunishType.KICK)
+                .debugInformation("MVC Pattern: "+string)
+                .build());
         }
     }
 
@@ -206,7 +211,6 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
         if (this.lastCommand.equalsIgnoreCase(message)) {
             this.count++;
             if (this.count > 5) {
-                event.setCancelled(true);
                 violation(event, ViolationDocument.builder()
                     .punishType(PunishType.KICK)
                     .debugInformation(String.format("Typed same command %s times", this.count))
