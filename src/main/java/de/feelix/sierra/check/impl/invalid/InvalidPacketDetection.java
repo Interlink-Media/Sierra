@@ -307,6 +307,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             ItemStack itemStack = wrapper.getItemStack();
 
+            checkAttributes(event, itemStack);
             checkInvalidNbt(event, itemStack);
             checkForInvalidBanner(event, itemStack);
             checkForInvalidContainer(event, itemStack);
@@ -568,6 +569,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     this.lastBookUse = System.currentTimeMillis();
                 }
 
+                checkAttributes(event, itemStack);
                 checkInvalidNbt(event, itemStack);
                 checkForInvalidBanner(event, itemStack);
                 checkForInvalidContainer(event, itemStack);
@@ -727,6 +729,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             checkButtonClickPosition(event, wrapper);
 
             ItemStack carriedItemStack = wrapper.getCarriedItemStack();
+            checkAttributes(event, carriedItemStack);
             checkInvalidNbt(event, carriedItemStack);
             checkForInvalidContainer(event, carriedItemStack);
             checkForInvalidShulker(event, carriedItemStack);
@@ -766,6 +769,117 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .build());
             }
         }
+    }
+
+    /**
+     * Checks the attributes of an ItemStack and handles violations accordingly.
+     *
+     * @param event      The PacketReceiveEvent that triggered the check.
+     * @param itemStack  The ItemStack to check for attribute modifiers.
+     */
+    private void checkAttributes(PacketReceiveEvent event, ItemStack itemStack) {
+        if (hasAttributeModifiers(itemStack)) {
+            List<NBTCompound> tags           = getAttributeModifiers(itemStack);
+            boolean           vanillaMapping = useVanillaAttributeMapping();
+            for (NBTCompound tag : tags) {
+                AttributeMapper attributeMapper = getAttributeMapper(tag);
+                if (attributeMapper != null) {
+                    handleAttributeViolation(event, vanillaMapping, attributeMapper, tag);
+                }
+            }
+        }
+    }
+
+    /**
+     * Retrieves the AttributeMapper corresponding to the given tag. The AttributeMapper is used to
+     * handle violations based on attribute modifiers in an ItemStack.
+     *
+     * @param tag The NBTCompound tag containing the "AttributeName" key.
+     * @return The AttributeMapper corresponding to the given tag, or null if no matching AttributeMapper is found.
+     */
+    private AttributeMapper getAttributeMapper(NBTCompound tag) {
+        return AttributeMapper.getAttributeMapper(tag.getStringTagOrNull("AttributeName").getValue());
+    }
+
+    /**
+     * Checks if an ItemStack has attribute modifiers.
+     *
+     * @param itemStack The ItemStack to check for attribute modifiers.
+     * @return true if the ItemStack has attribute modifiers, false otherwise.
+     */
+    private boolean hasAttributeModifiers(ItemStack itemStack) {
+        return itemStack.getNBT() != null && itemStack.getNBT().getCompoundListTagOrNull("AttributeModifiers") != null;
+    }
+
+    /**
+     * Retrieves the list of attribute modifiers from an ItemStack.
+     *
+     * @param itemStack The ItemStack to retrieve attribute modifiers from.
+     * @return The list of attribute modifiers as a List of NBTCompounds.
+     */
+    private List<NBTCompound> getAttributeModifiers(ItemStack itemStack) {
+        //noinspection DataFlowIssue
+        NBTList<NBTCompound> tagOrNull = itemStack.getNBT().getCompoundListTagOrNull("AttributeModifiers");
+        return tagOrNull.getTags();
+    }
+
+    /**
+     * Handles attribute violations based on the specified packet event, vanilla mapping flag,
+     * attribute mapper, and NBT tag.
+     *
+     * @param event           The PacketReceiveEvent triggering the attribute violation check.
+     * @param vanillaMapping  A flag indicating whether vanilla attribute mapping is used.
+     * @param attributeMapper The AttributeMapper to handle violations based on attribute modifiers.
+     * @param tag             The NBTCompound tag containing the attribute modifier.
+     */
+    private void handleAttributeViolation(PacketReceiveEvent event, boolean vanillaMapping,
+                                          AttributeMapper attributeMapper, NBTCompound tag) {
+        int amount = tag.getNumberTagOrNull("Amount").getAsInt();
+        if (isAmountInvalid(vanillaMapping, attributeMapper, amount)) {
+            violation(
+                event,
+                createViolation("Invalid attribute modifier. Amount: " + amount, PunishType.KICK)
+            );
+        } else if (!vanillaMapping && isSierraModifierInvalid(amount)) {
+            violation(
+                event,
+                createViolation("Sierra attribute modifier. Amount: " + amount, PunishType.KICK)
+            );
+        }
+    }
+
+    /**
+     * Determines whether the plugin should use vanilla attribute mapping or not.
+     *
+     * @return true if the plugin should use vanilla attribute mapping, false otherwise.
+     */
+    private boolean useVanillaAttributeMapping() {
+        return Sierra.getPlugin()
+            .getSierraConfigEngine()
+            .config()
+            .getBoolean("use-vanilla-attribute-mapping", true);
+    }
+
+    /**
+     * Checks if the amount is invalid based on the specified vanilla mapping flag, attribute mapper, and amount.
+     *
+     * @param vanillaMapping  A flag indicating whether vanilla attribute mapping is used.
+     * @param attributeMapper The AttributeMapper to handle violations based on attribute modifiers.
+     * @param amount          The amount to check.
+     * @return true if the amount is invalid, false otherwise.
+     */
+    private boolean isAmountInvalid(boolean vanillaMapping, AttributeMapper attributeMapper, int amount) {
+        return vanillaMapping && (amount > attributeMapper.getMax() || amount < attributeMapper.getMin());
+    }
+
+    /**
+     * Checks if the given amount is considered invalid for a Sierra attribute modifier.
+     *
+     * @param amount The amount to check.
+     * @return true if the amount is invalid, false otherwise.
+     */
+    private boolean isSierraModifierInvalid(int amount) {
+        return Math.abs(amount) > 5000;
     }
 
     /**

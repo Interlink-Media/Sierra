@@ -82,6 +82,9 @@ max-enchantment-level: 5
 #        This option only kicks and does not ban players.
 internal-punishment-config: "HARD"
 
+# You can choose between vanilla max and min attribute values or use Sierra`s max and min values
+use-vanilla-attribute-mapping: true
+
 # This is the command by which the Sierra punish a player when it is 99.99% certain
 # that a player attempted to crash the server
 punish-command: "ban {username} Crashing"
