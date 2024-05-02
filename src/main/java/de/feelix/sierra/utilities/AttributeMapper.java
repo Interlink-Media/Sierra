@@ -56,6 +56,7 @@ public enum AttributeMapper {
      * @return The AttributeMapper corresponding to the given key, or null if no matching AttributeMapper is found.
      */
     public static AttributeMapper getAttributeMapper(String key) {
+        key = key.toLowerCase().replace("minecraft:", "");
         for (AttributeMapper value : values()) {
             for (String s : value.keys) {
                 if (s.equalsIgnoreCase(key)) {
