@@ -75,6 +75,16 @@ public class FormatUtils {
         return -1;
     }
 
+    public static boolean checkDoublePrecision(double number) {
+        String numberStr = Double.toString(number);
+        if (!numberStr.contains(".")) {
+            return false;
+        }
+        int decimalIndex = numberStr.indexOf(".");
+        int precision = numberStr.length() - decimalIndex - 1;
+        return precision > 3;
+    }
+
     /**
      * Converts a Map object to its string representation.
      *

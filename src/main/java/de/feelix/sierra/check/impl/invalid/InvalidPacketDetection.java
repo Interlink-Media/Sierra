@@ -774,8 +774,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     /**
      * Checks the attributes of an ItemStack and handles violations accordingly.
      *
-     * @param event      The PacketReceiveEvent that triggered the check.
-     * @param itemStack  The ItemStack to check for attribute modifiers.
+     * @param event     The PacketReceiveEvent that triggered the check.
+     * @param itemStack The ItemStack to check for attribute modifiers.
      */
     private void checkAttributes(PacketReceiveEvent event, ItemStack itemStack) {
         if (hasAttributeModifiers(itemStack)) {
@@ -834,7 +834,9 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      */
     private void handleAttributeViolation(PacketReceiveEvent event, boolean vanillaMapping,
                                           AttributeMapper attributeMapper, NBTCompound tag) {
-        int amount = tag.getNumberTagOrNull("Amount").getAsInt();
+
+        double amount = tag.getNumberTagOrNull("Amount").getAsDouble();
+
         if (isAmountInvalid(vanillaMapping, attributeMapper, amount)) {
             violation(
                 event,
@@ -845,6 +847,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 event,
                 createViolation("Sierra attribute modifier. Amount: " + amount, PunishType.KICK)
             );
+        } else if (FormatUtils.checkDoublePrecision(amount)) {
+            violation(event, createViolation("Double is to precisely", PunishType.KICK));
         }
     }
 
@@ -868,7 +872,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * @param amount          The amount to check.
      * @return true if the amount is invalid, false otherwise.
      */
-    private boolean isAmountInvalid(boolean vanillaMapping, AttributeMapper attributeMapper, int amount) {
+    private boolean isAmountInvalid(boolean vanillaMapping, AttributeMapper attributeMapper, double amount) {
         return vanillaMapping && (amount > attributeMapper.getMax() || amount < attributeMapper.getMin());
     }
 
@@ -878,8 +882,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * @param amount The amount to check.
      * @return true if the amount is invalid, false otherwise.
      */
-    private boolean isSierraModifierInvalid(int amount) {
-        return Math.abs(amount) > 5000;
+    private boolean isSierraModifierInvalid(double amount) {
+        return Math.abs(amount) > 5.000;
     }
 
     /**

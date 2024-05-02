@@ -3,6 +3,7 @@ package de.feelix.sierra;
 import com.github.retrooper.packetevents.PacketEvents;
 import de.feelix.sierra.command.SierraCommand;
 import de.feelix.sierra.listener.PacketListener;
+import de.feelix.sierra.listener.bukkit.BlockRedstoneListener;
 import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.discord.SierraDiscordGateway;
@@ -18,6 +19,7 @@ import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -172,6 +174,10 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         // Setup punishment options for sierra
         this.punishmentConfig = PunishmentConfig.valueOf(
             this.sierraConfigEngine.config().getString("internal-punishment-config", "HARD"));
+
+        if (this.sierraConfigEngine.config().getBoolean("block-redstone-loops", true)) {
+            Bukkit.getPluginManager().registerEvents(new BlockRedstoneListener(), this);
+        }
 
         this.sierraDiscordGateway.setup();
 

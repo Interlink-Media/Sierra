@@ -2,37 +2,65 @@ package de.feelix.sierra.utilities;
 
 import lombok.Getter;
 
+/**
+ * A utility class that maps attribute keys to their corresponding attribute values.
+ * <p>
+ * The AttributeMapper class is used to handle violations based on attribute modifiers in an ItemStack.
+ */
 @Getter
 public enum AttributeMapper {
 
-    Armor("generic.armor", 30, 0),
-    ArmorTough("generic.armorToughness", 20, 0),
-    AttackDamage("generic.attackDamage", 2048, 0),
-    AttackSpeed("generic.attackSpeed", 1024, 0),
-    AttackKnockback("generic.attack_knockback", 5, 0),
-    FlyingSpeed("generic.flyingSpeed", 1024, 0),
-    JumpStrength("horse.jumpStrength", 2, 0),
-    KnockbackResistance("generic.knockbackResistance", 1, 0),
-    Luck("generic.luck", 1024, -1024),
-    MaxHealth("generic.maxHealth", 1024, 0),
-    FollowRange("generic.followRange", 2048, 0),
-    MovementSpeed("generic.movementSpeed", 1024, 0),
-    SpawnReinforcements("zombie.spawnReinforcements", 1, 0);
+    Armor(new String[]{"generic.armor"}, 30, 0),
+    ArmorTough(new String[]{"generic.armorToughness", "generic.armor_toughness"}, 20, 0),
+    AttackDamage(new String[]{"generic.attackDamage", "generic.attack_damage"}, 2.048, 0),
+    AttackSpeed(new String[]{"generic.attackSpeed", "generic.attack_speed"}, 1.024, 0),
+    AttackKnockback(new String[]{"generic.attack_knockback", "generic.attack_knockback"}, 5, 0),
+    FlyingSpeed(new String[]{"generic.flyingSpeed", "generic.flying_speed"}, 1.024, 0),
+    JumpStrength(new String[]{"horse.jumpStrength", "horse.jump_strength"}, 2, 0),
+    KnockbackResistance(new String[]{"generic.knockbackResistance", "generic.knockback_resistance"}, 1, 0),
+    Luck(new String[]{"generic.luck"}, 1.024, -1.024),
+    MaxHealth(new String[]{"generic.maxHealth", "generic.max_health"}, 1.024, 0),
+    FollowRange(new String[]{"generic.followRange", "generic.follow_range"}, 2.048, 0),
+    MovementSpeed(new String[]{"generic.movementSpeed", "generic.movement_speed"}, 1.024, 0),
+    SpawnReinforcements(new String[]{"zombie.spawnReinforcements", "zombie.spawn_reinforcements"}, 1, 0);
 
-    private final String key;
-    private final int    max;
-    private final int    min;
+    /**
+     * Represents a string array of keys.
+     */
+    private final String[] keys;
 
-    AttributeMapper(String key, int max, int min) {
-        this.key = key;
+    /**
+     * Represents the maximum value for an attribute.
+     */
+    private final double max;
+
+    /**
+     * Represents the minimum value for an attribute.
+     */
+    private final double min;
+
+    /**
+     * A utility class that maps attribute keys to their corresponding attribute values.
+     */
+    AttributeMapper(String[] keys, double max, double min) {
+        this.keys = keys;
         this.max = max;
         this.min = min;
     }
 
+    /**
+     * Retrieves the AttributeMapper corresponding to the given key. The AttributeMapper is used to
+     * handle violations based on attribute modifiers in an ItemStack.
+     *
+     * @param key The key to search for in the AttributeMapper enum.
+     * @return The AttributeMapper corresponding to the given key, or null if no matching AttributeMapper is found.
+     */
     public static AttributeMapper getAttributeMapper(String key) {
         for (AttributeMapper value : values()) {
-            if (value.key.equalsIgnoreCase(key)) {
-                return value;
+            for (String s : value.keys) {
+                if (s.equalsIgnoreCase(key)) {
+                    return value;
+                }
             }
         }
         return null;

@@ -94,6 +94,12 @@ punish-command: "ban {username} Crashing"
 # cases with crashers, since the API is very mature
 kick-on-packet-exception: true
 
+# Should sierra block redstone crash loops?
+block-redstone-loops: true
+
+# Default value. Only increase / decrease in case of crashes!
+redstone-tick-limit: 60
+
 # This is a list of commands that, in the past, led to crashes due to the incompetence
 # of the developers of those plugins. We have listed and blocked these commands here.
 # You can add or remove commands as you wish
@@ -123,7 +129,7 @@ disallowed-commands:
   - "/mv ^(.*." # MultiverseCore
   - "/mv ^" # MultiverseCore
   - "mvh .*{9999}.*{9999}.*{9999}.*{9999}.$%" # MultiverseCore
-  - "/mvh ('.'""+.+.+.+.+.+.+" # MultiverseCore
+  - "/mvh ('.'+.+.+.+.+.+.+" # MultiverseCore
   - "/mv ^(.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*" # MultiverseCore
   - "/mv help ^" # MultiverseCore
   - "/mvhelp ^" # MultiverseCore

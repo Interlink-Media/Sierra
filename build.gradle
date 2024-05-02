@@ -20,18 +20,13 @@ publishing {
 repositories {
     maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url = 'https://repo.codemc.io/repository/maven-releases/' } // PacketEvents
-    maven { url "https://repo.demeng.dev/releases" }
     mavenCentral()
 }
 
 dependencies {
-    implementation('com.github.retrooper.packetevents:spigot:2.2.1') {
+    implementation ('com.github.retrooper.packetevents:spigot:2.2.1') {
         //exclude group: 'com.google.code.gson', module: 'gson'
         changing = true
-    }
-    implementation ("dev.demeng:sentinel-java-wrapper:1.2.0") {
-        // Exclude GSON if it's already available
-        //exclude group: 'com.google.code.gson', module: 'gson'
     }
     implementation(project(':api'))
     implementation(project(':events'))
