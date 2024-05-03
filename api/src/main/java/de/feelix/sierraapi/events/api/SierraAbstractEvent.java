@@ -7,7 +7,7 @@ import lombok.Data;
  */
 @Data
 @SuppressWarnings("unused")
-public abstract class AbstractEvent {
+public abstract class SierraAbstractEvent {
 
     /**
      * Represents whether an event has been cancelled.

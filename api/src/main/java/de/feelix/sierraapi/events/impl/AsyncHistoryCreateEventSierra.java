@@ -1,6 +1,6 @@
 package de.feelix.sierraapi.events.impl;
 
-import de.feelix.sierraapi.events.api.AbstractEvent;
+import de.feelix.sierraapi.events.api.SierraAbstractEvent;
 import de.feelix.sierraapi.history.History;
 import lombok.Getter;
 
@@ -9,7 +9,7 @@ import lombok.Getter;
  * It extends the Event class.
  */
 @Getter
-public class AsyncHistoryCreateEvent extends AbstractEvent {
+public class AsyncHistoryCreateEventSierra extends SierraAbstractEvent {
 
     /**
      * The history variable represents a user's history of actions or punishments.
@@ -21,7 +21,7 @@ public class AsyncHistoryCreateEvent extends AbstractEvent {
      * The AsyncHistoryCreateEvent class represents an asynchronous event triggered when a history document is created.
      * It extends the Event class.
      */
-    public AsyncHistoryCreateEvent(History history){
+    public AsyncHistoryCreateEventSierra(History history){
         this.history = history;
     }
 }

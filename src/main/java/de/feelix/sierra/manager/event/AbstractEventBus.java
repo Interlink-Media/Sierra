@@ -1,6 +1,6 @@
 package de.feelix.sierra.manager.event;
 
-import de.feelix.sierraapi.events.api.AbstractEvent;
+import de.feelix.sierraapi.events.api.SierraAbstractEvent;
 import de.feelix.sierraapi.events.EventSubscriber;
 import de.feelix.sierraapi.events.priority.ListenerPriority;
 import de.feelix.sierraapi.events.EventBus;
@@ -25,19 +25,19 @@ public class AbstractEventBus implements EventBus {
      * @param eventType the class object representing the event type
      * @param event     the consumer to handle the event
      */
-    public <T extends AbstractEvent> void subscribe(Class<T> eventType, Consumer<T> event) {
+    public <T extends SierraAbstractEvent> void subscribe(Class<T> eventType, Consumer<T> event) {
         this.subscribe(eventType, event, ListenerPriority.NORMAL);
     }
 
     /**
      * Subscribes a consumer to handle events of a specific type with a given priority.
      *
-     * @param <T>       the type of event to subscribe to, must extend {@link AbstractEvent}
+     * @param <T>       the type of event to subscribe to, must extend {@link SierraAbstractEvent}
      * @param eventType the class object representing the type of event to subscribe to
      * @param event     the consumer function to handle the event
      * @param priority  the priority of the listener
      */
-    public <T extends AbstractEvent> void subscribe(Class<T> eventType, Consumer<T> event, ListenerPriority priority) {
+    public <T extends SierraAbstractEvent> void subscribe(Class<T> eventType, Consumer<T> event, ListenerPriority priority) {
         subscribers.computeIfAbsent(eventType, k -> new ArrayList<>())
             .add(new EventSubscriber<>(event, priority.getScore()));
     }
@@ -49,7 +49,7 @@ public class AbstractEventBus implements EventBus {
      * @param <T>   the type of event to be published, must extend AbstractEvent
      * @param event the event to be published
      */
-    public <T extends AbstractEvent> void publish(T event) {
+    public <T extends SierraAbstractEvent> void publish(T event) {
         List<EventSubscriber<?>> eventSubscribers = subscribers.get(event.getClass());
         if (eventSubscribers == null) return;
 
@@ -59,12 +59,12 @@ public class AbstractEventBus implements EventBus {
     /**
      * Dispatches an event to all the subscribers that are subscribed to the event type.
      *
-     * @param <T>              the type of the event, must extend {@link AbstractEvent}
+     * @param <T>              the type of the event, must extend {@link SierraAbstractEvent}
      * @param event            the event to be dispatched
      * @param eventSubscribers the list of event subscribers to send the event to
      */
-    public <T extends AbstractEvent> void dispatchEventToSubscribers(T event,
-                                                                     List<EventSubscriber<?>> eventSubscribers) {
+    public <T extends SierraAbstractEvent> void dispatchEventToSubscribers(T event,
+                                                                           List<EventSubscriber<?>> eventSubscribers) {
 
         eventSubscribers.sort(Comparator.comparingInt(EventSubscriber::getPriority));
 

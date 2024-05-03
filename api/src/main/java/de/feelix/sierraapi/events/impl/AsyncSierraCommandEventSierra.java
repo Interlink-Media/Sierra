@@ -1,6 +1,6 @@
 package de.feelix.sierraapi.events.impl;
 
-import de.feelix.sierraapi.events.api.AbstractEvent;
+import de.feelix.sierraapi.events.api.SierraAbstractEvent;
 import lombok.Getter;
 
 /**
@@ -8,7 +8,7 @@ import lombok.Getter;
  * It extends the Bukkit Event class.
  */
 @Getter
-public class AsyncSierraCommandEvent extends AbstractEvent {
+public class AsyncSierraCommandEventSierra extends SierraAbstractEvent {
 
     /**
      * The label of a command.
@@ -28,7 +28,7 @@ public class AsyncSierraCommandEvent extends AbstractEvent {
      * immutability and consistency of the label throughout the lifecycle
      * of the event.
      *
-     * @see AsyncSierraCommandEvent
+     * @see AsyncSierraCommandEventSierra
      */
     private final String label;
 
@@ -38,7 +38,7 @@ public class AsyncSierraCommandEvent extends AbstractEvent {
      * @param command the command being executed
      * @param label the alias of the command used
      */
-    public AsyncSierraCommandEvent(String command, String label) {
+    public AsyncSierraCommandEventSierra(String command, String label) {
         this.command = command;
         this.label = label;
     }

@@ -1,7 +1,7 @@
 package de.feelix.sierraapi.events.impl;
 
 import de.feelix.sierraapi.check.CheckType;
-import de.feelix.sierraapi.events.api.AbstractEvent;
+import de.feelix.sierraapi.events.api.SierraAbstractEvent;
 import de.feelix.sierraapi.user.impl.SierraUser;
 import de.feelix.sierraapi.violation.Violation;
 import lombok.Getter;
@@ -11,7 +11,7 @@ import lombok.Getter;
  * It provides information about the violation, check type, and associated user.
  */
 @Getter
-public class AsyncUserDetectionEvent extends AbstractEvent {
+public class AsyncUserDetectionEventSierra extends SierraAbstractEvent {
 
     /**
      * The `violation` variable represents a violation that has occurred.
@@ -43,7 +43,7 @@ public class AsyncUserDetectionEvent extends AbstractEvent {
     /**
      * The violations variable represents the number of violations for the associated user.
      *
-     * @see AsyncUserDetectionEvent
+     * @see AsyncUserDetectionEventSierra
      */
     private final double violations;
 
@@ -56,7 +56,7 @@ public class AsyncUserDetectionEvent extends AbstractEvent {
      * @param checkType  The CheckType object representing the type of check that triggered the violation.
      * @param violations The number of violations for the associated user.
      */
-    public AsyncUserDetectionEvent(Violation violation, SierraUser sierraUser, CheckType checkType, double violations) {
+    public AsyncUserDetectionEventSierra(Violation violation, SierraUser sierraUser, CheckType checkType, double violations) {
         this.checkType = checkType;
         this.violation = violation;
         this.violations = violations;
