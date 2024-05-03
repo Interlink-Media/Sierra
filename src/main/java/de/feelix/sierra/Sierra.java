@@ -67,25 +67,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     private SierraConfigEngine sierraConfigEngine;
 
     /**
-     * The {@code ticker} variable represents an instance of the {@link Ticker} class.
-     *
-     * <p>
-     * The {@code Ticker} class is a timer that runs asynchronously and performs tasks at regular intervals.
-     * It maintains a {@code currentTick} count that increments by 1 every tick.
-     * It also has a {@code task} that runs every second and performs certain actions.
-     * </p>
-     *
-     * <p>
-     * The {@code ticker} variable is part of the {@link Sierra} plugin and can be obtained through the
-     * {@link Sierra#getPlugin()} method.
-     * </p>
-     *
-     * @see Ticker
-     * @see Sierra#getPlugin()
-     */
-    private Ticker ticker;
-
-    /**
      * The DataManager class represents a singleton instance that manages player data in the application.
      * It provides methods to manipulate and retrieve player data from the underlying data structures.
      * <p>
@@ -158,7 +139,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         PacketEvents.getAPI().getEventManager().registerListener(new PacketListener());
         setPrefix();
 
-        this.ticker = new Ticker();
+        new Ticker();
         this.sierraDataManager = new SierraDataManager();
 
         Objects.requireNonNull(this.getCommand("sierra")).setExecutor(new SierraCommand());
