@@ -97,8 +97,12 @@ kick-on-packet-exception: true
 # Should sierra block redstone crash loops?
 block-redstone-loops: true
 
-# Default value. Only increase / decrease in case of crashes!
+# Default value. Only increase / decrease in case of crashes or issues!
+# See console for more details and warnings
 redstone-tick-limit: 60
+
+# Should we log any action of sierra in console? Recommended in case of errors!
+log-violation-to-console: true
 
 # This is a list of commands that, in the past, led to crashes due to the incompetence
 # of the developers of those plugins. We have listed and blocked these commands here.

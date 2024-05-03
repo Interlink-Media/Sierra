@@ -174,6 +174,11 @@ public class SierraDetection implements SierraCheck {
      * @param violationDocument The ViolationDocument containing information about the violation.
      */
     protected void consoleLog(User user, ViolationDocument violationDocument) {
+
+        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("log-violation-to-console", true)) {
+            return;
+        }
+
         logToConsole(createGeneralMessage(user, violationDocument.getPunishType()));
         logToConsole(createGeneralInformation(violationDocument));
         logToConsole(createGeneralCheck());
