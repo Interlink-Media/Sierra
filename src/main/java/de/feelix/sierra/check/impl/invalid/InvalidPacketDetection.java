@@ -22,7 +22,7 @@ import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
-import de.feelix.sierra.manager.storage.MenuType;
+import de.feelix.sierra.manager.storage.menu.MenuType;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.*;
 import de.feelix.sierra.utilities.types.BannerType;

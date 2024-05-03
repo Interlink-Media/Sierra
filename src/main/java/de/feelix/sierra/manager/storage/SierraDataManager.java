@@ -8,6 +8,7 @@ import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.events.EventManager;
 import de.feelix.sierra.Sierra;
+import de.feelix.sierra.manager.storage.history.HistoryDocument;
 import de.feelix.sierra.utilities.update.UpdateChecker;
 import de.feelix.sierraapi.events.AsyncHistoryCreateEvent;
 import de.feelix.sierraapi.history.HistoryType;

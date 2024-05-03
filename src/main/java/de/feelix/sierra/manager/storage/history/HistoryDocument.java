@@ -1,4 +1,4 @@
-package de.feelix.sierra.manager.storage;
+package de.feelix.sierra.manager.storage.history;
 
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.history.HistoryType;

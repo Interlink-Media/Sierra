@@ -1,7 +1,7 @@
 package de.feelix.sierra.manager.storage.processor;
 
 import de.feelix.sierra.manager.storage.PlayerData;
-import de.feelix.sierra.manager.storage.SierraTiming;
+import de.feelix.sierra.manager.storage.timings.SierraTiming;
 import de.feelix.sierraapi.timing.Timing;
 import lombok.Getter;
 

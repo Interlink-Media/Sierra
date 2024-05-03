@@ -1,4 +1,4 @@
-package de.feelix.sierra.manager.storage;
+package de.feelix.sierra.manager.storage.menu;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;

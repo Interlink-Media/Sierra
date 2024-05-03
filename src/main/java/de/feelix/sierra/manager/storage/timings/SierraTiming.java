@@ -1,4 +1,4 @@
-package de.feelix.sierra.manager.storage;
+package de.feelix.sierra.manager.storage.timings;
 
 import de.feelix.sierraapi.timing.Timing;
 
