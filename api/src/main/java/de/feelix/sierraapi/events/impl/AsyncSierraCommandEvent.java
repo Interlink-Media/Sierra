@@ -1,6 +1,6 @@
-package de.feelix.sierraapi.events;
+package de.feelix.sierraapi.events.impl;
 
-import de.feelix.events.AbstractEvent;
+import de.feelix.sierraapi.events.api.AbstractEvent;
 import lombok.Getter;
 
 /**
@@ -31,7 +31,6 @@ public class AsyncSierraCommandEvent extends AbstractEvent {
      * @see AsyncSierraCommandEvent
      */
     private final String label;
-
 
     /**
      * Constructor for the AsyncSierraCommandEvent class.

@@ -1,6 +1,6 @@
-package de.feelix.sierraapi.events;
+package de.feelix.sierraapi.events.impl;
 
-import de.feelix.events.AbstractEvent;
+import de.feelix.sierraapi.events.api.AbstractEvent;
 import de.feelix.sierraapi.history.History;
 import lombok.Getter;
 

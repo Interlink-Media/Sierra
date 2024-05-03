@@ -1,6 +1,7 @@
 package de.feelix.sierra;
 
 import com.github.retrooper.packetevents.PacketEvents;
+import de.feelix.sierra.manager.event.AbstractEventBus;
 import de.feelix.sierra.command.SierraCommand;
 import de.feelix.sierra.listener.PacketListener;
 import de.feelix.sierra.listener.bukkit.BlockRedstoneListener;
@@ -13,6 +14,7 @@ import de.feelix.sierra.utilities.Ticker;
 import de.feelix.sierra.utilities.update.UpdateChecker;
 import de.feelix.sierraapi.SierraApi;
 import de.feelix.sierraapi.SierraApiAccessor;
+import de.feelix.sierraapi.events.EventBus;
 import de.feelix.sierraapi.module.ModuleGateway;
 import de.feelix.sierraapi.user.UserRepository;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
@@ -34,7 +36,7 @@ import java.util.logging.Logger;
  * The Sierra plugin provides various functionalities for managing player data and performing punishments.
  *
  * <p>
- * This class initializes various components of the Sierra plugin, registers event listeners, and sets up the command
+ * This class initializes various components of the Sierra plugin, registers event priority, and sets up the command
  * executor.
  * It also provides methods for accessing and manipulating player data and punishment configuration.
  * </p>
@@ -100,9 +102,14 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     private SierraModuleGateway sierraModuleGateway;
 
     /**
+     * Represents an event bus that allows events to be published and subscribed to.
+     */
+    private final EventBus eventBus = new AbstractEventBus();
+
+    /**
      * This method is called when the plugin is being enabled.
      * It initializes various components of the Sierra plugin,
-     * registers event listeners, and sets up the command executor.
+     * registers event priority, and sets up the command executor.
      */
     @Override
     public void onLoad() {
@@ -124,7 +131,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     /**
      * This method is called when the plugin is being enabled.
      * It initializes various components of the Sierra plugin,
-     * registers event listeners and sets up the command executor.
+     * registers event priority and sets up the command executor.
      */
     @Override
     public void onEnable() {
@@ -273,5 +280,10 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     @Override
     public ModuleGateway moduleGateway() {
         return this.sierraModuleGateway;
+    }
+
+    @Override
+    public EventBus eventBus() {
+        return this.eventBus;
     }
 }

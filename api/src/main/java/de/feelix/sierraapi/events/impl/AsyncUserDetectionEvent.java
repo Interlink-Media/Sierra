@@ -1,7 +1,7 @@
-package de.feelix.sierraapi.events;
+package de.feelix.sierraapi.events.impl;
 
-import de.feelix.events.AbstractEvent;
 import de.feelix.sierraapi.check.CheckType;
+import de.feelix.sierraapi.events.api.AbstractEvent;
 import de.feelix.sierraapi.user.impl.SierraUser;
 import de.feelix.sierraapi.violation.Violation;
 import lombok.Getter;

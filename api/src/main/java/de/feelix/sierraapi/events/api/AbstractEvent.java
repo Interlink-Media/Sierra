@@ -1,4 +1,4 @@
-package de.feelix.events;
+package de.feelix.sierraapi.events.api;
 
 import lombok.Data;
 

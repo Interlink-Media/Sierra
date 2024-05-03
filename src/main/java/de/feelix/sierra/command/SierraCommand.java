@@ -1,6 +1,5 @@
 package de.feelix.sierra.command;
 
-import de.feelix.events.EventManager;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.command.api.BukkitAbstractCommand;
 import de.feelix.sierra.command.api.SierraArguments;
@@ -8,7 +7,8 @@ import de.feelix.sierra.command.api.SierraLabel;
 import de.feelix.sierra.command.api.SierraSender;
 import de.feelix.sierra.command.impl.*;
 import de.feelix.sierraapi.commands.ISierraCommand;
-import de.feelix.sierraapi.events.AsyncSierraCommandEvent;
+import de.feelix.sierraapi.events.impl.AsyncHistoryCreateEvent;
+import de.feelix.sierraapi.events.impl.AsyncSierraCommandEvent;
 import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -95,7 +95,7 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
 
         AsyncSierraCommandEvent event = new AsyncSierraCommandEvent(command.getName(), label);
 
-        FoliaCompatUtil.runTaskAsync(Sierra.getPlugin(), () -> EventManager.callEvent(event));
+        FoliaCompatUtil.runTaskAsync(Sierra.getPlugin(), () -> Sierra.getPlugin().getEventBus().publish(event));
 
         if (hasNoPermission(sender)) {
             CommandHelper.sendVersionOutput(new SierraSender(sender));

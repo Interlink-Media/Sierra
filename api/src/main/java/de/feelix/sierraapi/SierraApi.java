@@ -1,5 +1,6 @@
 package de.feelix.sierraapi;
 
+import de.feelix.sierraapi.events.EventBus;
 import de.feelix.sierraapi.module.ModuleGateway;
 import de.feelix.sierraapi.user.UserRepository;
 
@@ -19,4 +20,11 @@ public interface SierraApi {
      * @return an instance of ModuleGateway
      */
     ModuleGateway moduleGateway();
+
+    /**
+     * The eventBus method returns an instance of EventBus.
+     *
+     * @return an instance of EventBus.
+     */
+    EventBus eventBus();
 }

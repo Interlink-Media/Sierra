@@ -2,7 +2,6 @@ package de.feelix.sierra.check;
 
 import com.github.retrooper.packetevents.event.ProtocolPacketEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
-import de.feelix.events.EventManager;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
@@ -17,7 +16,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import de.feelix.sierraapi.check.CheckType;
-import de.feelix.sierraapi.events.AsyncUserDetectionEvent;
+import de.feelix.sierraapi.events.impl.AsyncUserDetectionEvent;
 import de.feelix.sierraapi.violation.PunishType;
 import org.bukkit.ChatColor;
 
@@ -162,8 +161,7 @@ public class SierraDetection implements SierraCheck {
     private void throwDetectionEvent(ViolationDocument violationDocument) {
         FoliaCompatUtil.runTaskAsync(
             Sierra.getPlugin(),
-            () -> EventManager.callEvent(
-                new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))
+            () -> Sierra.getPlugin().getEventBus().publish(new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))
         );
     }
 

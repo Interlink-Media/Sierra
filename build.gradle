@@ -29,7 +29,6 @@ dependencies {
         changing = true
     }
     implementation(project(':api'))
-    implementation(project(':events'))
     implementation "net.kyori:adventure-api:4.16.0"
     implementation 'club.minnced:discord-webhooks:0.8.4'
 
@@ -55,7 +54,7 @@ shadowJar {
     relocate 'com.google.gson', 'net.square.sierra.gson'
     relocate 'net.kyori', 'net.square.sierra.kyori'
     relocate 'com.github.retrooper.packetevents', 'net.square.sierra.packetevents.api'
-    relocate 'io.github.retrooper.packetevents', 'net.square.sierra.packetevents.impl'
+    relocate 'io.github.retrooper.packetevents', 'net.square.sierra.packetevents.api'
     relocate 'org.bstats', 'net.square.sierra.bstats'
 
     archiveFileName = "${project.name}-${project.version}.jar"
