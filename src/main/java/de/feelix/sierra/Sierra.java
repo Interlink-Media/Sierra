@@ -119,12 +119,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     private SierraModuleGateway sierraModuleGateway;
 
     /**
-     * The moduleDir variable represents the directory where the module files are located.
-     * It is a private field of type File.
-     */
-    private File moduleDir;
-
-    /**
      * This method is called when the plugin is being enabled.
      * It initializes various components of the Sierra plugin,
      * registers event listeners, and sets up the command executor.
@@ -209,11 +203,11 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * This method is called when the plugin is being enabled.
      */
     private void loadModules() {
-        this.moduleDir = new File("./plugins/" + this.getDescription().getName() + "/modules");
-        if (!this.moduleDir.mkdirs() && !this.moduleDir.exists()) {
+        File folder = new File("./plugins/" + this.getDescription().getName() + "/modules");
+        if (!folder.mkdirs() && !folder.exists()) {
             this.getLogger().severe("Failed to create modules directory!");
         }
-        this.sierraModuleGateway = new SierraModuleGateway(this.moduleDir);
+        this.sierraModuleGateway = new SierraModuleGateway(folder);
         this.sierraModuleGateway.loadModules();
     }
 
