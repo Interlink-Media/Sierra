@@ -103,6 +103,6 @@ public class AlertsCommand implements ISierraCommand {
      */
     @Override
     public String description() {
-        return "Join the alerts-mode";
+        return "Toggles the alerts";
     }
 }

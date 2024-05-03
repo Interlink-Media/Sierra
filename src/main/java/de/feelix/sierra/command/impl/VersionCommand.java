@@ -46,6 +46,6 @@ public class VersionCommand implements ISierraCommand {
      */
     @Override
     public String description() {
-        return "Show version info";
+        return "View version info";
     }
 }

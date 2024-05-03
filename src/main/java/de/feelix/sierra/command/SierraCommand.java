@@ -60,7 +60,8 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
 
     /**
      * The MESSAGE_PREFIX variable represents the prefix for messages sent by the Sierra plugin.
-     * It is a static, private field and is obtained by concatenating the Sierra.PREFIX constant with the " §fSubcommands §7(/sierra)" string.
+     * It is a static, private field and is obtained by concatenating the Sierra.PREFIX constant with the "
+     * §fSubcommands §7(/sierra)" string.
      * The prefix is translated using the '&' character as a color code indicator.
      */
     private static final String MESSAGE_PREFIX = Sierra.PREFIX + " §fSubcommands §7(/sierra)";
@@ -72,9 +73,9 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
      * corresponding command is entered in-game.
      */
     public SierraCommand() {
+        this.commands.put("reload", new ReloadCommand());
         this.commands.put("alerts", new AlertsCommand());
         this.commands.put("version", new VersionCommand());
-        this.commands.put("reload", new ReloadCommand());
         this.commands.put("monitor", new MonitorCommand());
         this.commands.put("history", new HistoryCommand());
     }
@@ -82,10 +83,10 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
     /**
      * Executes the Sierra command.
      *
-     * @param sender the command sender
+     * @param sender  the command sender
      * @param command the command being executed
-     * @param label the alias of the command used
-     * @param args the arguments provided for the command
+     * @param label   the alias of the command used
+     * @param args    the arguments provided for the command
      * @return true if the command was executed successfully, false otherwise
      */
     @Override
@@ -138,10 +139,10 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
      * This method is called when tab-completion for this command is requested.
      * It provides a list of valid completions for the current command arguments.
      *
-     * @param sender the command sender
+     * @param sender  the command sender
      * @param command the command being completed
-     * @param alias the alias used for the command
-     * @param args the arguments provided for the command
+     * @param alias   the alias used for the command
+     * @param args    the arguments provided for the command
      * @return a list of valid completions for the current command arguments
      */
     @Nullable

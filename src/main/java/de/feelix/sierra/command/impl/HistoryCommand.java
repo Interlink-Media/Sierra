@@ -162,6 +162,6 @@ public class HistoryCommand implements ISierraCommand {
      */
     @Override
     public String description() {
-        return "Show recent action history";
+        return "History of player`s punishments";
     }
 }

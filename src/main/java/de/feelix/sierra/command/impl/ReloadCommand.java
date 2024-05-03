@@ -59,6 +59,6 @@ public class ReloadCommand implements ISierraCommand {
      */
     @Override
     public String description() {
-        return "Reload the configuration";
+        return "Reloads the config";
     }
 }
