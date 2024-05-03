@@ -33,7 +33,8 @@ public class HistoryCommand implements ISierraCommand {
         }
 
         Pagination<HistoryDocument> pagination = setupPagination();
-        int page = correctPage(FormatUtils.toInt(sierraArguments.getArguments().get(1)), pagination.totalPages());
+        int                         page       = correctPage(
+            FormatUtils.toInt(sierraArguments.getArguments().get(1)), pagination.totalPages());
         sendMessage(sierraSender, page, pagination);
 
         List<HistoryDocument> historyDocumentList = pagination.itemsForPage(page);
@@ -49,8 +50,8 @@ public class HistoryCommand implements ISierraCommand {
     /**
      * Sends the history messages to the specified sender.
      *
-     * @param sierraSender         The ISierraSender object representing the sender.
-     * @param historyDocumentList  The list of HistoryDocument objects containing the history information.
+     * @param sierraSender        The ISierraSender object representing the sender.
+     * @param historyDocumentList The list of HistoryDocument objects containing the history information.
      */
     private void sendHistoryMessages(ISierraSender sierraSender, List<HistoryDocument> historyDocumentList) {
         for (HistoryDocument historyDocument : historyDocumentList) {
@@ -99,11 +100,11 @@ public class HistoryCommand implements ISierraCommand {
      * Sends a formatted message to the provided ISierraSender object using the specified pagination details.
      *
      * @param sierraSender - The ISierraSender object representing the sender to send the message to.
-     * @param page - The current page number.
-     * @param pagination - A Pagination object containing the history documents.
+     * @param page         - The current page number.
+     * @param pagination   - A Pagination object containing the history documents.
      */
     private void sendMessage(ISierraSender sierraSender, int page, Pagination<HistoryDocument> pagination) {
-        int totalHistory = pagination.getItems().size();
+        int totalHistory    = pagination.getItems().size();
         String unformulated = "%s §fShowing entries: §7(page §c%s §7of §c%d §7- §c%d §7entries)";
         sierraSender.getSender()
             .sendMessage(String.format(unformulated, Sierra.PREFIX, page, pagination.totalPages(), totalHistory));
@@ -116,12 +117,14 @@ public class HistoryCommand implements ISierraCommand {
      * @return The formatted history message.
      */
     private BaseComponent[] createHistoryMessage(HistoryDocument historyDocument) {
-        return FormatUtils.formatColor(String.format("§7[%s] §c%s §7(%dms) -> §c%s §7(%s)",
-                                                     historyDocument.formatTimestamp(),
-                                                     historyDocument.username(),
-                                                     historyDocument.ping(),
-                                                     historyDocument.punishType().historyMessage(),
-                                                     historyDocument.shortenDescription()));
+        return FormatUtils.formatColor(String.format(
+            "§7[%s] §c%s §7(%dms) -> §c%s §7(%s)",
+            historyDocument.formatTimestamp(),
+            historyDocument.username(),
+            historyDocument.ping(),
+            historyDocument.punishType().historyMessage(),
+            historyDocument.shortenDescription()
+        ));
     }
 
     /**
@@ -130,11 +133,7 @@ public class HistoryCommand implements ISierraCommand {
      * @param sierraSender The sender object.
      */
     private void sendHelpSyntax(ISierraSender sierraSender) {
-        String prefix = Sierra.PREFIX;
-        sierraSender.getSender().sendMessage(prefix + " §c§lCommand Usage §8- §7History");
-        sierraSender.getSender().sendMessage(prefix + " §8- §7Show the action history");
-        sierraSender.getSender().sendMessage(prefix + " §7Arguments:");
-        sierraSender.getSender().sendMessage(prefix + " §8- §8<§7page§8> §8-> §7The specific page");
+        sierraSender.getSender().sendMessage(Sierra.PREFIX + " §cInvalid usage, try /sierra history <page>");
     }
 
     /**

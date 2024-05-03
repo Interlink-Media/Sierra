@@ -14,7 +14,6 @@ import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
 import org.bukkit.entity.Player;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,15 +66,6 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      * ```
      */
     private static final Pattern EXPLOIT_PATTERN2 = Pattern.compile("\\$\\{.*}");
-
-    /**
-     * The list of disallowed commands.
-     * <p>
-     * This list is retrieved from the Sierra plugin's configuration file.
-     * It contains a collection of disallowed commands that players are not allowed to execute.
-     */
-    public static List<String> disallowedCommands = Sierra.getPlugin()
-        .getSierraConfigEngine().config().getStringList("disallowed-commands");
 
     private double count       = 0;
     private String lastCommand = "";
@@ -155,7 +145,8 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
     private void checkDisallowedCommand(PacketReceiveEvent event, String wrapper) {
         String string = wrapper.toLowerCase().replaceAll("\\s+", " ");
 
-        for (String disallowedCommand : disallowedCommands) {
+        for (String disallowedCommand : Sierra.getPlugin()
+            .getSierraConfigEngine().config().getStringList("disallowed-commands")) {
             if (string.contains(disallowedCommand)) {
                 if (playerHasPermission(event)) {
                     violation(event, ViolationDocument.builder()
@@ -205,7 +196,8 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      * @param message the message to check for double commands
      */
     private void checkForDoubleCommands(PacketReceiveEvent event, String message) {
-        for (String disallowedCommand : disallowedCommands) {
+        for (String disallowedCommand : Sierra.getPlugin()
+            .getSierraConfigEngine().config().getStringList("disallowed-commands")) {
             if (message.contains(disallowedCommand)) {
                 if (playerHasPermission(event)) {
                     violation(event, ViolationDocument.builder()
