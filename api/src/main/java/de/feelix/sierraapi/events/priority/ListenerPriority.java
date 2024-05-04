@@ -8,14 +8,23 @@ import lombok.Getter;
 @Getter
 public enum ListenerPriority {
 
-    HIGHEST(5),
-    HIGH(4),
-    NORMAL(3),
-    LOW(2),
-    LOWEST(1);
+    HIGHEST(2),
+    HIGH(1),
+    NORMAL(0),
+    LOW(-1),
+    LOWEST(-2);
 
+    /**
+     * The score for event priority.
+     */
     private final int score;
 
+    /**
+     * Represents the priority of an event listener.
+     * The lower the score, the higher the priority.
+     *
+     * @param score The score for the event priority.
+     */
     ListenerPriority(int score) {
         this.score = score;
     }
