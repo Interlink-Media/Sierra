@@ -221,7 +221,7 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
             this.count++;
             if (this.count > 5) {
                 violation(event, ViolationDocument.builder()
-                    .punishType(PunishType.KICK)
+                    .punishType(PunishType.MITIGATE)
                     .debugInformation(String.format("Typed same command %s times", this.count))
                     .build());
             }

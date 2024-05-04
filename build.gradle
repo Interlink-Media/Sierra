@@ -25,12 +25,13 @@ repositories {
 
 dependencies {
     implementation ('com.github.retrooper.packetevents:spigot:2.2.1') {
-        //exclude group: 'com.google.code.gson', module: 'gson'
+        exclude group: 'com.google.code.gson', module: 'gson'
         changing = true
     }
     implementation(project(':api'))
     implementation "net.kyori:adventure-api:4.16.0"
     implementation 'club.minnced:discord-webhooks:0.8.4'
+    implementation 'com.google.code.gson:gson:2.10.1'
 
     compileOnly 'org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT'
 
@@ -51,7 +52,7 @@ java.targetCompatibility = JavaVersion.VERSION_1_8
 shadowJar {
     minimize()
     relocate 'club.minnced', 'net.square.sierra.discord-webhooks'
-    relocate 'com.google.gson', 'net.square.sierra.gson'
+    relocate 'com.google', 'net.square.sierra.google'
     relocate 'net.kyori', 'net.square.sierra.kyori'
     relocate 'com.github.retrooper.packetevents', 'net.square.sierra.packetevents.api'
     relocate 'io.github.retrooper.packetevents', 'net.square.sierra.packetevents.api'
