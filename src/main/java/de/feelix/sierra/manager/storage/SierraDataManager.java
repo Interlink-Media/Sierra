@@ -10,6 +10,7 @@ import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.history.HistoryDocument;
 import de.feelix.sierra.utilities.update.UpdateChecker;
 import de.feelix.sierraapi.events.impl.AsyncHistoryCreateEventSierra;
+import de.feelix.sierraapi.history.History;
 import de.feelix.sierraapi.history.HistoryType;
 import de.feelix.sierraapi.violation.PunishType;
 import io.github.retrooper.packetevents.util.FoliaCompatUtil;
@@ -20,10 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -40,6 +38,7 @@ public class SierraDataManager implements UserRepository {
      */
     @Getter
     private static SierraDataManager     instance;
+
     /**
      * This variable represents a map of User objects to PlayerData objects.
      */
@@ -48,7 +47,7 @@ public class SierraDataManager implements UserRepository {
     /**
      * ArrayList to store the history documents.
      */
-    private final ArrayList<HistoryDocument> histories = new ArrayList<>();
+    private final ArrayList<History> histories = new ArrayList<>();
 
     /**
      * The DataManager function initializes the packet priority.
@@ -276,5 +275,10 @@ public class SierraDataManager implements UserRepository {
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    public List<History> getLocalActionHistory() {
+        return this.histories;
     }
 }

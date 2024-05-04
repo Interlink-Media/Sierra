@@ -1,7 +1,9 @@
 package de.feelix.sierraapi.user;
 
+import de.feelix.sierraapi.history.History;
 import de.feelix.sierraapi.user.impl.SierraUser;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,4 +35,11 @@ public interface UserRepository {
      * @return an Optional containing the SierraUser object if found, or an empty Optional if not found
      */
     Optional<SierraUser> queryUserByName(String name);
+
+    /**
+     * Retrieves the local action history of a user.
+     *
+     * @return A List of History objects representing the user's action history. The list may be empty if no history is available.
+     */
+    List<History> getLocalActionHistory();
 }
