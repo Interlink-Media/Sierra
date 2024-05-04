@@ -107,6 +107,45 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     private final EventBus eventBus = new AbstractEventBus();
 
     /**
+     * The PLUGIN_ID variable represents the unique identifier for the plugin. It is an integer value.
+     * <p>
+     * Note: This documentation does not include example code or author/version tags.
+     */
+    private static final int    PLUGIN_ID                  = 21527;
+
+    /**
+     * The INTERNAL_PUNISHMENT_CONFIG variable represents the name of the internal punishment configuration file in the Sierra plugin.
+     * This file is used to store and manage punishment settings and configurations for the plugin.
+     * It is a constant string variable and its value is set to "internal-punishment-config".
+     *
+     * @see SierraConfigEngine
+     * @see SierraConfigEngine#config()
+     */
+    private static final String INTERNAL_PUNISHMENT_CONFIG = "internal-punishment-config";
+
+    /**
+     * The HARD_PUNISHMENT_CONFIG variable represents the configuration type for hard punishments.
+     * It is a string constant with the value "HARD".
+     */
+    private static final String HARD_PUNISHMENT_CONFIG     = "HARD";
+
+    /**
+     * The BLOCK_REDSTONE_LOOP variable represents the name of the configuration option in the sierra.yml file.
+     * This option is used to identify the configuration value for block redstone loops in the Sierra plugin.
+     * The variable is a string with the value "block-redstone-loops".
+     * <p>
+     * This variable is used in the SierraConfigEngine class to retrieve the configuration value from the sierra.yml file.
+     * The SierraConfigEngine class initializes the main configuration file and caches it in memory for efficient access.
+     * The config() method in the SierraConfigEngine class returns a YamlConfiguration object that represents the sierra.yml file.
+     * The config() method is called to get the value associated with the BLOCK_REDSTONE_LOOP configuration option.
+     * <p>
+     * Example usage:
+     * <p>
+     * SierraConfigEngine configEngine = new SierraConfigEngine();
+     * YamlConfiguration config = configEngine*/
+    private static final String BLOCK_REDSTONE_LOOP        = "block-redstone-loops";
+
+    /**
      * This method is called when the plugin is being enabled.
      * It initializes various components of the Sierra plugin,
      * registers event priority, and sets up the command executor.
@@ -116,64 +155,126 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         plugin = this;
         sierraConfigEngine = new SierraConfigEngine();
         updateChecker = new UpdateChecker();
-
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
+        configureApiSettings();
+        PacketEvents.getAPI().load();
+    }
+
+    /**
+     * The configureApiSettings method configures the settings of the PacketEvents API used by the Sierra plugin.
+     * This method modifies various settings such as full stack trace, kick on packet exception, re-encoding,
+     * check for updates, and bStats.
+     * <p>
+     * This method retrieves the PacketEvents API from the SierraApi using the getAPI() method.
+     * It then uses the fluent builder pattern to configure the settings of the API.
+     * <p>
+     * Example usage:
+     * <pre>{@code
+     * configureApiSettings();
+     * }</pre>
+     */
+    private void configureApiSettings() {
         PacketEvents.getAPI().getSettings()
             .fullStackTrace(true)
             .kickOnPacketException(sierraConfigEngine.config().getBoolean("kick-on-packet-exception", true))
             .reEncodeByDefault(false)
             .checkForUpdates(false)
             .bStats(true);
-
-        PacketEvents.getAPI().load();
     }
 
     /**
      * This method is called when the plugin is being enabled.
      * It initializes various components of the Sierra plugin,
-     * registers event priority and sets up the command executor.
+     * registers event priority, and sets up the command executor.
      */
     @Override
     public void onEnable() {
-        plugin = this;
         long startTime = System.currentTimeMillis();
 
-        int pluginId = 21527; // https://bstats.org/plugin/bukkit/Sierra/21527
-
-        // For compatibility with folia
-        new io.github.retrooper.packetevents.bstats.Metrics(this, pluginId);
-
-        PacketEvents.getAPI().getEventManager().registerListener(new PacketListener());
+        initializePacketEvents();
         setPrefix();
-
         new Ticker();
-        this.sierraDataManager = new SierraDataManager();
 
+        this.sierraDataManager = new SierraDataManager();
         Objects.requireNonNull(this.getCommand("sierra")).setExecutor(new SierraCommand());
 
-        PacketEvents.getAPI().init();
-
-        // Setup punishment options for sierra
-        this.punishmentConfig = PunishmentConfig.valueOf(
-            this.sierraConfigEngine.config().getString("internal-punishment-config", "HARD"));
-
-        if (this.sierraConfigEngine.config().getBoolean("block-redstone-loops", true)) {
-            Bukkit.getPluginManager().registerEvents(new BlockRedstoneListener(), this);
-        }
+        setupPunishmentConfig();
+        blockRedStoneLoops();
 
         this.sierraDiscordGateway.setup();
 
-        checkForUpdate();
-        updateChecker.startScheduler();
+        checkAndUpdatePlugin();
 
         this.loadModules();
 
         long delay = System.currentTimeMillis() - startTime;
-        this.getLogger().log(Level.INFO, "Sierra is ready. (Took: " + delay + "ms)");
+        logInitializationTime(delay);
 
-        // Enable the api
         SierraApiAccessor.setSierraApiInstance(this);
         this.getLogger().log(Level.INFO, "API is ready");
+    }
+
+    /**
+     * Initializes the packet events for the Sierra plugin.
+     * This method sets up the necessary components for packet event handling, such as metrics, event listener registration,
+     * and initialization of the PacketEvents API.
+     */
+    private void initializePacketEvents() {
+        new io.github.retrooper.packetevents.bstats.Metrics(this, PLUGIN_ID);
+        PacketEvents.getAPI().getEventManager().registerListener(new PacketListener());
+        PacketEvents.getAPI().init();
+    }
+
+    /**
+     * The setupPunishmentConfig method is a private helper method used to set up the punishment configuration for the Sierra plugin.
+     * It retrieves the punishment configuration value from the sierra.yml configuration file, and sets the punishmentConfig field
+     * in the Sierra class using the PunishmentConfig enum.
+     * <p>
+     * The punishment configuration is obtained from the "internal.punishment.config" configuration option in the sierra.yml file.
+     * If this option does not exist in the configuration file, the "hard" punishment configuration is used as the default value.
+     * <p>
+     * Example usage:
+     * <pre>{@code
+     * setupPunishmentConfig();
+     * }</pre>
+     *
+     * @see Sierra#sierraConfigEngine
+     * @see PunishmentConfig
+     */
+    private void setupPunishmentConfig() {
+        this.punishmentConfig = PunishmentConfig.valueOf(
+            this.sierraConfigEngine.config().getString(INTERNAL_PUNISHMENT_CONFIG, HARD_PUNISHMENT_CONFIG));
+    }
+
+    /**
+     * This method blocks redstone loops if the "BLOCK_REDSTONE_LOOP" configuration option is set to true.
+     * It registers the BlockRedstoneListener event listener with the Bukkit plugin manager.
+     *
+     * @see Sierra#sierraConfigEngine
+     * @see SierraConfigEngine#config()
+     * @see BlockRedstoneListener
+     */
+    private void blockRedStoneLoops() {
+        if (this.sierraConfigEngine.config().getBoolean(BLOCK_REDSTONE_LOOP, true)) {
+            Bukkit.getPluginManager().registerEvents(new BlockRedstoneListener(), this);
+        }
+    }
+
+    /**
+     * Check for updates to the plugin and start the update checker scheduler.
+     */
+    private void checkAndUpdatePlugin() {
+        checkForUpdate();
+        updateChecker.startScheduler();
+    }
+
+    /**
+     * Logs the initialization time of the Sierra plugin.
+     *
+     * @param delay the time taken for initialization in milliseconds
+     */
+    private void logInitializationTime(long delay) {
+        this.getLogger().log(Level.INFO, "Sierra is ready. (Took: " + delay + "ms)");
     }
 
     /**
