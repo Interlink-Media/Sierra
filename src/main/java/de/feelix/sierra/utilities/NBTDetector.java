@@ -1,45 +1,11 @@
 package de.feelix.sierra.utilities;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * The NBTDetector class is used to check if a given string contains an NBT (Named Binary Tag) tag.
+ */
 public class NBTDetector {
-
-    /**
-     * The stringList variable is a private static final List of type String.
-     * It is used in the NBTDetector class to store a list of specific strings
-     * that are commonly found in NBT tags.
-     * <p>
-     * Example usage:
-     * NBTDetector detector = new NBTDetector();
-     * boolean result = detector.find("sample {nbt} input");
-     * <p>
-     * public class NBTDetector {
-     * <p>
-     * private static final List<String> stringList = new ArrayList<>();
-     * <p>
-     * public NBTDetector() {
-     * stringList.add("{");
-     * stringList.add("}");
-     * stringList.add("nbt");
-     * }
-     * <p>
-     * public boolean find(String input) {
-     * // implementation
-     * }
-     * }
-     */
-    private static final List<String> stringList = new ArrayList<>();
-
-    /**
-     * The NBTDetector class is responsible for detecting the presence of NBT tags in a given string.
-     */
-    public NBTDetector() {
-        stringList.add("{");
-        stringList.add("}");
-        stringList.add("nbt");
-    }
 
     /**
      * Returns true if the given string contains an NBT tag, otherwise returns false.
@@ -48,13 +14,6 @@ public class NBTDetector {
      * @return true if the string contains an NBT tag, false otherwise
      */
     public boolean find(String input) {
-        if (Pattern.compile("\\{[^{}]*}").matcher(input).find()) return true;
-
-        for (String string : stringList) {
-            if (input.contains(string)) {
-                return true;
-            }
-        }
-        return false;
+        return Pattern.compile("\\{[^{}]*}").matcher(input).find();
     }
 }
