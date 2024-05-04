@@ -10,6 +10,7 @@ import java.util.UUID;
 /**
  * The UserRepository interface represents a repository for querying SierraUser objects based on different criteria.
  */
+@SuppressWarnings("unused")
 public interface UserRepository {
 
     /**
