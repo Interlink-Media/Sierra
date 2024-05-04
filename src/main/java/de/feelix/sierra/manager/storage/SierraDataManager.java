@@ -73,12 +73,7 @@ public class SierraDataManager implements UserRepository {
 
             @Override
             public void onUserDisconnect(UserDisconnectEvent event) {
-                User user = event.getUser();
-
-                // Remove user to prevent next session, if login
-                // Sierra.getPlugin().getUniqueRunnableExecutor().getFlagOfExecutedTask().remove(user.getUUID());
-
-                removePlayerData(user);
+                removePlayerData(event.getUser());
             }
         });
     }
