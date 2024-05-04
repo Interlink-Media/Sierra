@@ -7,8 +7,6 @@ import de.feelix.sierra.command.api.SierraLabel;
 import de.feelix.sierra.command.api.SierraSender;
 import de.feelix.sierra.command.impl.*;
 import de.feelix.sierraapi.commands.ISierraCommand;
-import de.feelix.sierraapi.events.impl.AsyncSierraCommandEventSierra;
-import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -91,10 +89,6 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label,
                              String[] args) {
-
-        AsyncSierraCommandEventSierra event = new AsyncSierraCommandEventSierra(command.getName(), label);
-
-        FoliaCompatUtil.runTaskAsync(Sierra.getPlugin(), () -> Sierra.getPlugin().getEventBus().publish(event));
 
         if (hasNoPermission(sender)) {
             CommandHelper.sendVersionOutput(new SierraSender(sender));
