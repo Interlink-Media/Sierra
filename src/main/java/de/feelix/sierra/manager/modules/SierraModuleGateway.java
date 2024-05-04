@@ -1,6 +1,8 @@
 package de.feelix.sierra.manager.modules;
 
 import de.feelix.sierra.Sierra;
+import de.feelix.sierraapi.events.impl.ModuleDisableEvent;
+import de.feelix.sierraapi.events.impl.ModuleEnableEvent;
 import de.feelix.sierraapi.module.ModuleGateway;
 import de.feelix.sierraapi.module.SierraModule;
 import de.feelix.sierraapi.module.SierraModuleDescription;
@@ -71,8 +73,11 @@ public class SierraModuleGateway implements ModuleGateway {
             final SierraModule            module      = modules.get(name);
             final SierraModuleDescription description = module.getSierraModuleDescription();
             String                        format      = "Disabling Module %s v%s by %s...";
-            logger
-                .info(String.format(format, description.getName(), description.getVersion(), description.getAuthor()));
+            Sierra.getPlugin().getEventBus().publish(new ModuleDisableEvent(name, description));
+
+            logger.info(String.format(format, description.getName(), description.getVersion(),
+                                      description.getAuthor()
+            ));
             module.disable();
         }
         modules.clear();
@@ -194,6 +199,7 @@ public class SierraModuleGateway implements ModuleGateway {
 
             logInfo(String.format(rawString, description.getName(), description.getVersion(), description.getAuthor()));
             modules.put(description.getName(), module);
+            Sierra.getPlugin().getEventBus().publish(new ModuleEnableEvent(description.getName(), description));
             processDataDirectory(description);
             module.enable(
                 description, new File(moduleDir, description.getName()), Sierra.getPlugin().getDescription().getName(),
