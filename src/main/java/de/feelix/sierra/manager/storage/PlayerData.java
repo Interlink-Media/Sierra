@@ -9,6 +9,7 @@ import de.feelix.sierra.manager.storage.processor.BrandProcessor;
 import de.feelix.sierra.manager.storage.processor.GameModeProcessor;
 import de.feelix.sierra.manager.storage.processor.PingProcessor;
 import de.feelix.sierra.manager.storage.processor.TimingProcessor;
+import de.feelix.sierraapi.timing.TimingHandler;
 import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import lombok.Data;
 import de.feelix.sierraapi.check.CheckRepository;
@@ -59,7 +60,7 @@ public class PlayerData implements SierraUser {
     private final BrandProcessor    brandProcessor    = new BrandProcessor(this);
     private final GameModeProcessor gameModeProcessor = new GameModeProcessor(this);
     private final PingProcessor     pingProcessor     = new PingProcessor(this);
-    private final TimingProcessor   timingProcessor   = new TimingProcessor(this);
+    private final TimingHandler     timingProcessor   = new TimingProcessor(this);
 
     /**
      * The PlayerData function is a constructor that takes in a User object and sets the user variable to it.
@@ -229,4 +230,15 @@ public class PlayerData implements SierraUser {
         return this.checkManager;
     }
 
+    /**
+     * Retrieves the TimingHandler object associated with the PlayerData object.
+     *
+     * @return the TimingHandler object
+     *
+     * @see SierraUser#timingHandler()
+     */
+    @Override
+    public TimingHandler timingHandler() {
+        return this.getTimingProcessor();
+    }
 }

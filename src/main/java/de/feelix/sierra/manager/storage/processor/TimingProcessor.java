@@ -3,13 +3,14 @@ package de.feelix.sierra.manager.storage.processor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.timings.SierraTiming;
 import de.feelix.sierraapi.timing.Timing;
+import de.feelix.sierraapi.timing.TimingHandler;
 import lombok.Getter;
 
 /**
  * The TimingProcessor class is responsible for processing timing information related to player actions.
  */
 @Getter
-public class TimingProcessor {
+public class TimingProcessor implements TimingHandler {
 
     /**
      * The playerData variable represents the player data associated with a player.
@@ -54,5 +55,20 @@ public class TimingProcessor {
      */
     public TimingProcessor(PlayerData playerData) {
         this.playerData = playerData;
+    }
+
+    @Override
+    public Timing getMovementTask() {
+        return movementProcessor;
+    }
+
+    @Override
+    public Timing getPacketReceiveTask() {
+        return packetReceiveTiming;
+    }
+
+    @Override
+    public Timing getPacketSendTask() {
+        return packetSendTiming;
     }
 }

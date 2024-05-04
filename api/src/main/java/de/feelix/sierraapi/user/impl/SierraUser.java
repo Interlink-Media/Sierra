@@ -1,6 +1,7 @@
 package de.feelix.sierraapi.user.impl;
 
 import de.feelix.sierraapi.check.CheckRepository;
+import de.feelix.sierraapi.timing.TimingHandler;
 
 import java.util.UUID;
 
@@ -87,4 +88,13 @@ public interface SierraUser {
      * The CheckRepository interface represents a repository of checks in the Sierra API.
      */
     CheckRepository checkRepository();
+
+    /**
+     * The TimingHandler interface represents an object that provides timing tasks for various operations.
+     * The implementation of this interface should provide methods to retrieve different Timing objects
+     * for measuring the timing of specific tasks or operations.
+     *
+     * @return The TimingHandler object.
+     */
+    TimingHandler timingHandler();
 }
