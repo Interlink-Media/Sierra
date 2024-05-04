@@ -5,10 +5,7 @@ import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.CheckManager;
-import de.feelix.sierra.manager.storage.processor.BrandProcessor;
-import de.feelix.sierra.manager.storage.processor.GameModeProcessor;
-import de.feelix.sierra.manager.storage.processor.PingProcessor;
-import de.feelix.sierra.manager.storage.processor.TimingProcessor;
+import de.feelix.sierra.manager.storage.processor.*;
 import de.feelix.sierraapi.timing.TimingHandler;
 import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import lombok.Data;
@@ -54,8 +51,9 @@ public class PlayerData implements SierraUser {
 
     private String brand = "vanilla";
 
-    private       ClientVersion     clientVersion;
-    private       GameMode          gameMode;
+    private ClientVersion clientVersion;
+    private GameMode      gameMode;
+
     private final CheckManager      checkManager      = new CheckManager(this);
     private final BrandProcessor    brandProcessor    = new BrandProcessor(this);
     private final GameModeProcessor gameModeProcessor = new GameModeProcessor(this);
@@ -234,7 +232,6 @@ public class PlayerData implements SierraUser {
      * Retrieves the TimingHandler object associated with the PlayerData object.
      *
      * @return the TimingHandler object
-     *
      * @see SierraUser#timingHandler()
      */
     @Override

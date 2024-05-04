@@ -54,11 +54,12 @@ public class PacketListener extends PacketListenerAbstract {
     /**
      * Checks the handling of a packet for the given player data and event.
      * If the player data is not null, has a valid user, and the name has not been checked yet,
-     * it validates the username of the event's user. If the username is invalid, it cancels the event and kicks the player.
+     * it validates the username of the event's user. If the username is invalid, it cancels the event and kicks the
+     * player.
      * Finally, it sets the nameChecked flag in the player data to true.
      *
      * @param playerData the PlayerData object representing the data associated with the player
-     * @param event the PacketReceiveEvent representing the packet receive event
+     * @param event      the PacketReceiveEvent representing the packet receive event
      */
     private void checkHandling(PlayerData playerData, PacketReceiveEvent event) {
         if (playerData != null
