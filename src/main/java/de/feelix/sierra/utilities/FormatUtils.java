@@ -1,14 +1,11 @@
 package de.feelix.sierra.utilities;
 
-import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,34 +44,6 @@ public class FormatUtils {
         }
     }
 
-    // Taken from https://www.spigotmc.org/threads/mapping-protocol-to-bukkit-slots.577724/
-    public static int getBukkitSlot(int packetSlot) {
-        // 0 -> 5 are crafting slots, don't exist in bukkit
-        if (packetSlot <= 4) {
-            return -1;
-        }
-        // 5 -> 8 are armor slots in protocol, ordered helmets to boots
-        if (packetSlot <= 8) {
-            // 36 -> 39 are armor slots in bukkit, ordered boots to helmet. tbh I got this from trial and error.
-            return (7 - packetSlot) + 36;
-        }
-        // By a coincidence, non-hotbar inventory slots match.
-        if (packetSlot <= 35) {
-            return packetSlot;
-        }
-        // 36 -> 44 are hotbar slots in protocol
-        if (packetSlot <= 44) {
-            // 0 -> 9 are hotbar slots in bukkit
-            return packetSlot - 36;
-        }
-        // 45 is offhand is packet, it is 40 in bukkit
-        if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_9)
-            && packetSlot == 45) {
-            return 40;
-        }
-        return -1;
-    }
-
     public static boolean checkDoublePrecision(double number) {
         String numberStr = Double.toString(number);
         if (!numberStr.contains(".")) {
@@ -110,27 +79,6 @@ public class FormatUtils {
     }
 
     /**
-     * Converts a List object to its string representation.
-     *
-     * @param <T>  the type of elements in the list
-     * @param list the list to be converted to a string
-     * @return the string representation of the list
-     */
-    public static <T> String listToString(List<T> list) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-        for (T item : list) {
-            sb.append(item).append(", ");
-        }
-        if (!list.isEmpty()) {
-            sb.setLength(sb.length() - 2);
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
-
-    /**
      * Converts a given time in milliseconds to ticks.
      *
      * @param millis The time in milliseconds to be converted.
@@ -139,7 +87,6 @@ public class FormatUtils {
     public static int convertMillisToTicks(long millis) {
         return (int) (millis * 20 / 1000);
     }
-
 
     /**
      * Converts a given timestamp to a formatted string representation.
