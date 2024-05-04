@@ -34,8 +34,8 @@ public class HistoryCommand implements ISierraCommand {
         }
 
         Pagination<History> pagination = setupPagination();
-        int page = correctPage(
-            FormatUtils.toInt(sierraArguments.getArguments().get(1)), pagination.totalPages());
+
+        int page = correctPage(FormatUtils.toInt(sierraArguments.getArguments().get(1)), pagination.totalPages());
         sendMessage(sierraSender, page, pagination);
 
         List<History> historyDocumentList = pagination.itemsForPage(page);
