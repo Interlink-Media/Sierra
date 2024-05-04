@@ -112,7 +112,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
         if (isPreventInvalidMoveDisabled()) return;
 
         if (isFlying(event)) {
-            getPlayerData().getTimingProcessor().getMovementProcessor().prepare();
+            getPlayerData().getTimingProcessor().getMovementTask().prepare();
             handleFlyingPacket(event, data);
         } else if (isVehicleMovePacket(event)) {
             handleVehicleMovePacket(event, data);
@@ -171,7 +171,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
 
         checkForBorder(position, event);
         sortOutExtremeValues(location, event);
-        getPlayerData().getTimingProcessor().getMovementProcessor().end();
+        getPlayerData().getTimingProcessor().getMovementTask().end();
     }
 
     /**

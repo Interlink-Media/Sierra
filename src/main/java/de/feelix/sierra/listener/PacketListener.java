@@ -38,7 +38,7 @@ public class PacketListener extends PacketListenerAbstract {
             return;
         }
 
-        playerData.getTimingProcessor().getPacketReceiveTiming().prepare();
+        playerData.getTimingProcessor().getPacketReceiveTask().prepare();
 
         checkHandling(playerData, event);
 
@@ -48,7 +48,7 @@ public class PacketListener extends PacketListenerAbstract {
         playerData.getPingProcessor().handle(event);
 
         processAvailableChecksReceive(playerData, event);
-        playerData.getTimingProcessor().getPacketReceiveTiming().end();
+        playerData.getTimingProcessor().getPacketReceiveTask().end();
     }
 
     /**
@@ -84,12 +84,12 @@ public class PacketListener extends PacketListenerAbstract {
 
         if (playerData == null || handleExemptOrBlockedPlayer(playerData, event)) return;
 
-        playerData.getTimingProcessor().getPacketSendTiming().prepare();
+        playerData.getTimingProcessor().getPacketSendTask().prepare();
 
         playerData.getGameModeProcessor().process(event);
         playerData.getPingProcessor().handle(event);
         processAvailableChecksSend(playerData, event);
-        playerData.getTimingProcessor().getPacketSendTiming().end();
+        playerData.getTimingProcessor().getPacketSendTask().end();
     }
 
     /**

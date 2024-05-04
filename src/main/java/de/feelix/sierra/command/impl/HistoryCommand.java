@@ -6,6 +6,7 @@ import de.feelix.sierra.manager.storage.history.HistoryDocument;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierra.utilities.pagination.Pagination;
 import de.feelix.sierraapi.commands.*;
+import de.feelix.sierraapi.history.History;
 import net.md_5.bungee.api.chat.BaseComponent;
 
 import java.util.ArrayList;
@@ -32,12 +33,12 @@ public class HistoryCommand implements ISierraCommand {
             return;
         }
 
-        Pagination<HistoryDocument> pagination = setupPagination();
-        int                         page       = correctPage(
+        Pagination<History> pagination = setupPagination();
+        int page = correctPage(
             FormatUtils.toInt(sierraArguments.getArguments().get(1)), pagination.totalPages());
         sendMessage(sierraSender, page, pagination);
 
-        List<HistoryDocument> historyDocumentList = pagination.itemsForPage(page);
+        List<History> historyDocumentList = pagination.itemsForPage(page);
 
         if (historyDocumentList.isEmpty()) {
             sierraSender.getSender().sendMessage(Sierra.PREFIX + " §cNo history available");
@@ -53,9 +54,11 @@ public class HistoryCommand implements ISierraCommand {
      * @param sierraSender        The ISierraSender object representing the sender.
      * @param historyDocumentList The list of HistoryDocument objects containing the history information.
      */
-    private void sendHistoryMessages(ISierraSender sierraSender, List<HistoryDocument> historyDocumentList) {
-        for (HistoryDocument historyDocument : historyDocumentList) {
-            sierraSender.getSenderAsPlayer().spigot().sendMessage(createHistoryMessage(historyDocument));
+    private void sendHistoryMessages(ISierraSender sierraSender, List<History> historyDocumentList) {
+        for (History historyDocument : historyDocumentList) {
+            sierraSender.getSenderAsPlayer()
+                .spigot()
+                .sendMessage(createHistoryMessage((HistoryDocument) historyDocument));
         }
     }
 
@@ -74,11 +77,11 @@ public class HistoryCommand implements ISierraCommand {
      *
      * @return A Pagination object containing the sorted history documents.
      */
-    private Pagination<HistoryDocument> setupPagination() {
-        List<HistoryDocument> list = new ArrayList<>(Sierra.getPlugin()
-                                                         .getSierraDataManager()
-                                                         .getHistories());
-        list.sort(Comparator.comparing(HistoryDocument::timestamp).reversed());
+    private Pagination<History> setupPagination() {
+        List<History> list = new ArrayList<>(Sierra.getPlugin()
+                                                 .getSierraDataManager()
+                                                 .getHistories());
+        list.sort(Comparator.comparing(History::timestamp).reversed());
         return new Pagination<>(list, 10);
     }
 
@@ -103,8 +106,8 @@ public class HistoryCommand implements ISierraCommand {
      * @param page         - The current page number.
      * @param pagination   - A Pagination object containing the history documents.
      */
-    private void sendMessage(ISierraSender sierraSender, int page, Pagination<HistoryDocument> pagination) {
-        int totalHistory    = pagination.getItems().size();
+    private void sendMessage(ISierraSender sierraSender, int page, Pagination<History> pagination) {
+        int    totalHistory = pagination.getItems().size();
         String unformulated = "%s §fShowing entries: §7(page §c%s §7of §c%d §7- §c%d §7entries)";
         sierraSender.getSender()
             .sendMessage(String.format(unformulated, Sierra.PREFIX, page, pagination.totalPages(), totalHistory));

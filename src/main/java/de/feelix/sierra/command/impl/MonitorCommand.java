@@ -3,9 +3,9 @@ package de.feelix.sierra.command.impl;
 import com.github.retrooper.packetevents.PacketEvents;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.PlayerData;
-import de.feelix.sierra.manager.storage.processor.TimingProcessor;
 import de.feelix.sierraapi.commands.*;
 import de.feelix.sierraapi.timing.Timing;
+import de.feelix.sierraapi.timing.TimingHandler;
 import org.bukkit.entity.Player;
 
 import java.lang.ref.WeakReference;
@@ -58,12 +58,12 @@ public class MonitorCommand implements ISierraCommand {
      */
     private void printMonitor(PlayerData playerData, Player player) {
 
-        TimingProcessor timingProcessor = playerData.getTimingProcessor();
+        TimingHandler timingProcessor = playerData.getTimingProcessor();
         player.sendMessage(Sierra.PREFIX + " §c§lPackets:");
-        sendTiming(timingProcessor.getPacketReceiveTiming(), "Ingoing Packets", player);
-        sendTiming(timingProcessor.getPacketSendTiming(), "Outgoing Packets", player);
+        sendTiming(timingProcessor.getPacketReceiveTask(), "Ingoing Packets", player);
+        sendTiming(timingProcessor.getPacketSendTask(), "Outgoing Packets", player);
         player.sendMessage(Sierra.PREFIX + " §c§lEnvironment:");
-        sendTiming(timingProcessor.getMovementProcessor(), "Movement Task", player);
+        sendTiming(timingProcessor.getMovementTask(), "Movement Task", player);
     }
 
     /**
