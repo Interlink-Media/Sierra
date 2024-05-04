@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * ModuleGateway is an interface for managing modules in the Sierra plugin.
  */
+@SuppressWarnings("unused")
 public interface ModuleGateway {
 
     /**
