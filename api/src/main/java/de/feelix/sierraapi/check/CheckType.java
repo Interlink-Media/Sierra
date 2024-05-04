@@ -20,6 +20,7 @@ public enum CheckType {
      * Represents the unique identifier for a check type.
      */
     private final int    id;
+
     /**
      * Represents the friendly name of a check type.
      *
