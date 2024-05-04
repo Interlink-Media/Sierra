@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.logging.Level;
 
 /**
  * The UpdateChecker class is responsible for checking the latest release version of a given repository on GitHub.
@@ -85,12 +84,7 @@ public class UpdateChecker {
      * @param e The exception you want to log.
      */
     private void logError(Exception e) {
-        Sierra.getPlugin()
-            .getLogger()
-            .log(
-                Level.SEVERE,
-                String.format("%s in class UpdateChecker: %s", "Unable to fetch latest version", e.getMessage()), e
-            );
+        Sierra.getPlugin().getLogger().severe("Unable to fetch latest version: " + e.getMessage());
     }
 
     /**
