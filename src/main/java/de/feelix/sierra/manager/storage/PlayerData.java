@@ -48,6 +48,8 @@ public class PlayerData implements SierraUser {
     private boolean exempt             = false;
     private boolean hasBrand           = false;
     private boolean nameChecked        = false;
+    private boolean hasOpenAnvil       = false;
+    private boolean openInventory      = false;
 
     private String brand = "vanilla";
 

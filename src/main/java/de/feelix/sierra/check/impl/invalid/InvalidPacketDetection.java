@@ -468,6 +468,10 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             String channelName = wrapper.getChannelName();
 
+            if(channelName.equalsIgnoreCase("MC|ItemName") && !playerData.isHasOpenAnvil()) {
+                violation(event, createViolation("Send anvil name, without anvil", PunishType.KICK));
+            }
+
             if (channelName.equals("MC|BEdit")
                 || channelName.equals("MC|BSign")
                 || channelName.equals("minecraft:bedit")
@@ -645,6 +649,11 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 } while (data.getSecond() != id);
             }
 
+        } else if (event.getPacketType() == PacketType.Play.Client.CLIENT_STATUS) {
+
+            // To prevent false kicks in inventory
+            playerData.setOpenInventory(true);
+
         } else if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
 
             WrapperPlayClientNameItem wrapper = CastUtil.getSupplierValue(
@@ -713,6 +722,10 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 playerData::exceptionDisconnect
             );
 
+            if (!playerData.isOpenInventory()) {
+                violation(event, createViolation("Interacted in closed inventory", PunishType.KICK));
+            }
+
             if (isSupportedServerVersion(ServerVersion.V_1_14)) {
                 int clickType = wrapper.getWindowClickType().ordinal();
                 int button    = wrapper.getButton();
@@ -768,6 +781,11 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .punishType(PunishType.KICK)
                     .build());
             }
+        } else if (event.getPacketType() == PacketType.Play.Client.CLOSE_WINDOW) {
+
+            // Reset this state to prevent false positives
+            playerData.setHasOpenAnvil(false);
+            playerData.setOpenInventory(false);
         }
     }
 
@@ -1081,7 +1099,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * @param itemStack The ItemStack to check.
      */
     private void checkForInvalidContainer(PacketReceiveEvent event, ItemStack itemStack) {
-        if (isInvalidItem(itemStack)) {
+        if (isContainerItem(itemStack)) {
             if (itemStack.getNBT() != null) {
                 String string = FormatUtils.mapToString(itemStack.getNBT().getTags());
                 checkForInvalidSizeAndPresence(event, string);
@@ -1095,7 +1113,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * @param itemStack The ItemStack to check.
      * @return true if the item is invalid, false otherwise.
      */
-    private boolean isInvalidItem(ItemStack itemStack) {
+    private boolean isContainerItem(ItemStack itemStack) {
         return itemStack.getType() == ItemTypes.CHEST
                || itemStack.getType() == ItemTypes.HOPPER
                || itemStack.getType() == ItemTypes.HOPPER_MINECART
@@ -1402,6 +1420,13 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 () -> new WrapperPlayServerOpenWindow(event),
                 playerData::exceptionDisconnect
             );
+
+            String legacyType = window.getLegacyType();
+            playerData.setOpenInventory(true);
+
+            if (legacyType.contains("anvil")) {
+                playerData.setHasOpenAnvil(true);
+            }
 
             if (isSupportedServerVersion(ServerVersion.V_1_14)) {
                 this.type = MenuType.getMenuType(window.getType());

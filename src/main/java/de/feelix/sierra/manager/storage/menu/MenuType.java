@@ -59,25 +59,31 @@ public enum MenuType {
     private final int id;
 
     /**
-     * This method is used to retrieve the MenuType based on the given menu ID.
+     * Retrieves an array of all available menu types.
      *
-     * @param id The ID of the menu
-     * @return The corresponding MenuType
+     * @return An array of MenuType objects representing the available menu types.
      */
-    //TODO: could be optimized
+    public static MenuType[] getMenuTypeValues() {
+        return MenuType.values();
+    }
+
+    /**
+     * Retrieves the MenuType based on the given ID.
+     *
+     * @param id The ID of the menu type.
+     * @return The MenuType associated with the ID, or UNKNOWN if the ID is invalid.
+     */
     public static MenuType getMenuType(int id) {
         if (id < 0) return UNKNOWN;
         ServerVersion version = PacketEvents.getAPI().getServerManager().getVersion();
         // versions under 1.20.3
         if (version.isOlderThan(ServerVersion.V_1_20_3)) {
             if (id > 23) return UNKNOWN;
-            MenuType[] values = MenuType.values();
             if (id >= 7) id++;
-            return values[id];
+            return getMenuTypeValues()[id];
         }
         // 1.20.3 & greater
-        MenuType[] values = MenuType.values();
-        if (id >= values.length) return UNKNOWN;
-        return MenuType.values()[id];
+        if (id >= getMenuTypeValues().length) return UNKNOWN;
+        return getMenuTypeValues()[id];
     }
 }
