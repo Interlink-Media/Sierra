@@ -4,8 +4,8 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTList;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.Pair;
@@ -73,7 +73,7 @@ public class CreativeSkull implements ItemCheck {
 
                 JsonObject jsonObject;
                 try {
-                    jsonObject = JsonParser.parseString(decoded).getAsJsonObject();
+                    jsonObject = new Gson().fromJson(decoded, JsonObject.class);
                 } catch (Exception e) {
                     return new Pair<>("Unable to decode JsonObject", PunishType.KICK);
                 }
