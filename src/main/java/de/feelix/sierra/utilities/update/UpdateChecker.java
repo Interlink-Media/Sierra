@@ -52,10 +52,6 @@ public class UpdateChecker {
      * @return the latest release version as a string, or an empty string if an error occurred
      */
     public String getLatestReleaseVersion() {
-        if (!latestReleaseVersion.equalsIgnoreCase(UNKNOWN_VERSION)) {
-            return latestReleaseVersion;
-        }
-        refreshNewVersion();
         return this.latestReleaseVersion;
     }
 
@@ -63,7 +59,7 @@ public class UpdateChecker {
      * Refreshes the new version by retrieving the latest release version from the GitHub API.
      * If an error occurs while retrieving the version, it logs the error and returns.
      */
-    private void refreshNewVersion() {
+    public void refreshNewVersion() {
         String jsonResponse;
         try {
             jsonResponse = getJsonResponseFromGithub();
@@ -112,7 +108,7 @@ public class UpdateChecker {
      */
     public void startScheduler() {
         FoliaCompatUtil.runTaskTimerAsync(Sierra.getPlugin(),
-                                          o -> refreshNewVersion(), 5100, 5100
+                                          o -> refreshNewVersion(), 30100, 30100
         );
     }
 

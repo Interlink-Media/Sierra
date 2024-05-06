@@ -274,6 +274,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * Check for updates to the plugin and start the update checker scheduler.
      */
     private void checkAndUpdatePlugin() {
+        updateChecker.refreshNewVersion();
         checkForUpdate();
         updateChecker.startScheduler();
     }
