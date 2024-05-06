@@ -111,10 +111,11 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * <p>
      * Note: This documentation does not include example code or author/version tags.
      */
-    private static final int    PLUGIN_ID                  = 21527;
+    private static final int PLUGIN_ID = 21527;
 
     /**
-     * The INTERNAL_PUNISHMENT_CONFIG variable represents the name of the internal punishment configuration file in the Sierra plugin.
+     * The INTERNAL_PUNISHMENT_CONFIG variable represents the name of the internal punishment configuration file in
+     * the Sierra plugin.
      * This file is used to store and manage punishment settings and configurations for the plugin.
      * It is a constant string variable and its value is set to "internal-punishment-config".
      *
@@ -127,23 +128,27 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * The HARD_PUNISHMENT_CONFIG variable represents the configuration type for hard punishments.
      * It is a string constant with the value "HARD".
      */
-    private static final String HARD_PUNISHMENT_CONFIG     = "HARD";
+    private static final String HARD_PUNISHMENT_CONFIG = "HARD";
 
     /**
      * The BLOCK_REDSTONE_LOOP variable represents the name of the configuration option in the sierra.yml file.
      * This option is used to identify the configuration value for block redstone loops in the Sierra plugin.
      * The variable is a string with the value "block-redstone-loops".
      * <p>
-     * This variable is used in the SierraConfigEngine class to retrieve the configuration value from the sierra.yml file.
-     * The SierraConfigEngine class initializes the main configuration file and caches it in memory for efficient access.
-     * The config() method in the SierraConfigEngine class returns a YamlConfiguration object that represents the sierra.yml file.
+     * This variable is used in the SierraConfigEngine class to retrieve the configuration value from the sierra.yml
+     * file.
+     * The SierraConfigEngine class initializes the main configuration file and caches it in memory for efficient
+     * access.
+     * The config() method in the SierraConfigEngine class returns a YamlConfiguration object that represents the
+     * sierra.yml file.
      * The config() method is called to get the value associated with the BLOCK_REDSTONE_LOOP configuration option.
      * <p>
      * Example usage:
      * <p>
      * SierraConfigEngine configEngine = new SierraConfigEngine();
-     * YamlConfiguration config = configEngine*/
-    private static final String BLOCK_REDSTONE_LOOP        = "block-redstone-loops";
+     * YamlConfiguration config = configEngine
+     */
+    private static final String BLOCK_REDSTONE_LOOP = "block-redstone-loops";
 
     /**
      * This method is called when the plugin is being enabled.
@@ -216,7 +221,8 @@ public final class Sierra extends JavaPlugin implements SierraApi {
 
     /**
      * Initializes the packet events for the Sierra plugin.
-     * This method sets up the necessary components for packet event handling, such as metrics, event listener registration,
+     * This method sets up the necessary components for packet event handling, such as metrics, event listener
+     * registration,
      * and initialization of the PacketEvents API.
      */
     private void initializePacketEvents() {
@@ -226,12 +232,16 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     }
 
     /**
-     * The setupPunishmentConfig method is a private helper method used to set up the punishment configuration for the Sierra plugin.
-     * It retrieves the punishment configuration value from the sierra.yml configuration file, and sets the punishmentConfig field
+     * The setupPunishmentConfig method is a private helper method used to set up the punishment configuration for
+     * the Sierra plugin.
+     * It retrieves the punishment configuration value from the sierra.yml configuration file, and sets the
+     * punishmentConfig field
      * in the Sierra class using the PunishmentConfig enum.
      * <p>
-     * The punishment configuration is obtained from the "internal.punishment.config" configuration option in the sierra.yml file.
-     * If this option does not exist in the configuration file, the "hard" punishment configuration is used as the default value.
+     * The punishment configuration is obtained from the "internal.punishment.config" configuration option in the
+     * sierra.yml file.
+     * If this option does not exist in the configuration file, the "hard" punishment configuration is used as the
+     * default value.
      * <p>
      * Example usage:
      * <pre>{@code
