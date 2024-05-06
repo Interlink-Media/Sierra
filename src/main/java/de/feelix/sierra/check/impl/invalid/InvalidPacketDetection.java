@@ -1421,11 +1421,20 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 playerData::exceptionDisconnect
             );
 
-            String legacyType = window.getLegacyType();
             playerData.setOpenInventory(true);
 
-            if (legacyType.contains("anvil")) {
-                playerData.setHasOpenAnvil(true);
+            if (PacketEvents.getAPI()
+                .getServerManager()
+                .getVersion()
+                .isNewerThanOrEquals(ServerVersion.V_1_14)) {
+                if(window.getType() == MenuType.ANVIL.getId()) {
+                    playerData.setHasOpenAnvil(true);
+                }
+            } else {
+                String legacyType = window.getLegacyType();
+                if(legacyType.contains("anvil")) {
+                    playerData.setHasOpenAnvil(true);
+                }
             }
 
             if (isSupportedServerVersion(ServerVersion.V_1_14)) {
