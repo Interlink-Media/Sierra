@@ -1,6 +1,7 @@
 package de.feelix.sierra.manager.config;
 
 import de.feelix.sierra.Sierra;
+import de.feelix.sierra.utilities.FileUtil;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -10,11 +11,13 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The SierraConfigEngine class is responsible for managing the configuration files in the Sierra plugin.
- * It provides methods to load the main configuration file and messages file into memory, and retrieve them as YamlConfiguration objects.
+ * It provides methods to load the main configuration file and messages file into memory, and retrieve them as
+ * YamlConfiguration objects.
  * The loaded files are cached for efficient access.
  */
 public class SierraConfigEngine {
@@ -70,12 +73,35 @@ public class SierraConfigEngine {
      */
     private YamlConfiguration getFileFromName(String name) {
 
-        Sierra.getPlugin().saveResource(name, false);
-        File              file = new File("plugins/Sierra/" + name);
+        String pathName = "plugins/Sierra/" + name;
+
+        File sierraFolder = new File("plugins/Sierra/");
+        if(!sierraFolder.exists()) {
+            if (!sierraFolder.mkdir()) {
+                Sierra.getPlugin().getLogger().severe("Cant create folder!");
+            }
+        }
+
+        File sierraFile = new File(pathName);
+        if (!sierraFile.exists()) {
+            try {
+                if (!sierraFile.createNewFile()) {
+                    Sierra.getPlugin().getLogger().severe("Cant create file!");
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                FileUtil.saveInputStreamToFile(Objects.requireNonNull(Sierra.getPlugin().getResource(name)), pathName);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         YamlConfiguration yamlConfiguration;
 
         try {
-            InputStream       inputStream = Files.newInputStream(file.toPath());
+            InputStream       inputStream = Files.newInputStream(sierraFile.toPath());
             InputStreamReader reader      = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
             yamlConfiguration = YamlConfiguration.loadConfiguration(reader);
         } catch (IOException e) {
