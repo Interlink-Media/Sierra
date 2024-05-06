@@ -9,7 +9,7 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.history.HistoryDocument;
 import de.feelix.sierra.utilities.update.UpdateChecker;
-import de.feelix.sierraapi.events.impl.AsyncHistoryCreateEventSierra;
+import de.feelix.sierraapi.events.impl.AsyncHistoryCreateEvent;
 import de.feelix.sierraapi.history.History;
 import de.feelix.sierraapi.history.HistoryType;
 import de.feelix.sierraapi.violation.PunishType;
@@ -192,7 +192,7 @@ public class SierraDataManager implements UserRepository {
     private void throwHistory(HistoryDocument document) {
         FoliaCompatUtil.runTaskAsync(
             Sierra.getPlugin(),
-            () -> Sierra.getPlugin().getEventBus().publish(new AsyncHistoryCreateEventSierra(document))
+            () -> Sierra.getPlugin().getEventBus().publish(new AsyncHistoryCreateEvent(document))
         );
 
         this.histories.add(document);

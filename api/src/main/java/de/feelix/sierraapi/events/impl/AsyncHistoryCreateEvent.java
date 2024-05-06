@@ -9,7 +9,7 @@ import lombok.Getter;
  * It extends the Event class.
  */
 @Getter
-public class AsyncHistoryCreateEventSierra extends SierraAbstractEvent {
+public class AsyncHistoryCreateEvent extends SierraAbstractEvent {
 
     /**
      * The history variable represents a user's history of actions or punishments.
@@ -21,7 +21,7 @@ public class AsyncHistoryCreateEventSierra extends SierraAbstractEvent {
      * The AsyncHistoryCreateEvent class represents an asynchronous event triggered when a history document is created.
      * It extends the Event class.
      */
-    public AsyncHistoryCreateEventSierra(History history){
+    public AsyncHistoryCreateEvent(History history){
         this.history = history;
     }
 }

@@ -3,8 +3,10 @@ package de.feelix.sierra.manager.storage.processor;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPluginMessage;
+import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
+import de.feelix.sierraapi.events.impl.UserBrandEvent;
 import lombok.Getter;
 
 /**
@@ -59,6 +61,7 @@ public class BrandProcessor {
             channel.equals("MC|Brand")) { // 1.12
             if (data.length > 64 || data.length == 0) {
                 playerData.setBrand("sent " + data.length + " bytes as brand");
+                Sierra.getPlugin().getEventBus().publish(new UserBrandEvent(playerData, playerData.getBrand()));
             } else if (!playerData.isHasBrand()) {
 
                 byte[] minusLength = new byte[data.length - 1];
@@ -66,6 +69,7 @@ public class BrandProcessor {
 
                 // Removes velocity's brand suffix
                 playerData.setBrand(new String(minusLength).replace(" (Velocity)", ""));
+                Sierra.getPlugin().getEventBus().publish(new UserBrandEvent(playerData, playerData.getBrand()));
             }
             playerData.setHasBrand(true);
         }

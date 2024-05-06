@@ -57,16 +57,37 @@ public class TimingProcessor implements TimingHandler {
         this.playerData = playerData;
     }
 
+    /**
+     * Retrieves the movement task Timing object.
+     *
+     * @return the Timing object for measuring the timing of the movement task
+     */
     @Override
     public Timing getMovementTask() {
         return movementProcessor;
     }
 
+    /**
+     * Retrieves the Timing object for measuring the timing of the packet receive task.
+     *
+     * @return the Timing object for measuring the timing of the packet receive task
+     *
+     * @see TimingHandler#getPacketReceiveTask()
+     * @see Timing
+     */
     @Override
     public Timing getPacketReceiveTask() {
         return packetReceiveTiming;
     }
 
+    /**
+     * Retrieves the Timing object for measuring the timing of the packet send task.
+     *
+     * @return the Timing object for measuring the timing of the packet send task
+     *
+     * @see TimingHandler#getPacketSendTask()
+     * @see Timing
+     */
     @Override
     public Timing getPacketSendTask() {
         return packetSendTiming;

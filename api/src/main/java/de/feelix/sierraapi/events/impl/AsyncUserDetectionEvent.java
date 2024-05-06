@@ -11,7 +11,7 @@ import lombok.Getter;
  * It provides information about the violation, check type, and associated user.
  */
 @Getter
-public class AsyncUserDetectionEventSierra extends SierraAbstractEvent {
+public class AsyncUserDetectionEvent extends SierraAbstractEvent {
 
     /**
      * The `violation` variable represents a violation that has occurred.
@@ -43,7 +43,7 @@ public class AsyncUserDetectionEventSierra extends SierraAbstractEvent {
     /**
      * The violations variable represents the number of violations for the associated user.
      *
-     * @see AsyncUserDetectionEventSierra
+     * @see AsyncUserDetectionEvent
      */
     private final double violations;
 
@@ -56,7 +56,7 @@ public class AsyncUserDetectionEventSierra extends SierraAbstractEvent {
      * @param checkType  The CheckType object representing the type of check that triggered the violation.
      * @param violations The number of violations for the associated user.
      */
-    public AsyncUserDetectionEventSierra(Violation violation, SierraUser sierraUser, CheckType checkType, double violations) {
+    public AsyncUserDetectionEvent(Violation violation, SierraUser sierraUser, CheckType checkType, double violations) {
         this.checkType = checkType;
         this.violation = violation;
         this.violations = violations;
