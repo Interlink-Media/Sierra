@@ -177,6 +177,8 @@ public class SierraDetection implements SierraCheck {
             return;
         }
 
+        if(violationDocument.getPunishType() == PunishType.MITIGATE) return;
+
         logToConsole(createGeneralMessage(user, violationDocument.getPunishType()));
         logToConsole(createGeneralInformation(violationDocument));
         logToConsole(createGeneralCheck());
@@ -299,6 +301,11 @@ public class SierraDetection implements SierraCheck {
     @Override
     public double violations() {
         return this.violations;
+    }
+
+    @Override
+    public double setViolations(double violations) {
+        return 0;
     }
 
     /**

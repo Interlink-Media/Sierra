@@ -256,15 +256,15 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      * This method handles a vehicle move packet received from the player.
      * It checks for invalid movement values and takes appropriate actions.
      *
-     * @param event The PacketReceiveEvent triggered by receiving the vehicle move packet from the player
+     * @param event      The PacketReceiveEvent triggered by receiving the vehicle move packet from the player
      * @param playerData The PlayerData object containing the player's data
      */
     private void handleVehicleMovePacket(PacketReceiveEvent event, PlayerData playerData) {
 
-        WrapperPlayClientVehicleMove wrapper  = CastUtil.getSupplierValue(
+        WrapperPlayClientVehicleMove wrapper = CastUtil.getSupplierValue(
             () -> new WrapperPlayClientVehicleMove(event), playerData::exceptionDisconnect);
 
-        Vector3d                     location = wrapper.getPosition();
+        Vector3d location = wrapper.getPosition();
 
         if (invalidValue(location.getX(), location.getY(), location.getZ())) {
             violation(event, buildExtValueBanViolation("Extreme values: double"));

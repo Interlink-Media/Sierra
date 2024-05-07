@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableClassToInstanceMap;
 import de.feelix.sierra.check.impl.book.MassiveBook;
 import de.feelix.sierra.check.impl.command.BlockedCommand;
 import de.feelix.sierra.check.impl.creative.ItemDetectionRunner;
+import de.feelix.sierra.check.impl.latency.TimerDetection;
 import de.feelix.sierra.check.impl.move.InvalidMoveDetection;
 import de.feelix.sierra.check.impl.invalid.InvalidPacketDetection;
 import de.feelix.sierra.check.impl.sign.SignDetection;
@@ -27,7 +28,8 @@ public class CheckManager implements CheckRepository {
      * The `packetChecks` variable is a `ClassToInstanceMap` that stores instances of `SierraDetection` classes.
      * It is a private final variable in the `CheckManager` class.
      * <p>
-     * This map is used to manage packet checks for a player. The keys in the map represent the types of packet checks, while the values are the corresponding instances of `Sierra
+     * This map is used to manage packet checks for a player. The keys in the map represent the types of packet
+     * checks, while the values are the corresponding instances of `Sierra
      * Detection` classes.
      * <p>
      * Example usage:
@@ -41,8 +43,8 @@ public class CheckManager implements CheckRepository {
      * <p>
      * // Iterate over the available checks
      * for (SierraCheck check : availableChecks) {
-     *     // Perform checks on player's packets
-     *     check.performCheck();
+     * // Perform checks on player's packets
+     * check.performCheck();
      * }
      */
     private final ClassToInstanceMap<SierraDetection> packetChecks;
@@ -60,14 +62,15 @@ public class CheckManager implements CheckRepository {
         this.playerData = playerData;
 
         packetChecks = new ImmutableClassToInstanceMap.Builder<SierraDetection>()
-                .put(PacketSpamDetection.class, new PacketSpamDetection(playerData))
-                .put(SignDetection.class, new SignDetection(playerData))
-                .put(InvalidPacketDetection.class, new InvalidPacketDetection(playerData))
-                .put(InvalidMoveDetection.class, new InvalidMoveDetection(playerData))
-                .put(ItemDetectionRunner.class, new ItemDetectionRunner(playerData))
-                .put(BlockedCommand.class, new BlockedCommand(playerData))
-                .put(MassiveBook.class, new MassiveBook(playerData))
-                .build();
+            .put(PacketSpamDetection.class, new PacketSpamDetection(playerData))
+            .put(SignDetection.class, new SignDetection(playerData))
+            .put(InvalidPacketDetection.class, new InvalidPacketDetection(playerData))
+            .put(InvalidMoveDetection.class, new InvalidMoveDetection(playerData))
+            .put(ItemDetectionRunner.class, new ItemDetectionRunner(playerData))
+            .put(BlockedCommand.class, new BlockedCommand(playerData))
+            .put(TimerDetection.class, new TimerDetection(playerData))
+            .put(MassiveBook.class, new MassiveBook(playerData))
+            .build();
     }
 
     /**

@@ -10,16 +10,17 @@ public enum CheckType {
 
     SPAM(1, "Packet Spam"),
     SIGN(2, "Sign Crasher"),
-    INVALID(3, "Invalid Packet"),
+    INVALID(3, "Invalid Protocol"),
     BOOK(4, "Book Crasher"),
     COMMAND(5, "Blocked Command"),
     CREATIVE(6, "Creative Crasher"),
-    MOVE(7, "Move Crasher");
+    MOVE(7, "Move Crasher"),
+    LATENCY_ABUSE(8, "Timer");
 
     /**
      * Represents the unique identifier for a check type.
      */
-    private final int    id;
+    private final int id;
 
     /**
      * Represents the friendly name of a check type.

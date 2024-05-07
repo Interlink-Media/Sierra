@@ -468,7 +468,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             String channelName = wrapper.getChannelName();
 
-            if(channelName.equalsIgnoreCase("MC|ItemName") && !playerData.isHasOpenAnvil()) {
+            if (channelName.equalsIgnoreCase("MC|ItemName") && !playerData.isHasOpenAnvil()) {
                 violation(event, createViolation("Send anvil name, without anvil", PunishType.KICK));
             }
 
@@ -1427,12 +1427,12 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 .getServerManager()
                 .getVersion()
                 .isNewerThanOrEquals(ServerVersion.V_1_14)) {
-                if(window.getType() == MenuType.ANVIL.getId()) {
+                if (window.getType() == MenuType.ANVIL.getId()) {
                     playerData.setHasOpenAnvil(true);
                 }
             } else {
                 String legacyType = window.getLegacyType();
-                if(legacyType.contains("anvil")) {
+                if (legacyType.contains("anvil")) {
                     playerData.setHasOpenAnvil(true);
                 }
             }

@@ -57,6 +57,11 @@ block-disallowed-commands: true
 # have this check enabled and encounter issues, please report them to us immediately on Discord
 prevent-invalid-move: true
 
+# This is a way to additionally prevent movement-based cheats. This check should be disabled if there's a reliable
+# anti-cheat system like Polar or Intave on the server. This check can only kick in as a last resort, so it can be
+# activated. If too many players are being kicked, please report it and disable the check
+prevent-timer-cheats: true
+
 # This is also a crucial core element of our system, as most crashers operate with books and NBT data.
 # This check must never be deactivated, as it also constitutes a very significant part of our security promise.
 # This check operates very precisely. If you experience any issues with it, please contact us immediately on Discord.

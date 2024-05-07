@@ -3,6 +3,8 @@ package de.feelix.sierra.utilities;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierraapi.check.CheckType;
+import de.feelix.sierraapi.check.impl.SierraCheck;
 import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import lombok.Getter;
 
@@ -55,6 +57,14 @@ public class Ticker {
                 value.setPacketAllowance(maxPacketAllowance);
                 value.setPacketCount(0);
                 value.setBytesSent(0);
+
+                for (SierraCheck sierraCheck : value.getCheckManager().availableChecks()) {
+                    if (sierraCheck.checkType() == CheckType.LATENCY_ABUSE) {
+                        if (sierraCheck.violations() > 0) {
+                            sierraCheck.setViolations(sierraCheck.violations() - 1);
+                        }
+                    }
+                }
             }
         }, 0, 20);
     }

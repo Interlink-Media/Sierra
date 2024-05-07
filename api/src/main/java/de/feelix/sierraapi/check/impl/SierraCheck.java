@@ -15,6 +15,15 @@ public interface SierraCheck {
     double violations();
 
     /**
+     * Sets the number of violations found by this check.
+     *
+     * @return The number of violations after setting.
+     *
+     * @since 1.0
+     */
+    double setViolations(double violations);
+
+    /**
      * Retrieves the CheckType of the current instance.
      *
      * @return The CheckType of the instance.
