@@ -67,8 +67,9 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      */
     private static final Pattern EXPLOIT_PATTERN2 = Pattern.compile("\\$\\{.*}");
 
-    private double count       = 0;
-    private String lastCommand = "";
+    private double count                = 0;
+    private String lastCommand          = "";
+    private long   sentLastMessageTwice = 0;
 
     /**
      * BlockedCommand is a class representing a specific action to be taken when a blocked command is detected.
@@ -218,17 +219,16 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
         }
 
         if (this.lastCommand.equalsIgnoreCase(message)) {
-            this.count++;
-            if (this.count > 5) {
+            if (System.currentTimeMillis() - this.sentLastMessageTwice < 1000 && this.count++ > 5) {
                 violation(event, ViolationDocument.builder()
                     .punishType(PunishType.MITIGATE)
                     .debugInformation(String.format("Typed same command %s times", this.count))
                     .build());
             }
+            this.sentLastMessageTwice = System.currentTimeMillis();
         } else {
             this.count = 0;
         }
-
         this.lastCommand = message;
     }
 
