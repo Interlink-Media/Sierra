@@ -36,7 +36,7 @@ dependencies {
 shadowJar {
     minimize()
 
-    archiveFileName = "${project.name}-${project.version}.jar"
+    archiveFileName = "${project.description}-${project.version}.jar"
     destinationDirectory = file("C://Users/admin/Desktop/server/plugins")
 }
 

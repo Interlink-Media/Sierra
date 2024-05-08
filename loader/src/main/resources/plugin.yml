@@ -1,0 +1,8 @@
+name: SierraLoader
+version: '1.0.0'
+author: Feelix
+main: de.feelix.sierraloader.SierraLoader
+description: Loader for the sierra anticrash system
+website: https://discord.gg/squarecode
+folia-supported: true
+api-version: 1.13
