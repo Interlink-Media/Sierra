@@ -1,3 +1,4 @@
 rootProject.name = 'Sierra'
 include 'api'
+include 'loader'
 
