@@ -9,6 +9,7 @@ import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.discord.SierraDiscordGateway;
 import de.feelix.sierra.manager.modules.SierraModuleGateway;
+import de.feelix.sierra.manager.server.ServerManager;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.utilities.Ticker;
 import de.feelix.sierra.utilities.update.UpdateChecker;
@@ -16,6 +17,7 @@ import de.feelix.sierraapi.SierraApi;
 import de.feelix.sierraapi.SierraApiAccessor;
 import de.feelix.sierraapi.events.EventBus;
 import de.feelix.sierraapi.module.ModuleGateway;
+import de.feelix.sierraapi.server.Server;
 import de.feelix.sierraapi.user.UserRepository;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import io.github.retrooper.packetevents.util.FoliaCompatUtil;
@@ -105,6 +107,11 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * Represents an event bus that allows events to be published and subscribed to.
      */
     private final EventBus eventBus = new AbstractEventBus();
+
+    /**
+     * The Server interface represents a server and defines its properties and behaviors.
+     */
+    private final Server server = new ServerManager();
 
     /**
      * The PLUGIN_ID variable represents the unique identifier for the plugin. It is an integer value.
@@ -394,8 +401,25 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         return this.sierraModuleGateway;
     }
 
+    /**
+     * Returns the EventBus implementation used by the Sierra plugin.
+     *
+     * @return the EventBus implementation
+     * @see EventBus
+     */
     @Override
     public EventBus eventBus() {
         return this.eventBus;
+    }
+
+    /**
+     * The server method returns the Server instance representing the server.
+     *
+     * @return the Server instance representing the server.
+     * @see Server
+     */
+    @Override
+    public Server server() {
+        return server;
     }
 }
