@@ -42,6 +42,7 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * The InvalidPacketDetection class is responsible for detecting and handling invalid packets received from players.
@@ -174,6 +175,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      */
     private long lastBookUse = 0L;
 
+    private static final Pattern EXPLOIT_PATTERN = Pattern.compile("\\$\\{.+}");
+
     /**
      * Represents the type of container.
      * <p>
@@ -295,6 +298,13 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 violation(event, ViolationDocument.builder()
                     .punishType(PunishType.KICK)
                     .debugInformation("Locale is null in settings")
+                    .build());
+            }
+
+            if (EXPLOIT_PATTERN.matcher(wrapper.getLocale()).matches()) {
+                violation(event, ViolationDocument.builder()
+                    .punishType(PunishType.MITIGATE)
+                    .debugInformation("Invalid locale: " + wrapper.getLocale())
                     .build());
             }
 
