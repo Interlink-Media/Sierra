@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    implementation ('com.github.retrooper.packetevents:spigot:2.2.1') {
+    implementation ('com.github.retrooper.packetevents:spigot:2.3.0') {
         changing = true
     }
     implementation(project(':api'))
