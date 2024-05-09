@@ -2,7 +2,7 @@ package de.feelix.sierraapi;
 
 import de.feelix.sierraapi.events.EventBus;
 import de.feelix.sierraapi.module.ModuleGateway;
-import de.feelix.sierraapi.server.Server;
+import de.feelix.sierraapi.server.SierraServer;
 import de.feelix.sierraapi.user.UserRepository;
 
 /**
@@ -34,5 +34,5 @@ public interface SierraApi {
      *
      * @return the Server instance representing the server
      */
-    Server server();
+    SierraServer server();
 }

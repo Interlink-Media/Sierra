@@ -6,7 +6,7 @@ import java.util.UUID;
  * The Server interface represents a server and defines its properties and behaviors.
  */
 @SuppressWarnings("unused")
-public interface Server {
+public interface SierraServer {
 
     /**
      * Returns the UUID of the server.

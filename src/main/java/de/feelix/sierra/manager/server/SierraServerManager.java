@@ -1,6 +1,6 @@
 package de.feelix.sierra.manager.server;
 
-import de.feelix.sierraapi.server.Server;
+import de.feelix.sierraapi.server.SierraServer;
 import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
 
 import java.util.UUID;
@@ -9,7 +9,7 @@ import java.util.UUID;
  * The ServerManager class implements the Server interface and represents a server manager.
  * It provides methods to retrieve the UUID of the server and the TPS (Ticks Per Second).
  */
-public class ServerManager implements Server {
+public class SierraServerManager implements SierraServer {
 
     /**
      * The uuid variable represents a UUID (Universally Unique Identifier) that is generated using the randomUUID() method from the UUID class.
