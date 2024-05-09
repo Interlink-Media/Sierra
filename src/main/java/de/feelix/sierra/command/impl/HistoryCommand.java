@@ -166,4 +166,9 @@ public class HistoryCommand implements ISierraCommand {
     public String description() {
         return "History of player`s punishments";
     }
+
+    @Override
+    public String permission() {
+        return "sierra.command.history";
+    }
 }

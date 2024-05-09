@@ -48,4 +48,9 @@ public class VersionCommand implements ISierraCommand {
     public String description() {
         return "View version info";
     }
+
+    @Override
+    public String permission() {
+        return null;
+    }
 }

@@ -18,3 +18,30 @@ permissions:
   sierra.command:
     description: General permission for the main command
     default: op
+  sierra.command.monitor:
+    description: Permission for the monitor sub-command
+    default: op
+  sierra.command.alerts:
+    description: Permission for the monitor sub-command
+    default: false
+  sierra.command.history:
+    description: Permission for the monitor sub-command
+    default: op
+  sierra.command.reload:
+    description: Permission for the monitor sub-command
+    default: op
+  sierra.*:
+    default: false
+    description: Admin permission for sierra
+    children:
+      - sierra.command.*
+      - sierra.update
+  sierra.command.*:
+    description: Permission for all sub-commands
+    default: false
+    children:
+      - sierra.command.monitor
+      - sierra.command.alerts
+      - sierra.command.history
+      - sierra.command.reload
+      - sierra.command

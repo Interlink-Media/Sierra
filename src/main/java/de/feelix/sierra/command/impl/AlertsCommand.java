@@ -105,4 +105,9 @@ public class AlertsCommand implements ISierraCommand {
     public String description() {
         return "Toggles the alerts";
     }
+
+    @Override
+    public String permission() {
+        return "sierra.command.alerts";
+    }
 }

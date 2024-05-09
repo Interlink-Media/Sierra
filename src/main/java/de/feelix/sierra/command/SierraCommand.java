@@ -90,8 +90,10 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label,
                              String[] args) {
 
+        SierraSender sierraSender = new SierraSender(sender);
+
         if (hasNoPermission(sender)) {
-            CommandHelper.sendVersionOutput(new SierraSender(sender));
+            CommandHelper.sendVersionOutput(sierraSender);
             return true;
         }
 
@@ -100,7 +102,13 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
                 String         firstInput     = args[0];
                 ISierraCommand iSierraCommand = commands.get(firstInput);
                 if (iSierraCommand != null) {
-                    iSierraCommand.process(new SierraSender(sender), new BukkitAbstractCommand(command),
+
+                    if (iSierraCommand.permission() != null && !sender.hasPermission(iSierraCommand.permission())) {
+                        CommandHelper.sendVersionOutput(sierraSender);
+                        return;
+                    }
+
+                    iSierraCommand.process(sierraSender, new BukkitAbstractCommand(command),
                                            new SierraLabel(label), new SierraArguments(args)
                     );
                 } else {
@@ -123,7 +131,12 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
         commands.forEach((s, iSierraCommand) -> {
             if (commandSender.hasPermission("sierra.command")) {
                 String description = iSierraCommand.description();
-                commandSender.sendMessage(String.format(MESSAGE_FORMAT, Sierra.PREFIX, s, description));
+
+                if (iSierraCommand.permission() == null) {
+                    commandSender.sendMessage(String.format(MESSAGE_FORMAT, Sierra.PREFIX, s, description));
+                } else if (commandSender.hasPermission(iSierraCommand.permission())) {
+                    commandSender.sendMessage(String.format(MESSAGE_FORMAT, Sierra.PREFIX, s, description));
+                }
             }
         });
     }
@@ -148,7 +161,7 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
         if (hasNoPermission(sender)) {
             return null;
         }
-        List<String> keys = getGeneratedKeys(args);
+        List<String> keys = getGeneratedKeys(sender, args);
         return keys.isEmpty() ? getOnlinePlayerNames() : keys;
     }
 
@@ -172,15 +185,16 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
         return !sender.hasPermission("sierra.command");
     }
 
-    /**
-     * Retrieves a list of generated keys based on the given arguments.
-     *
-     * @param args an array of strings representing the arguments
-     * @return a list of generated keys
-     */
-    private List<String> getGeneratedKeys(String[] args) {
+
+    private List<String> getGeneratedKeys(CommandSender commandSender, String[] args) {
         List<String> keys = new ArrayList<>();
-        commands.forEach((s, iSierraCommand) -> keys.addAll(iSierraCommand.fromId(args.length, args)));
+        commands.forEach((s, iSierraCommand) -> {
+            if (iSierraCommand.permission() == null) {
+                keys.addAll(iSierraCommand.fromId(args.length, args));
+            } else if (commandSender.hasPermission(iSierraCommand.permission())) {
+                keys.addAll(iSierraCommand.fromId(args.length, args));
+            }
+        });
         return keys;
     }
 

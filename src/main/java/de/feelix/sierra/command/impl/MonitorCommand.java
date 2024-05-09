@@ -101,4 +101,9 @@ public class MonitorCommand implements ISierraCommand {
     public String description() {
         return "Performance analysis";
     }
+
+    @Override
+    public String permission() {
+        return "sierra.command.monitor";
+    }
 }

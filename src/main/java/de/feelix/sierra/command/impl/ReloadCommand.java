@@ -56,4 +56,9 @@ public class ReloadCommand implements ISierraCommand {
     public String description() {
         return "Reloads the config";
     }
+
+    @Override
+    public String permission() {
+        return "sierra.command.reload";
+    }
 }

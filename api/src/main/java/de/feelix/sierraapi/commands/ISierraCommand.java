@@ -34,4 +34,11 @@ public interface ISierraCommand {
      * @return the description of the method or command as a String
      */
     String description();
+
+    /**
+     * Returns the permission required to execute the method or command.
+     *
+     * @return the required permission as a String
+     */
+    String permission();
 }
