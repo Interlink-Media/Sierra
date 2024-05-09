@@ -649,11 +649,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 } while (data.getSecond() != id);
             }
 
-        } else if (event.getPacketType() == PacketType.Play.Client.CLIENT_STATUS) {
-
-            // To prevent false kicks in inventory
-            playerData.setOpenInventory(true);
-
         } else if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
 
             WrapperPlayClientNameItem wrapper = CastUtil.getSupplierValue(
@@ -722,10 +717,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 playerData::exceptionDisconnect
             );
 
-            if (!playerData.isOpenInventory()) {
-                violation(event, createViolation("Interacted in closed inventory", PunishType.KICK));
-            }
-
             if (isSupportedServerVersion(ServerVersion.V_1_14)) {
                 int clickType = wrapper.getWindowClickType().ordinal();
                 int button    = wrapper.getButton();
@@ -785,7 +776,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             // Reset this state to prevent false positives
             playerData.setHasOpenAnvil(false);
-            playerData.setOpenInventory(false);
         }
     }
 
@@ -816,6 +806,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * @return The AttributeMapper corresponding to the given tag, or null if no matching AttributeMapper is found.
      */
     private AttributeMapper getAttributeMapper(NBTCompound tag) {
+        //noinspection DataFlowIssue
         return AttributeMapper.getAttributeMapper(tag.getStringTagOrNull("AttributeName").getValue());
     }
 
@@ -838,6 +829,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     private List<NBTCompound> getAttributeModifiers(ItemStack itemStack) {
         //noinspection DataFlowIssue
         NBTList<NBTCompound> tagOrNull = itemStack.getNBT().getCompoundListTagOrNull("AttributeModifiers");
+        //noinspection DataFlowIssue
         return tagOrNull.getTags();
     }
 
@@ -853,6 +845,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     private void handleAttributeViolation(PacketReceiveEvent event, boolean vanillaMapping,
                                           AttributeMapper attributeMapper, NBTCompound tag) {
 
+        //noinspection DataFlowIssue
         double amount = tag.getNumberTagOrNull("Amount").getAsDouble();
 
         if (isAmountInvalid(vanillaMapping, attributeMapper, amount)) {
@@ -924,11 +917,13 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             for (NBTCompound tag : items.getTags()) {
                 if (tag.getStringTagOrNull("id") != null) {
+                    //noinspection DataFlowIssue
                     if (tag.getStringTagOrNull("id").getValue().equalsIgnoreCase("minecraft:air")) {
                         violation(event, createViolation("Invalid item: air", PunishType.MITIGATE));
-                    } else if (tag.getStringTagOrNull("id").getValue().equalsIgnoreCase("minecraft:bundle")) {
-                        violation(event, createViolation("Invalid item: bundle", PunishType.MITIGATE));
-                    }
+                    } else //noinspection DataFlowIssue
+                        if (tag.getStringTagOrNull("id").getValue().equalsIgnoreCase("minecraft:bundle")) {
+                            violation(event, createViolation("Invalid item: bundle", PunishType.MITIGATE));
+                        }
                 }
             }
         }
@@ -1157,6 +1152,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     listContent.set(listContent.get() + 1);
                     if (itemStack.getNBT().getCompoundListTagOrNull(s) != null) {
                         NBTList<NBTCompound> tagOrNull = itemStack.getNBT().getCompoundListTagOrNull(s);
+                        //noinspection DataFlowIssue
                         if (tagOrNull.getTags().size() > 50) {
                             violation(event, ViolationDocument.builder()
                                 .debugInformation("Too big nbt list size")
@@ -1295,6 +1291,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             if (itemStack.getNBT() != null) {
 
                 if (itemStack.getNBT().getCompoundTagOrNull("BlockEntityTag") != null) {
+                    //noinspection DataFlowIssue
                     NBTList<NBTCompound> tagOrNull = itemStack.getNBT()
                         .getCompoundTagOrNull("BlockEntityTag")
                         .getCompoundListTagOrNull("Patterns");
@@ -1420,8 +1417,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 () -> new WrapperPlayServerOpenWindow(event),
                 playerData::exceptionDisconnect
             );
-
-            playerData.setOpenInventory(true);
 
             if (PacketEvents.getAPI()
                 .getServerManager()

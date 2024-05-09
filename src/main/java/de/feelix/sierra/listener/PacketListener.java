@@ -89,6 +89,7 @@ public class PacketListener extends PacketListenerAbstract {
 
         playerData.getGameModeProcessor().process(event);
         playerData.getPingProcessor().handle(event);
+
         processAvailableChecksSend(playerData, event);
         playerData.getTimingProcessor().getPacketSendTask().end();
     }

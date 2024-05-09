@@ -49,18 +49,17 @@ public class PlayerData implements SierraUser {
     private boolean hasBrand           = false;
     private boolean nameChecked        = false;
     private boolean hasOpenAnvil       = false;
-    private boolean openInventory      = false;
 
     private String brand = "vanilla";
 
     private ClientVersion clientVersion;
     private GameMode      gameMode;
 
-    private final CheckManager      checkManager      = new CheckManager(this);
-    private final BrandProcessor    brandProcessor    = new BrandProcessor(this);
-    private final GameModeProcessor gameModeProcessor = new GameModeProcessor(this);
-    private final PingProcessor     pingProcessor     = new PingProcessor(this);
-    private final TimingHandler     timingProcessor   = new TimingProcessor(this);
+    private final CheckManager       checkManager       = new CheckManager(this);
+    private final BrandProcessor     brandProcessor     = new BrandProcessor(this);
+    private final GameModeProcessor  gameModeProcessor  = new GameModeProcessor(this);
+    private final PingProcessor      pingProcessor      = new PingProcessor(this);
+    private final TimingHandler      timingProcessor    = new TimingProcessor(this);
 
     /**
      * The PlayerData function is a constructor that takes in a User object and sets the user variable to it.
