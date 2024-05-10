@@ -22,11 +22,16 @@ public class EnchantLimit implements ItemCheck {
     @Override
     public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
                                                 NBTCompound nbtCompound, PlayerData playerData) {
+
         //This is "version safe", since we check both the older 'ench' and the newer 'Enchantments' tag
         //Not a very clean approach. A way to get items within pe itemstacks would certainly be helpful
         if (nbtCompound.getTags().containsKey(clickedStack.getEnchantmentsTagName(CLIENT_VERSION))) {
+
             NBTList<NBTCompound> enchantments = nbtCompound.getCompoundListTagOrNull(
                 clickedStack.getEnchantmentsTagName(CLIENT_VERSION));
+
+            if(enchantments == null) return null;
+
             for (int i = 0; i < enchantments.size(); i++) {
                 NBTCompound enchantment = enchantments.getTag(i);
                 if (enchantment.getTags().containsKey("lvl")) {
