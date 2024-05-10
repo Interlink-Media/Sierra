@@ -20,6 +20,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSe
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.ViolationDocument;
+import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.menu.MenuType;
@@ -31,6 +32,7 @@ import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
@@ -317,6 +319,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             ItemStack itemStack = wrapper.getItemStack();
 
+            wrapper.getSlot();
             checkAttributes(event, itemStack);
             checkInvalidNbt(event, itemStack);
             checkForInvalidBanner(event, itemStack);
@@ -861,15 +864,33 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         if (isAmountInvalid(vanillaMapping, attributeMapper, amount)) {
             violation(
                 event,
-                createViolation("Invalid attribute modifier. Amount: " + amount, PunishType.KICK)
+                createViolation("Invalid attribute modifier. Amount: " + amount, PunishType.MITIGATE)
             );
+            removeItem();
         } else if (!vanillaMapping && isSierraModifierInvalid(amount)) {
             violation(
                 event,
-                createViolation("Sierra attribute modifier. Amount: " + amount, PunishType.KICK)
+                createViolation("Sierra attribute modifier. Amount: " + amount, PunishType.MITIGATE)
             );
+            removeItem();
         } else if (FormatUtils.checkDoublePrecision(amount)) {
-            violation(event, createViolation("Double is to precisely", PunishType.KICK));
+            violation(event, createViolation("Double is to precisely", PunishType.MITIGATE));
+            removeItem();
+        }
+    }
+
+    /**
+     * Removes the item from the player's hand if the punishment configuration is set to HARD.
+     * If the player is offline or does not have an item in their hand, the method returns without performing any action.
+     */
+    private void removeItem() {
+        if (Sierra.getPlugin().getPunishmentConfig() == PunishmentConfig.HARD) {
+            Player player = Bukkit.getPlayer(getPlayerData().username());
+
+            if (player == null) return;
+
+            //noinspection deprecation
+            player.getInventory().setItemInHand(null);
         }
     }
 

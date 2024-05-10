@@ -50,7 +50,7 @@ public class FormatUtils {
             return false;
         }
         int decimalIndex = numberStr.indexOf(".");
-        int precision = numberStr.length() - decimalIndex - 1;
+        int precision    = numberStr.length() - decimalIndex - 1;
         return precision > 3;
     }
 

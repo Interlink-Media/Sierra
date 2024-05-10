@@ -23,7 +23,7 @@ permissions:
     default: op
   sierra.command.alerts:
     description: Permission for the monitor sub-command
-    default: false
+    default: op
   sierra.command.history:
     description: Permission for the monitor sub-command
     default: op
