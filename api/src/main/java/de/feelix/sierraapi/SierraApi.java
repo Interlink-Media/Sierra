@@ -1,7 +1,6 @@
 package de.feelix.sierraapi;
 
 import de.feelix.sierraapi.events.EventBus;
-import de.feelix.sierraapi.module.ModuleGateway;
 import de.feelix.sierraapi.server.SierraServer;
 import de.feelix.sierraapi.user.UserRepository;
 
@@ -14,13 +13,6 @@ public interface SierraApi {
      * UserRepository is an interface that provides methods for querying user information.
      */
     UserRepository userRepository();
-
-    /**
-     * The moduleGateway method returns an instance of ModuleGateway.
-     *
-     * @return an instance of ModuleGateway
-     */
-    ModuleGateway moduleGateway();
 
     /**
      * The eventBus method returns an instance of EventBus.

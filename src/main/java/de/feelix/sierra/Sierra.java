@@ -8,7 +8,6 @@ import de.feelix.sierra.listener.bukkit.BlockRedstoneListener;
 import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.discord.SierraDiscordGateway;
-import de.feelix.sierra.manager.modules.SierraModuleGateway;
 import de.feelix.sierra.manager.server.SierraServerManager;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.utilities.Ticker;
@@ -16,7 +15,6 @@ import de.feelix.sierra.utilities.update.UpdateChecker;
 import de.feelix.sierraapi.SierraApi;
 import de.feelix.sierraapi.SierraApiAccessor;
 import de.feelix.sierraapi.events.EventBus;
-import de.feelix.sierraapi.module.ModuleGateway;
 import de.feelix.sierraapi.server.SierraServer;
 import de.feelix.sierraapi.user.UserRepository;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
@@ -27,7 +25,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -97,11 +94,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * It can be used to set up the gateway, send alerts, and perform other actions related to Discord integration.
      */
     private SierraDiscordGateway sierraDiscordGateway = new SierraDiscordGateway();
-
-    /**
-     * The ModuleGateway class represents the gateway for accessing different modules and their functionalities.
-     */
-    private SierraModuleGateway sierraModuleGateway;
 
     /**
      * Represents an event bus that allows events to be published and subscribed to.
@@ -217,8 +209,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
 
         checkAndUpdatePlugin();
 
-        this.loadModules();
-
         long delay = System.currentTimeMillis() - startTime;
         logInitializationTime(delay);
 
@@ -296,29 +286,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     }
 
     /**
-     * Loads the modules for the Sierra plugin.
-     * The method creates a modules directory specific to the plugin, and initializes a {@link SierraModuleGateway}
-     * object
-     * to manage the loading of modules.
-     * <p>
-     * The modules directory is created at "./plugins/{plugin_name}/modules". If the directory already exists,
-     * no action is taken. If the directory cannot be created, a severe logging message is displayed.
-     * <p>
-     * After creating the modules directory, the {@link SierraModuleGateway} object is initialized with the directory
-     * and the {@link SierraModuleGateway#loadModules()} method is called to load the modules.
-     * <p>
-     * This method is called when the plugin is being enabled.
-     */
-    private void loadModules() {
-        File folder = new File("./plugins/" + this.getDescription().getName() + "/modules");
-        if (!folder.mkdirs() && !folder.exists()) {
-            this.getLogger().severe("Failed to create modules directory!");
-        }
-        this.sierraModuleGateway = new SierraModuleGateway(folder);
-        this.sierraModuleGateway.loadModules();
-    }
-
-    /**
      * Checks for updates to the Sierra plugin asynchronously.
      */
     private void checkForUpdate() {
@@ -375,7 +342,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         if (PacketEvents.getAPI() != null) {
             PacketEvents.getAPI().terminate();
         }
-        this.sierraModuleGateway.disableModules();
     }
 
     /**
@@ -387,18 +353,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     @Override
     public UserRepository userRepository() {
         return this.sierraDataManager;
-    }
-
-    /**
-     * The {@code moduleGateway()} method returns an instance of ModuleGateway.
-     *
-     * @return An instance of ModuleGateway.
-     * @see ModuleGateway
-     * @see Sierra#sierraModuleGateway
-     */
-    @Override
-    public ModuleGateway moduleGateway() {
-        return this.sierraModuleGateway;
     }
 
     /**
