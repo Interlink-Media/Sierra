@@ -13,7 +13,7 @@ import java.util.List;
  * The AlertsCommand class represents a command that toggles the alert messages for a player.
  * It implements the ISierraCommand interface and provides the necessary methods to process the command.
  */
-public class AlertsCommand implements ISierraCommand {
+public class MitigationCommand implements ISierraCommand {
 
     /**
      * The process method performs the necessary actions to toggle the alert messages for a player.
@@ -60,11 +60,11 @@ public class AlertsCommand implements ISierraCommand {
      * @param playerSender the Player object representing the player who executed the command
      */
     private void toggleAlertMessages(PlayerData playerData, Player playerSender) {
-        if (playerData.getAlertSettings().enabled()) {
-            playerData.getAlertSettings().toggle(false);
+        if (playerData.getMitigationSettings().enabled()) {
+            playerData.getMitigationSettings().toggle(false);
             sendMessage(playerSender, true);
         } else {
-            playerData.getAlertSettings().toggle(true);
+            playerData.getMitigationSettings().toggle(true);
             sendMessage(playerSender, false);
         }
     }
@@ -77,7 +77,7 @@ public class AlertsCommand implements ISierraCommand {
      */
     private void sendMessage(Player player, boolean isDisabled) {
         String statusWord = isDisabled ? "§cdisabled" : "§aenabled";
-        String message    = Sierra.PREFIX + " §fYou have " + statusWord + " §fthe alerts messages";
+        String message    = Sierra.PREFIX + " §fYou have " + statusWord + " §fthe mitigation messages";
         player.sendMessage(message);
     }
 
@@ -91,7 +91,7 @@ public class AlertsCommand implements ISierraCommand {
     @Override
     public List<String> fromId(int id, String[] args) {
         if (id == 1) {
-            return Collections.singletonList("alerts");
+            return Collections.singletonList("mitigation");
         }
         return Collections.emptyList();
     }
@@ -103,11 +103,11 @@ public class AlertsCommand implements ISierraCommand {
      */
     @Override
     public String description() {
-        return "Toggles the alerts";
+        return "Toggles the mitigations";
     }
 
     @Override
     public String permission() {
-        return "sierra.command.alerts";
+        return "sierra.command.mitigation";
     }
 }

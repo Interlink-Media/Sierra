@@ -5,8 +5,10 @@ import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.CheckManager;
+import de.feelix.sierra.manager.storage.alert.AbstractAlertSetting;
 import de.feelix.sierra.manager.storage.processor.*;
 import de.feelix.sierraapi.timing.TimingHandler;
+import de.feelix.sierraapi.user.settings.AlertSettings;
 import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import lombok.Data;
 import de.feelix.sierraapi.check.CheckRepository;
@@ -44,7 +46,6 @@ public class PlayerData implements SierraUser {
     private long joinTime         = System.currentTimeMillis();
 
     private boolean receivedPunishment = false;
-    private boolean receiveAlerts      = false;
     private boolean exempt             = false;
     private boolean hasBrand           = false;
     private boolean nameChecked        = false;
@@ -55,11 +56,14 @@ public class PlayerData implements SierraUser {
     private ClientVersion clientVersion;
     private GameMode      gameMode;
 
-    private final CheckManager       checkManager       = new CheckManager(this);
-    private final BrandProcessor     brandProcessor     = new BrandProcessor(this);
-    private final GameModeProcessor  gameModeProcessor  = new GameModeProcessor(this);
-    private final PingProcessor      pingProcessor      = new PingProcessor(this);
-    private final TimingHandler      timingProcessor    = new TimingProcessor(this);
+    private final AlertSettings alertSettings      = new AbstractAlertSetting();
+    private final AlertSettings mitigationSettings = new AbstractAlertSetting();
+
+    private final CheckManager      checkManager      = new CheckManager(this);
+    private final BrandProcessor    brandProcessor    = new BrandProcessor(this);
+    private final GameModeProcessor gameModeProcessor = new GameModeProcessor(this);
+    private final PingProcessor     pingProcessor     = new PingProcessor(this);
+    private final TimingHandler     timingProcessor   = new TimingProcessor(this);
 
     /**
      * The PlayerData function is a constructor that takes in a User object and sets the user variable to it.
@@ -159,26 +163,14 @@ public class PlayerData implements SierraUser {
         return this.exempt;
     }
 
-    /**
-     * Returns whether the player should receive alerts.
-     *
-     * @return {@code true} if the player should receive alerts, {@code false} otherwise
-     */
     @Override
-    public boolean isAlerts() {
-        return this.receiveAlerts;
+    public AlertSettings alertSettings() {
+        return alertSettings;
     }
 
-    /**
-     * Sets whether the player should receive alerts.
-     *
-     * @param b true to enable alerts, false to disable alerts
-     * @return the updated value of receiveAlerts
-     */
     @Override
-    public boolean setAlerts(boolean b) {
-        this.receiveAlerts = b;
-        return this.receiveAlerts;
+    public AlertSettings mitigationSettings() {
+        return mitigationSettings;
     }
 
     public void exceptionDisconnect(Exception exception) {

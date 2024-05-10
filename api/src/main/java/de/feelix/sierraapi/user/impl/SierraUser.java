@@ -2,6 +2,7 @@ package de.feelix.sierraapi.user.impl;
 
 import de.feelix.sierraapi.check.CheckRepository;
 import de.feelix.sierraapi.timing.TimingHandler;
+import de.feelix.sierraapi.user.settings.AlertSettings;
 
 import java.util.UUID;
 
@@ -70,19 +71,19 @@ public interface SierraUser {
     boolean setExempt(boolean b);
 
     /**
-     * Returns whether the user has any alerts.
+     * Retrieves the alert settings for the user.
      *
-     * @return true if the user has alerts, false otherwise.
+     * @return The alert settings for the user as an instance of {@link AlertSettings}.
+     *
+     * @see SierraUser#alertSettings()
      */
-    boolean isAlerts();
+    AlertSettings alertSettings();
 
     /**
-     * Sets whether the user has alerts.
+     * Retrieves the mitigation settings for the user.
      *
-     * @param b true to enable alerts, false to disable alerts
-     * @return true if the alerts setting is successfully changed, false otherwise
-     */
-    boolean setAlerts(boolean b);
+     * @return The mitigation settings for the user as*/
+    AlertSettings mitigationSettings();
 
     /**
      * The CheckRepository interface represents a repository of checks in the Sierra API.

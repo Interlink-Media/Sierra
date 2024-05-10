@@ -135,7 +135,7 @@ public class SierraDetection implements SierraCheck {
         // Log to console, alert staff, create history, and potentially punish
         User user = event.getUser();
         consoleLog(user, violationDocument);
-        alert(user, violationDocument.getDebugInformation(), violationDocument.punishType());
+        alert(user, violationDocument);
 
         if (violationDocument.punishType() != PunishType.MITIGATE) {
             Sierra.getPlugin()
@@ -161,7 +161,9 @@ public class SierraDetection implements SierraCheck {
     private void throwDetectionEvent(ViolationDocument violationDocument) {
         FoliaCompatUtil.runTaskAsync(
             Sierra.getPlugin(),
-            () -> Sierra.getPlugin().getEventBus().publish(new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))
+            () -> Sierra.getPlugin()
+                .getEventBus()
+                .publish(new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))
         );
     }
 
@@ -177,7 +179,7 @@ public class SierraDetection implements SierraCheck {
             return;
         }
 
-        if(violationDocument.getPunishType() == PunishType.MITIGATE) return;
+        if (violationDocument.getPunishType() == PunishType.MITIGATE) return;
 
         logToConsole(createGeneralMessage(user, violationDocument.getPunishType()));
         logToConsole(createGeneralInformation(violationDocument));
@@ -227,48 +229,83 @@ public class SierraDetection implements SierraCheck {
         logger.log(Level.INFO, message);
     }
 
+
     /**
-     * Sends an alert message to all players who have enabled receiving alerts.
+     * Sends an alert message to staff members with information about the violation.
      *
-     * @param user       The User object representing the player.
-     * @param details    Additional details about the alert.
-     * @param punishType The type of punishment associated with the alert.
+     * @param user              The User object representing the player.
+     * @param violationDocument The ViolationDocument containing information about the violation.
      */
-    protected void alert(User user, String details, PunishType punishType) {
+    protected void alert(User user, ViolationDocument violationDocument) {
         SierraConfigEngine sierraConfig = Sierra.getPlugin().getSierraConfigEngine();
 
-        String staffAlert = formatStaffAlertMessage(user, punishType, sierraConfig);
-        String username = this.playerData.getUser().getName();
-        String clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
-        int    ticks = FormatUtils.convertMillisToTicks(System.currentTimeMillis() - this.playerData.getJoinTime());
+        PunishType punishType = violationDocument.getPunishType();
+        String     staffAlert = formatStaffAlertMessage(user, punishType, sierraConfig);
+        String     username = this.playerData.getUser().getName();
+        String     clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
+        int        ticks = FormatUtils.convertMillisToTicks(System.currentTimeMillis() - this.playerData.getJoinTime());
 
         StringBuilder content = new StringBuilder()
-            .append(" §7Username: §c").append(username).append("\n")
-            .append(" §7Version: §c").append(clientVersion).append("\n")
-            .append(" §7Brand: §c").append(playerData.getBrand()).append("\n")
-            .append(" §7Exist since: §c").append(ticks).append(" ticks\n")
-            .append(" §7Game mode: §c").append(this.playerData.getGameMode().name()).append("\n")
-            .append(" §7Tag: §c").append(this.friendlyName.toLowerCase()).append("\n")
-            .append(" §7Debug info: §c").append(FormatUtils.shortenString(details)).append("\n")
+            .append(" §7Username: §c")
+            .append(username)
+            .append("\n")
+            .append(" §7Version: §c")
+            .append(clientVersion)
+            .append("\n")
+            .append(" §7Brand: §c")
+            .append(playerData.getBrand())
+            .append("\n")
+            .append(" §7Exist since: §c")
+            .append(ticks)
+            .append(" ticks\n")
+            .append(" §7Game mode: §c")
+            .append(this.playerData.getGameMode().name())
+            .append("\n")
+            .append(" §7Tag: §c")
+            .append(this.friendlyName.toLowerCase())
+            .append("\n")
+            .append(" §7Debug info: §c")
+            .append(FormatUtils.shortenString(violationDocument.getDebugInformation()))
+            .append("\n")
             .append("\n")
             .append(ChatColor.translateAlternateColorCodes(
                 '&',
-                sierraConfig.config().getString("layout.detection-message.alert-command-note", "&fClick to teleport")
+                getAlertNote(sierraConfig)
             ));
 
-        String command = sierraConfig.config()
-            .getString("layout.detection-message.alert-command", "/tp {username}")
-            .replace("{username}", username);
+        String command = getPunishmentCommand(sierraConfig, username);
 
-        for (PlayerData playerData : Sierra.getPlugin().getSierraDataManager().getPlayerData().values()) {
-            if (playerData.isReceiveAlerts()) {
-                playerData.getUser().sendMessage(
-                    LegacyComponentSerializer.legacy('&')
-                        .deserialize(staffAlert)
-                        .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, command))
-                        .hoverEvent(HoverEvent.showText(Component.text(content.toString()))));
+        if (punishType == PunishType.MITIGATE) {
+            for (PlayerData playerData : Sierra.getPlugin().getSierraDataManager().getPlayerData().values()) {
+                if (playerData.getMitigationSettings().enabled()) {
+                    playerData.getUser().sendMessage(
+                        LegacyComponentSerializer.legacy('&')
+                            .deserialize(staffAlert)
+                            .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, command))
+                            .hoverEvent(HoverEvent.showText(Component.text(content.toString()))));
+                }
+            }
+        } else {
+            for (PlayerData playerData : Sierra.getPlugin().getSierraDataManager().getPlayerData().values()) {
+                if (playerData.getAlertSettings().enabled()) {
+                    playerData.getUser().sendMessage(
+                        LegacyComponentSerializer.legacy('&')
+                            .deserialize(staffAlert)
+                            .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, command))
+                            .hoverEvent(HoverEvent.showText(Component.text(content.toString()))));
+                }
             }
         }
+    }
+
+    private String getAlertNote(SierraConfigEngine sierraConfig) {
+        return sierraConfig.config().getString("layout.detection-message.alert-command-note", "&fClick to teleport");
+    }
+
+    private String getPunishmentCommand(SierraConfigEngine sierraConfig, String username) {
+        return sierraConfig.config()
+            .getString("layout.detection-message.alert-command", "/tp {username}")
+            .replace("{username}", username);
     }
 
     /**
