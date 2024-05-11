@@ -3,6 +3,7 @@ package de.feelix.sierra.check.impl.invalid;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.event.ProtocolPacketEvent;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
@@ -17,10 +18,10 @@ import com.github.retrooper.packetevents.wrapper.play.client.*;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerKeepAlive;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenWindow;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetExperience;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowItems;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.ViolationDocument;
-import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.menu.MenuType;
@@ -32,7 +33,6 @@ import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
@@ -423,6 +423,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             this.lastSlot = slot;
 
+
         } else if (event.getPacketType() == PacketType.Play.Client.TAB_COMPLETE) {
 
             WrapperPlayClientTabComplete wrapper = CastUtil.getSupplierValue(
@@ -798,7 +799,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * @param event     The PacketReceiveEvent that triggered the check.
      * @param itemStack The ItemStack to check for attribute modifiers.
      */
-    private void checkAttributes(PacketReceiveEvent event, ItemStack itemStack) {
+    private void checkAttributes(ProtocolPacketEvent<Object> event, ItemStack itemStack) {
         if (hasAttributeModifiers(itemStack)) {
             List<NBTCompound> tags           = getAttributeModifiers(itemStack);
             boolean           vanillaMapping = useVanillaAttributeMapping();
@@ -847,16 +848,15 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     }
 
     /**
-     * Handles attribute violations based on the specified packet event, vanilla mapping flag,
-     * attribute mapper, and NBT tag.
+     * Handles an attribute violation in a packet receive event.
      *
-     * @param event           The PacketReceiveEvent triggering the attribute violation check.
+     * @param event           The ProtocolPacketEvent<Object> event to handle.
      * @param vanillaMapping  A flag indicating whether vanilla attribute mapping is used.
      * @param attributeMapper The AttributeMapper to handle violations based on attribute modifiers.
-     * @param tag             The NBTCompound tag containing the attribute modifier.
+     * @param tag             The NBTCompound tag containing the attribute information.
      */
-    private void handleAttributeViolation(PacketReceiveEvent event, boolean vanillaMapping,
-                                          AttributeMapper attributeMapper, NBTCompound tag) {
+    private void handleAttributeViolation(ProtocolPacketEvent<Object> event, boolean vanillaMapping,
+                                             AttributeMapper attributeMapper, NBTCompound tag) {
 
         //noinspection DataFlowIssue
         double amount = tag.getNumberTagOrNull("Amount").getAsDouble();
@@ -864,33 +864,15 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         if (isAmountInvalid(vanillaMapping, attributeMapper, amount)) {
             violation(
                 event,
-                createViolation("Invalid attribute modifier. Amount: " + amount, PunishType.MITIGATE)
+                createViolation("Invalid attribute modifier. Amount: " + amount, PunishType.KICK)
             );
-            removeItem();
         } else if (!vanillaMapping && isSierraModifierInvalid(amount)) {
             violation(
                 event,
-                createViolation("Sierra attribute modifier. Amount: " + amount, PunishType.MITIGATE)
+                createViolation("Sierra attribute modifier. Amount: " + amount, PunishType.KICK)
             );
-            removeItem();
         } else if (FormatUtils.checkDoublePrecision(amount)) {
-            violation(event, createViolation("Double is to precisely", PunishType.MITIGATE));
-            removeItem();
-        }
-    }
-
-    /**
-     * Removes the item from the player's hand if the punishment configuration is set to HARD.
-     * If the player is offline or does not have an item in their hand, the method returns without performing any action.
-     */
-    private void removeItem() {
-        if (Sierra.getPlugin().getPunishmentConfig() == PunishmentConfig.HARD) {
-            Player player = Bukkit.getPlayer(getPlayerData().username());
-
-            if (player == null) return;
-
-            //noinspection deprecation
-            player.getInventory().setItemInHand(null);
+            violation(event, createViolation("Double is to precisely", PunishType.KICK));
         }
     }
 
@@ -1430,6 +1412,15 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .punishType(PunishType.BAN)
                     .build());
             }
+        } else if (event.getPacketType() == PacketType.Play.Server.WINDOW_ITEMS) {
+
+            WrapperPlayServerWindowItems wrapper = new WrapperPlayServerWindowItems(event);
+
+            for (ItemStack item : wrapper.getItems()) {
+                if (item.getNBT() == null) continue;
+                checkAttributes(event, item);
+            }
+
         } else if (event.getPacketType() == PacketType.Play.Server.RESPAWN) {
 
             playerData.setSkipInvCheckTime(System.currentTimeMillis());
