@@ -17,6 +17,10 @@ import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import lombok.Getter;
 import de.feelix.sierraapi.user.UserRepository;
 import de.feelix.sierraapi.user.impl.SierraUser;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -37,12 +41,12 @@ public class SierraDataManager implements UserRepository {
      * It provides methods to manipulate and retrieve player data from the underlying data structures.
      */
     @Getter
-    private static SierraDataManager     instance;
+    private static SierraDataManager instance;
 
     /**
      * This variable represents a map of User objects to PlayerData objects.
      */
-    private final  Map<User, PlayerData> playerData = new ConcurrentHashMap<>();
+    private final Map<User, PlayerData> playerData = new ConcurrentHashMap<>();
 
     /**
      * ArrayList to store the history documents.
@@ -98,7 +102,7 @@ public class SierraDataManager implements UserRepository {
             Player player = getPlayer(user);
             if (player == null || !playerCanUpdate(player)) return;
 
-            sendMessage(player);
+            sendMessage(user);
         });
     }
 
@@ -157,17 +161,24 @@ public class SierraDataManager implements UserRepository {
     }
 
     /**
-     * Sends a message to the specified player to inform them that the current version
-     * of the Sierra plugin is outdated.
+     * Sends a message to the specified user.
      *
-     * @param player The Player to send the message to.
+     * @param user The user to send the message to.
      */
-    private void sendMessage(Player player) {
+    private void sendMessage(User user) {
         String localVersion         = Sierra.getPlugin().getDescription().getVersion();
         String latestReleaseVersion = Sierra.getPlugin().getUpdateChecker().getLatestReleaseVersion();
 
-        player.sendMessage(Sierra.PREFIX + " §cThis version of Sierra is outdated!");
-        player.sendMessage(Sierra.PREFIX + " §fLocal: §c" + localVersion + "§f, Latest: §a" + latestReleaseVersion);
+        user.sendMessage(Sierra.PREFIX + " §cServer is running an outdated version of Sierra");
+        user.sendMessage(Sierra.PREFIX + " §fLocal: §c" + localVersion + "§f, Latest: §a" + latestReleaseVersion);
+        user.sendMessage(
+            LegacyComponentSerializer.legacy('&')
+                .deserialize(Sierra.PREFIX + " &c&nToo lazy? Stay always up-to-date with SierraLoader&c")
+                .clickEvent(ClickEvent.clickEvent(
+                    ClickEvent.Action.OPEN_URL,
+                    "https://sierra.squarecode.de/sierra/sierra-documentation/sierra-loader"
+                ))
+                .hoverEvent(HoverEvent.showText(Component.text("§7Click me to view the documentation"))));
     }
 
     /**

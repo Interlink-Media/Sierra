@@ -130,6 +130,8 @@ public class TimerDetection extends SierraDetection implements IngoingProcessor,
                         createViolation(event, "Movement frequency: bal:~" + balance, PunishType.KICK);
                     }
                     balance = balReset;
+
+                    // Todo: 1.20 check
                 }
             }
             lastFlyingTime = System.currentTimeMillis();
