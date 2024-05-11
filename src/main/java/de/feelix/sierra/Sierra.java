@@ -17,6 +17,7 @@ import de.feelix.sierraapi.SierraApiAccessor;
 import de.feelix.sierraapi.events.EventBus;
 import de.feelix.sierraapi.server.SierraServer;
 import de.feelix.sierraapi.user.UserRepository;
+import io.github.retrooper.packetevents.bstats.Metrics;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import io.github.retrooper.packetevents.util.FoliaCompatUtil;
 import lombok.Getter;
@@ -223,7 +224,11 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * and initialization of the PacketEvents API.
      */
     private void initializePacketEvents() {
-        new io.github.retrooper.packetevents.bstats.Metrics(this, PLUGIN_ID);
+        Metrics metrics = new Metrics(this, PLUGIN_ID);
+
+        metrics.addCustomChart(new Metrics.SingleLineChart("bans", () -> SierraDataManager.BANS));
+        metrics.addCustomChart(new Metrics.SingleLineChart("kicks", () -> SierraDataManager.KICKS));
+
         PacketEvents.getAPI().getEventManager().registerListener(new PacketListener());
         PacketEvents.getAPI().init();
     }

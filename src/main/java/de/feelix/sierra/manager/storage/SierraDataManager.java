@@ -54,6 +54,22 @@ public class SierraDataManager implements UserRepository {
     private final ArrayList<History> histories = new ArrayList<>();
 
     /**
+     * The KICKS variable represents the number of kicks in this session
+     * <p>
+     * Note: KICKS is a static variable which means it is shared across all instances
+     * of the containing class SierraDataManager.
+     */
+    public static int KICKS = 0;
+
+    /**
+     * The BANS variable represents the number of bans in this session
+     * <p>
+     * Note: BANS is a static variable which means it is shared across all instances
+     * of the containing class SierraDataManager.
+     */
+    public static int BANS  = 0;
+
+    /**
      * The DataManager function initializes the packet priority.
      */
     public SierraDataManager() {

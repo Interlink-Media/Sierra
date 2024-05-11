@@ -134,6 +134,7 @@ public class PlayerData implements SierraUser {
      */
     @Override
     public boolean kick() {
+        SierraDataManager.KICKS++;
         if (user != null) {
             user.closeConnection();
             return true;
@@ -201,6 +202,7 @@ public class PlayerData implements SierraUser {
      * Then, it dispatches the command to the console sender.
      */
     private void ban() {
+        SierraDataManager.BANS++;
         FoliaCompatUtil.runTask(Sierra.getPlugin(), o -> Bukkit.dispatchCommand(
             Bukkit.getConsoleSender(),
             Sierra.getPlugin()
