@@ -52,8 +52,8 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      * String code = "for (...) {\n   ...\n}";
      * Matcher matcher = pattern.matcher(code);
      * if (matcher.find()) {
-     *     // Code pattern matched
-     *     ...
+     * // Code pattern matched
+     * ...
      * }
      * ```
      */
@@ -165,11 +165,11 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
     /**
      * Checks the given command for disallowed commands and triggers a violation if found.
      *
-     * @param event   the PacketReceiveEvent that triggered the check
-     * @param wrapper the WrapperPlayClientUpdateCommandBlock containing the command to be checked
+     * @param event       the PacketReceiveEvent that triggered the check
+     * @param commandLine the WrapperPlayClientUpdateCommandBlock containing the command to be checked
      */
-    private void checkDisallowedCommand(PacketReceiveEvent event, String wrapper) {
-        String string = wrapper.toLowerCase().replaceAll("\\s+", " ");
+    private void checkDisallowedCommand(PacketReceiveEvent event, String commandLine) {
+        String string = commandLine.toLowerCase().replaceAll("\\s+", " ");
 
         for (String disallowedCommand : Sierra.getPlugin()
             .getSierraConfigEngine().config().getStringList("disallowed-commands")) {
