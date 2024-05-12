@@ -90,6 +90,30 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
     private int buffer = 0;
 
     /**
+     * Last known X coordinate.
+     */
+    private Double lastX;
+
+    /**
+     * Last known Y coordinate.
+     */
+    private Double lastY;
+
+    /**
+     * Last known Z coordinate.
+     */
+    private Double lastZ;
+
+    /**
+     * Constant representing a special value.
+     * <p>
+     * This constant is a final double value and acts as a special marker or predefined value.
+     * <p>
+     * The value of SPECIAL_VALUE is 9.223372E18d.
+     */
+    final double SPECIAL_VALUE = 9.223372E18d;
+
+    /**
      * InvalidMoveDetection is a subclass of SierraDetection which is used to detect and handle invalid movement
      * packets from a player.
      * It examines the player's movement data and checks for any suspicious or invalid values.
@@ -170,8 +194,52 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
         lastChunkId = chunkId;
 
         checkForBorder(position, event);
+        checkDelta(position, event);
         sortOutExtremeValues(location, event);
         getPlayerData().getTimingProcessor().getMovementTask().end();
+    }
+
+    /**
+     * Checks the delta (difference) between the current position and the previous position.
+     *
+     * @param position the current position of the entity
+     * @param event    the PacketReceiveEvent triggered by receiving a packet from the player
+     */
+    private void checkDelta(Vector3d position, PacketReceiveEvent event) {
+
+        if (lastX != null && this.lastY != null && lastZ != null) {
+            double deltaX = Math.max(position.getX(), this.lastX) - Math.min(position.getX(), this.lastX);
+            double deltaY = Math.max(position.getY(), this.lastY) - Math.min(position.getY(), this.lastY);
+            double deltaZ = Math.max(position.getZ(), this.lastZ) - Math.min(position.getZ(), this.lastZ);
+
+            if (invalidDeltaValue(deltaX, deltaY, deltaZ)) {
+                violation(event, ViolationDocument.builder()
+                    .punishType(PunishType.KICK)
+                    .debugInformation(String.format("X: %.2f Y: %.2f Z: %.2f", deltaX, deltaY, deltaZ))
+                    .build());
+            }
+        }
+
+        this.lastX = position.getX();
+        this.lastY = position.getY();
+        this.lastZ = position.getZ();
+    }
+
+    /**
+     * Checks if the given deltas are invalid.
+     *
+     * @param deltas the delta values to check
+     * @return true if any of the deltas are invalid, false otherwise
+     */
+    public boolean invalidDeltaValue(double... deltas) {
+        for (double delta : deltas) {
+            if (delta >= 10.0d && delta % 1.0d == 0.0d) {
+                if (delta > 1000.0d) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -181,7 +249,31 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      * @param event   the PacketReceiveEvent triggered by receiving the packet from the player
      */
     private void sortOutInvalidRotation(WrapperPlayClientPlayerFlying wrapper, PacketReceiveEvent event) {
-        if (wrapper.hasRotationChanged()) checkInvalidPitch(wrapper.getLocation(), event);
+        if (wrapper.hasRotationChanged()) {
+            checkInvalidPitch(wrapper.getLocation(), event);
+        }
+
+        float pitch = wrapper.getLocation().getPitch();
+        float yaw = wrapper.getLocation().getYaw();
+
+        // Check if any condition is met
+        if (isOutOfRange(yaw) || isOutOfRange(pitch) || yaw == SPECIAL_VALUE || pitch == SPECIAL_VALUE) {
+            violation(event, ViolationDocument.builder()
+                .debugInformation(String.format("Yaw: %.4f, Pitch: %.4f", yaw, pitch))
+                .punishType(PunishType.KICK)
+                .build());
+        }
+    }
+
+    /**
+     * Determines if the given value is out of range.
+     *
+     * @param value The value to check.
+     * @return {@code true} if the value is out of range, {@code false} otherwise.
+     */
+    // Helper method to check if a value is out of range
+    private boolean isOutOfRange(float value) {
+        return value < (float) -80000.0 || value > (float) 80000.0;
     }
 
     /**
