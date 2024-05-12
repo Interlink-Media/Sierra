@@ -32,7 +32,8 @@ import de.feelix.sierraapi.violation.PunishType;
  * </p>
  *
  * <p>
- * The class also has constants that define the maximum balance, balance reset value, and balance decrease value on teleport.
+ * The class also has constants that define the maximum balance, balance reset value, and balance decrease value on
+ * teleport.
  * </p>
  *
  * @see SierraDetection
@@ -63,7 +64,7 @@ public class TimerDetection extends SierraDetection implements IngoingProcessor,
      * The balance is used to track the movement frequency of the player. It is updated when the player is flying and
      * is decremented when the player is teleported. If the balance exceeds a certain threshold, a violation is created.
      */
-    private long balance        = 0L;
+    private long balance = 0L;
 
     /**
      * Represents the maximum balance of a player.
@@ -130,8 +131,6 @@ public class TimerDetection extends SierraDetection implements IngoingProcessor,
                         createViolation(event, "Movement frequency: bal:~" + balance, PunishType.KICK);
                     }
                     balance = balReset;
-
-                    // Todo: 1.20 check
                 }
             }
             lastFlyingTime = System.currentTimeMillis();
@@ -141,9 +140,9 @@ public class TimerDetection extends SierraDetection implements IngoingProcessor,
     /**
      * Creates a violation event.
      *
-     * @param event             The PacketReceiveEvent object representing the received packet
-     * @param debugInformation  Additional information related to the violation
-     * @param punishType        The type of punishment for the violation
+     * @param event            The PacketReceiveEvent object representing the received packet
+     * @param debugInformation Additional information related to the violation
+     * @param punishType       The type of punishment for the violation
      */
     private void createViolation(PacketReceiveEvent event, String debugInformation, PunishType punishType) {
         violation(event, ViolationDocument.builder()
@@ -154,14 +153,16 @@ public class TimerDetection extends SierraDetection implements IngoingProcessor,
 
     /**
      * The handle method is used to process a PacketSendEvent and update the player's balance based on the packet type.
-     * If the packet type is PacketType.Play.Server.PLAYER_POSITION_AND_LOOK, the balance is decreased by the balSubOnTp value.
+     * If the packet type is PacketType.Play.Server.PLAYER_POSITION_AND_LOOK, the balance is decreased by the
+     * balSubOnTp value.
      *
-     * @param event The PacketSendEvent object representing the event triggered by a packet being sent
+     * @param event      The PacketSendEvent object representing the event triggered by a packet being sent
      * @param playerData The PlayerData object representing the player's data
      */
     @Override
     public void handle(PacketSendEvent event, PlayerData playerData) {
-        if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK) {
+        if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
+            || event.getPacketType() == PacketType.Play.Server.ENTITY_VELOCITY) {
             balance -= balSubOnTp;
         }
     }

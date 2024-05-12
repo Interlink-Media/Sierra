@@ -1008,7 +1008,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
         if (openInventory.getBottomInventory().getType() == InventoryType.PLAYER
             && openInventory.getTopInventory().getType() == InventoryType.CRAFTING) {
-
             max += 4;
         }
 
