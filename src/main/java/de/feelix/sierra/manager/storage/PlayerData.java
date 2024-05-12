@@ -164,16 +164,34 @@ public class PlayerData implements SierraUser {
         return this.exempt;
     }
 
+    /**
+     * Retrieves the alert settings for the user.
+     *
+     * @return The alert settings for the user as an instance of {@link AlertSettings}.
+     */
     @Override
     public AlertSettings alertSettings() {
         return alertSettings;
     }
 
+    /**
+     * Retrieves the mitigation settings for the user.
+     *
+     * @return The mitigation settings for the user as an instance of {@link AlertSettings}.
+     *
+     * @see SierraUser#mitigationSettings()
+     * @see AlertSettings
+     */
     @Override
     public AlertSettings mitigationSettings() {
         return mitigationSettings;
     }
 
+    /**
+     * Disconnects the user associated with the PlayerData object and logs a message with the provided exception.
+     *
+     * @param exception the exception that occurred
+     */
     public void exceptionDisconnect(Exception exception) {
         Sierra.getPlugin().getLogger().log(Level.INFO, "We disconnect " + this.username() + " for security purpose");
         Sierra.getPlugin().getLogger().log(Level.INFO, "Exception: " + exception.getMessage());
