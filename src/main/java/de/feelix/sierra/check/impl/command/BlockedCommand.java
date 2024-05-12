@@ -35,6 +35,31 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
     private static final Pattern EXPLOIT_PATTERN = java.util.regex.Pattern.compile("\\$\\{.+}");
 
     /**
+     * Represents a regular expression pattern for detecting a specific code pattern in a string.
+     * <p>
+     * The pattern is defined as follows:
+     * - The string must contain the word "for" followed by an open parenthesis "("
+     * - The pattern can match any characters (including new lines) in a non-greedy way, denoted by ".*?"
+     * - The string must then contain a closing parenthesis ")" followed by an opening curly brace "{"
+     * - The pattern can again match any characters (including new lines) in a non-greedy way, denoted by ".*?"
+     * - The string must end with a closing curly brace "}"
+     * <p>
+     * This pattern is typically used to detect a for loop with its body in a given string.
+     * <p>
+     * Example usage:
+     * <p>
+     * ```java
+     * String code = "for (...) {\n   ...\n}";
+     * Matcher matcher = pattern.matcher(code);
+     * if (matcher.find()) {
+     *     // Code pattern matched
+     *     ...
+     * }
+     * ```
+     */
+    private static final Pattern WORLDEDIT_PATTERN = Pattern.compile("for\\(.*?\\)\\{.*?}");
+
+    /**
      * Regular expression pattern used to match a specific command pattern in the format "/mv ({letter?{number}})%".
      * The pattern is used to detect blocked commands.
      */
@@ -156,6 +181,13 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
                         .build());
                 }
             }
+        }
+
+        if (WORLDEDIT_PATTERN.matcher(string).find()) {
+            violation(event, ViolationDocument.builder()
+                .punishType(PunishType.KICK)
+                .debugInformation("WorldEdit Pattern: " + string)
+                .build());
         }
 
         if (MVC_PATTERN.matcher(string).find()) {
