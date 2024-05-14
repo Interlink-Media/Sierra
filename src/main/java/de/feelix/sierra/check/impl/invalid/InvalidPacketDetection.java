@@ -15,7 +15,6 @@ import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.play.client.*;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerKeepAlive;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenWindow;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetExperience;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowItems;
@@ -38,9 +37,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -198,21 +195,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * A negative value (-1) indicates that the container ID is invalid or uninitialized.
      */
     private int containerId = -1;
-
-    /**
-     * Represents a map of keep alive timestamps.
-     * <p>
-     * This map is used to store pairs of timestamps indicating the last time a keep alive packet was sent and received.
-     * The map follows a first-in-first-out (FIFO) order, meaning the oldest pair is always removed first when the
-     * capacity of the map is reached.
-     * </p>
-     * <p>
-     * The map uses a LinkedList implementation for efficient insertion and removal of elements.
-     * </p>
-     *
-     * @since 1.0
-     */
-    private final Queue<Pair<Long, Long>> keepAliveMap = new LinkedList<>();
 
     /**
      * Represents the maximum byte size for a variable.
@@ -625,44 +607,14 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 playerData::exceptionDisconnect
             );
 
-            if (wrapper.getEntityId() < 0 || event.getUser().getEntityId() == wrapper.getEntityId()) {
+            int entityId = event.getUser().getEntityId();
+
+            if (wrapper.getEntityId() < 0 || entityId == wrapper.getEntityId()) {
                 violation(event, ViolationDocument.builder()
                     .punishType(PunishType.BAN)
-                    .debugInformation("Entity id at " + wrapper.getEntityId())
+                    .debugInformation("Id at " + wrapper.getEntityId()+", player id: "+entityId)
                     .build());
-
             }
-        } else if (event.getPacketType() == PacketType.Play.Client.KEEP_ALIVE) {
-
-            // Check original by https://github.com/GrimAnticheat/Grim/blob/2.0/src/main/java/ac/grim/grimac/checks/impl/badpackets/BadPacketsO.java
-            WrapperPlayClientKeepAlive packet = CastUtil.getSupplierValue(
-                () -> new WrapperPlayClientKeepAlive(event),
-                playerData::exceptionDisconnect
-            );
-
-            long    id    = packet.getId();
-            boolean hasID = false;
-
-            for (Pair<Long, Long> iterator : keepAliveMap) {
-                if (iterator.getFirst() == id) {
-                    hasID = true;
-                    break;
-                }
-            }
-
-            if (!hasID) {
-                violation(event, ViolationDocument.builder()
-                    .debugInformation("Unexpected id: " + id)
-                    .punishType(PunishType.MITIGATE)
-                    .build());
-            } else { // Found the ID, remove stuff until we get to it (to stop very slow memory leaks)
-                Pair<Long, Long> data;
-                do {
-                    data = keepAliveMap.poll();
-                    if (data == null) break;
-                } while (data.getSecond() != id);
-            }
-
         } else if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
 
             WrapperPlayClientNameItem wrapper = CastUtil.getSupplierValue(
@@ -1423,14 +1375,6 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         } else if (event.getPacketType() == PacketType.Play.Server.RESPAWN) {
 
             playerData.setSkipInvCheckTime(System.currentTimeMillis());
-
-        } else if (event.getPacketType() == PacketType.Play.Server.KEEP_ALIVE) {
-
-            WrapperPlayServerKeepAlive packet = CastUtil.getSupplierValue(
-                () -> new WrapperPlayServerKeepAlive(event),
-                playerData::exceptionDisconnect
-            );
-            keepAliveMap.add(new Pair<>(packet.getId(), System.nanoTime()));
 
         } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
 

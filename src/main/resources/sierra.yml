@@ -144,7 +144,7 @@ disallowed-commands:
   - "/mvhelp ^" # MultiverseCore
   - "/$" # MultiverseCore
   - "/pay * a a" # Essentials
-  - "/name ???????????????" # FDPClient Crasher
+  - "/name ???" # FDPClient Crasher
   - "/replay æˆ‘å°†å°½å…¶æ‰€èƒ½åœ" # FDPClient Crasher
   - "java.util.Random@" # FDPClient Crasher
 
