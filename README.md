@@ -24,7 +24,6 @@
 
 <p align="center">
   This project is based on https://github.com/jtJava/Titanium
-  <p></p>
   <a href="https://sierra.squarecode.de/sierra">More information about Sierra can be found here</a>
 </p>
 
