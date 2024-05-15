@@ -1,11 +1,4 @@
 <!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -13,23 +6,21 @@
 
 <h3 align="center">Sierra</h3>
 
-  <p align="center">
-    Packet Analysis Tool for the Minecraft Protocol by Feelix.
-    <br />
-    <a href="https://github.com/Interlink-Media/Sierra/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/Interlink-Media/Sierra/issues">Request Feature</a>
-  </p>
-</div>
+<p align="center">
+  Packet Analysis Tool for the Minecraft Protocol by Feelix.
+  <br />
+  <a href="https://github.com/Interlink-Media/Sierra/issues">Report Bug</a>
+  ·
+  <a href="https://github.com/Interlink-Media/Sierra/issues">Request Feature</a>
+</p>
 
 <p align="center">
   This project is based on https://github.com/jtJava/Titanium
+  <br>
   <a href="https://sierra.squarecode.de/sierra">More information about Sierra can be found here</a>
 </p>
 
-
 <!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/Interlink-Media/Sierra.svg?style=for-the-badge
 [contributors-url]: https://github.com/Interlink-Media/Sierra/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/Interlink-Media/Sierra.svg?style=for-the-badge
