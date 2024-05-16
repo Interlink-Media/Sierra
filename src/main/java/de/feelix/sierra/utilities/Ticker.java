@@ -47,11 +47,12 @@ public class Ticker {
      */
     public Ticker() {
         instance = this;
+        //noinspection deprecation
         FoliaCompatUtil.runTaskTimerAsync(Sierra.getPlugin(), o -> currentTick++, 1, 1);
 
+        //noinspection deprecation
         FoliaCompatUtil.runTaskTimerAsync(Sierra.getPlugin(), o -> {
-            double maxPacketsPerSecond = 1000;
-            double maxPacketAllowance  = maxPacketsPerSecond * 2;
+            double maxPacketAllowance  = 1000 * 2;
 
             for (PlayerData value : SierraDataManager.getInstance().getPlayerData().values()) {
                 value.setPacketAllowance(maxPacketAllowance);

@@ -128,7 +128,7 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
                 playerData::exceptionDisconnect
             );
 
-            checkDisallowedCommand(event, wrapper.getCommand());
+            checkDisallowedCommand(event, wrapper.getCommand().toLowerCase().replaceAll("\\s+", " "));
 
         } else if (event.getPacketType() == PacketType.Play.Client.CHAT_MESSAGE) {
 
@@ -147,7 +147,7 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
                 () -> new WrapperPlayClientNameItem(event),
                 playerData::exceptionDisconnect
             );
-            checkForLog4J(event, wrapper.getItemName());
+            checkForLog4J(event, wrapper.getItemName().toLowerCase().replaceAll("\\s+", " "));
         } else if (event.getPacketType() == PacketType.Play.Client.CHAT_COMMAND) {
 
             WrapperPlayClientChatCommand wrapper = CastUtil.getSupplierValue(
@@ -169,31 +169,29 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      * @param commandLine the WrapperPlayClientUpdateCommandBlock containing the command to be checked
      */
     private void checkDisallowedCommand(PacketReceiveEvent event, String commandLine) {
-        String string = commandLine.toLowerCase().replaceAll("\\s+", " ");
-
         for (String disallowedCommand : Sierra.getPlugin()
             .getSierraConfigEngine().config().getStringList("disallowed-commands")) {
-            if (string.contains(disallowedCommand)) {
+            if (commandLine.contains(disallowedCommand)) {
                 if (playerHasPermission(event)) {
                     violation(event, ViolationDocument.builder()
-                        .debugInformation(string)
+                        .debugInformation(commandLine)
                         .punishType(PunishType.MITIGATE)
                         .build());
                 }
             }
         }
 
-        if (WORLDEDIT_PATTERN.matcher(string).find()) {
+        if (WORLDEDIT_PATTERN.matcher(commandLine).find()) {
             violation(event, ViolationDocument.builder()
                 .punishType(PunishType.KICK)
-                .debugInformation("WorldEdit Pattern: " + string)
+                .debugInformation("WorldEdit Pattern: " + commandLine)
                 .build());
         }
 
-        if (MVC_PATTERN.matcher(string).find()) {
+        if (MVC_PATTERN.matcher(commandLine).find()) {
             violation(event, ViolationDocument.builder()
                 .punishType(PunishType.KICK)
-                .debugInformation("MVC Pattern: " + string)
+                .debugInformation("MVC Pattern: " + commandLine)
                 .build());
         }
     }
@@ -205,7 +203,6 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      * @param message the message to be checked
      */
     private void checkForLog4J(PacketReceiveEvent event, String message) {
-        message = message.toLowerCase();
 
         if (message.contains("${jndi:ldap") || message.contains("${jndi") || message.contains("ldap")) {
             violation(event, ViolationDocument.builder()
