@@ -223,6 +223,33 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     private static final String WURSTCLIENT_URL = "www.wurstclient.net";
 
     /**
+     * The maximum number of layers allowed for a banner.
+     */
+    private static final int MAX_BANNER_LAYERS  = 15;
+
+    /**
+     * The maximum length of a pattern.
+     */
+    private static final int MAX_PATTERN_LENGTH = 50;
+
+    /**
+     * The minimum valid color value.
+     */
+    private static final int MIN_VALID_COLOR    = 0;
+
+    /**
+     * The maximum valid color value.
+     * <p>
+     * This variable represents the maximum value of a valid color component in the
+     * RGB color model. The valid color component values range from 0 to this
+     * maximum value (inclusive).
+     * <p>
+     * The value of this variable is set to 255, which corresponds to the maximum
+     * valid color value in an 8-bit RGB color model (0-255).
+     */
+    private static final int MAX_VALID_COLOR    = 255;
+
+    /**
      * Handles a PacketReceiveEvent and performs various checks and actions based on the packet type and player data.
      *
      * @param event      The PacketReceiveEvent to handle.
@@ -305,6 +332,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             checkAttributes(event, itemStack);
             checkInvalidNbt(event, itemStack);
             checkForInvalidBanner(event, itemStack);
+            checkForInvalidArmorStand(event, itemStack);
             checkForInvalidContainer(event, itemStack);
             checkForInvalidShulker(event, itemStack);
             checkNbtTags(event, itemStack);
@@ -465,7 +493,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             String channelName = wrapper.getChannelName();
 
             if (channelName.equalsIgnoreCase("MC|ItemName") && !playerData.isHasOpenAnvil()) {
-                violation(event, createViolation("Send anvil name, without anvil", PunishType.KICK));
+                violation(event, createViolationKick("Send anvil name, without anvil", PunishType.KICK));
             }
 
             if (channelName.equals("MC|BEdit")
@@ -572,6 +600,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 checkAttributes(event, itemStack);
                 checkInvalidNbt(event, itemStack);
                 checkForInvalidBanner(event, itemStack);
+                checkForInvalidArmorStand(event, itemStack);
                 checkForInvalidContainer(event, itemStack);
                 checkForInvalidShulker(event, itemStack);
                 checkNbtTags(event, itemStack);
@@ -612,7 +641,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             if (wrapper.getEntityId() < 0 || entityId == wrapper.getEntityId()) {
                 violation(event, ViolationDocument.builder()
                     .punishType(PunishType.BAN)
-                    .debugInformation("Id at " + wrapper.getEntityId()+", player id: "+entityId)
+                    .debugInformation("Id at " + wrapper.getEntityId() + ", player id: " + entityId)
                     .build());
             }
         } else if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
@@ -704,6 +733,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             checkForInvalidContainer(event, carriedItemStack);
             checkForInvalidShulker(event, carriedItemStack);
             checkForInvalidBanner(event, carriedItemStack);
+            checkForInvalidArmorStand(event, carriedItemStack);
             checkNbtTags(event, carriedItemStack);
             checkForInvalidSlot(event, wrapper);
 
@@ -808,7 +838,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * @param tag             The NBTCompound tag containing the attribute information.
      */
     private void handleAttributeViolation(ProtocolPacketEvent<Object> event, boolean vanillaMapping,
-                                             AttributeMapper attributeMapper, NBTCompound tag) {
+                                          AttributeMapper attributeMapper, NBTCompound tag) {
 
         //noinspection DataFlowIssue
         double amount = tag.getNumberTagOrNull("Amount").getAsDouble();
@@ -816,15 +846,15 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         if (isAmountInvalid(vanillaMapping, attributeMapper, amount)) {
             violation(
                 event,
-                createViolation("Invalid attribute modifier. Amount: " + amount, PunishType.KICK)
+                createViolationKick("Invalid attribute modifier. Amount: " + amount, PunishType.KICK)
             );
         } else if (!vanillaMapping && isSierraModifierInvalid(amount)) {
             violation(
                 event,
-                createViolation("Sierra attribute modifier. Amount: " + amount, PunishType.KICK)
+                createViolationKick("Sierra attribute modifier. Amount: " + amount, PunishType.KICK)
             );
         } else if (FormatUtils.checkDoublePrecision(amount)) {
-            violation(event, createViolation("Double is to precisely", PunishType.KICK));
+            violation(event, createViolationKick("Double is to precisely", PunishType.KICK));
         }
     }
 
@@ -877,17 +907,17 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         NBTList<NBTCompound> items = nbt.getTagListOfTypeOrNull("Items", NBTCompound.class);
         if (items != null) {
             if (items.size() > 64) {
-                violation(event, createViolation("Too big items list", PunishType.MITIGATE));
+                violation(event, createViolationKick("Too big items list", PunishType.MITIGATE));
             }
 
             for (NBTCompound tag : items.getTags()) {
                 if (tag.getStringTagOrNull("id") != null) {
                     //noinspection DataFlowIssue
                     if (tag.getStringTagOrNull("id").getValue().equalsIgnoreCase("minecraft:air")) {
-                        violation(event, createViolation("Invalid item: air", PunishType.MITIGATE));
+                        violation(event, createViolationKick("Invalid item: air", PunishType.MITIGATE));
                     } else //noinspection DataFlowIssue
                         if (tag.getStringTagOrNull("id").getValue().equalsIgnoreCase("minecraft:bundle")) {
-                            violation(event, createViolation("Invalid item: bundle", PunishType.MITIGATE));
+                            violation(event, createViolationKick("Invalid item: bundle", PunishType.MITIGATE));
                         }
                 }
             }
@@ -902,7 +932,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     NBTString potion = tag1.getStringTagOrNull("Potion");
                     if (potion != null) {
                         if (potion.getValue().endsWith("empty")) {
-                            violation(event, createViolation(
+                            violation(event, createViolationKick(
                                 "Invalid projectile: empty",
                                 PunishType.MITIGATE
                             ));
@@ -920,12 +950,12 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             //noinspection ConditionCoveredByFurtherCondition
             if (asInt == Integer.MIN_VALUE || asInt == Integer.MAX_VALUE || asInt < 0) {
-                violation(event, createViolation("Invalid custom model data: " + asInt, PunishType.MITIGATE));
+                violation(event, createViolationKick("Invalid custom model data: " + asInt, PunishType.MITIGATE));
             }
         }
     }
 
-    public ViolationDocument createViolation(String debugInformation, PunishType punishType) {
+    public ViolationDocument createViolationKick(String debugInformation, PunishType punishType) {
         return ViolationDocument.builder()
             .debugInformation(debugInformation)
             .punishType(punishType)
@@ -1242,6 +1272,146 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     }
 
     /**
+     * Checks for any invalid properties in the provided Armor Stand item stack and sends an event if found.
+     *
+     * @param event The packet receive event.
+     * @param itemStack The item stack to check.
+     */
+    private void checkForInvalidArmorStand(PacketReceiveEvent event, ItemStack itemStack) {
+        if (itemStack.getType() != ItemTypes.ARMOR_STAND || itemStack.getNBT() == null) return;
+        NBTCompound entityTag = itemStack.getNBT().getCompoundTagOrNull("EntityTag");
+        if (entityTag == null) return;
+
+        checkInvalidPoses(event, entityTag);
+        checkInvalidCustomName(event, entityTag);
+        checkInvalidSkullOwner(event, entityTag);
+        checkInvalidRotation(event, entityTag);
+    }
+
+    /**
+     * Checks for invalid poses in the given entity tag and raises events accordingly.
+     *
+     * @param event     The PacketReceiveEvent object associated with the entity tag.
+     * @param entityTag The NBTCompound object representing the entity tag.
+     */
+    private void checkInvalidPoses(PacketReceiveEvent event, NBTCompound entityTag) {
+        NBTCompound pose = entityTag.getCompoundTagOrNull("Pose");
+        if (pose != null) {
+            invalidPoseAngles(event, pose, "Head");
+            invalidPoseAngles(event, pose, "Body");
+            invalidPoseAngles(event, pose, "LeftArm");
+            invalidPoseAngles(event, pose, "RightArm");
+            invalidPoseAngles(event, pose, "LeftLeg");
+            invalidPoseAngles(event, pose, "RightLeg");
+        }
+    }
+
+    /**
+     * Checks if the custom name of an entity is invalid.
+     * If the custom name exceeds the character limit of 70, it is considered invalid.
+     *
+     * @param event     The packet receive event.
+     * @param entityTag The NBT compound tag of the entity.
+     */
+    private void checkInvalidCustomName(PacketReceiveEvent event, NBTCompound entityTag) {
+        NBTString customName = entityTag.getStringTagOrNull("CustomName");
+        if (customName != null && customName.getValue().length() > 70) {
+            violation(
+                event, createViolationKick(
+                    "Invalid armor stand name length: " + customName.getValue().length(),
+                    PunishType.MITIGATE
+                ));
+        }
+    }
+
+    /**
+     * Checks for invalid skull owners in the equipment of the entity.
+     *
+     * @param event the PacketReceiveEvent that triggered the check
+     * @param entityTag the NBTCompound representing the tag of the entity
+     */
+    private void checkInvalidSkullOwner(PacketReceiveEvent event, NBTCompound entityTag) {
+        NBTList<NBTCompound> equipment = entityTag.getCompoundListTagOrNull("Equipment");
+        if (equipment != null) {
+            for (NBTCompound tag : equipment.getTags()) {
+                checkSkullOwner(event, tag);
+            }
+        }
+    }
+
+    /**
+     * Checks for invalid rotation of an armor stand entity.
+     *
+     * @param event The packet receive event associated with the armor stand entity.
+     * @param entityTag The NBT compound tag containing the rotation information.
+     */
+    private void checkInvalidRotation(PacketReceiveEvent event, NBTCompound entityTag) {
+        NBTList<NBTNumber> rotation = entityTag.getNumberListTagOrNull("Rotation");
+        if (rotation != null) {
+            for (NBTNumber tag : rotation.getTags()) {
+                float armorStandRotation = tag.getAsFloat();
+                if (armorStandRotation < 0 || armorStandRotation > 360) {
+                    violation(
+                        event, createViolationKick(
+                            "Invalid armor stand rotation: " + armorStandRotation,
+                            PunishType.KICK
+                        ));
+                }
+            }
+        }
+    }
+
+    /**
+     * Check the owner of a skull item and take appropriate action if the owner's name is invalid.
+     *
+     * @param event The PacketReceiveEvent that triggered the method.
+     * @param item The NBTCompound representing the skull item.
+     */
+    private void checkSkullOwner(PacketReceiveEvent event, NBTCompound item) {
+        if ("skull".equals(item.getStringTagValueOrNull("id"))) {
+            NBTCompound tag = item.getCompoundTagOrNull("tag");
+            if (tag != null) {
+                NBTString skullOwner = tag.getStringTagOrNull("SkullOwner");
+                if (skullOwner != null) {
+                    String name = skullOwner.getValue();
+                    if (name.length() < 3 || name.length() > 16 || !name.matches("^[a-zA-Z0-9_\\-.]{3,16}$")) {
+                        violation(event, createViolationKick(
+                            "Invalid skull owner name: " + name,
+                            PunishType.KICK
+                        ));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if the given pose angles are valid for the specified limb.
+     *
+     * @param event The PacketReceiveEvent associated with the pose angles check.
+     * @param pose  The NBTCompound representing the pose.
+     * @param limb  The name of the limb for which to check the pose angles.
+     * @throws IllegalStateException if the pose angles for the limb are invalid.
+     */
+    private void invalidPoseAngles(PacketReceiveEvent event, NBTCompound pose,
+                                   String limb) throws IllegalStateException {
+        NBTList<NBTNumber> angles = pose.getTagListOfTypeOrNull(limb, NBTNumber.class);
+        if (angles != null) {
+            for (NBTNumber tag : angles.getTags()) {
+                double value = tag.getAsDouble();
+                if (value < -360.0 || value > 360.0) {
+                    violation(
+                        event, createViolationKick(
+                            String.format("Invalid rotation, limb: %s[%s]", limb, value),
+                            PunishType.KICK
+                        ));
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
      * Checks for an invalid banner and handles violations.
      *
      * @param event     The PacketReceiveEvent.
@@ -1249,79 +1419,85 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * @since 1.0.0
      */
     private void checkForInvalidBanner(PacketReceiveEvent event, ItemStack itemStack) {
-
-        if (isBanner(itemStack)) {
-
-            if (itemStack.getNBT() != null) {
-
-                if (itemStack.getNBT().getCompoundTagOrNull("BlockEntityTag") != null) {
-                    //noinspection DataFlowIssue
-                    NBTList<NBTCompound> tagOrNull = itemStack.getNBT()
-                        .getCompoundTagOrNull("BlockEntityTag")
-                        .getCompoundListTagOrNull("Patterns");
-
-                    if (tagOrNull != null) {
-                        List<NBTCompound> tags = tagOrNull.getTags();
-
-                        if (tags.size() > 15) {
-                            violation(event, ViolationDocument.builder()
-                                .debugInformation("Too many banner layers")
-                                .punishType(PunishType.KICK)
-                                .build());
-                        }
-
-                        for (NBTCompound tag : tags) {
-                            NBTString pattern = tag.getStringTagOrNull("Pattern");
-
-                            if (pattern == null || pattern.getValue() == null) {
-                                violation(event, ViolationDocument.builder()
-                                    .debugInformation("Banner pattern is null")
-                                    .punishType(PunishType.KICK)
-                                    .build());
-                                return;
-                            }
-
-                            if (pattern.getValue().length() > 50) {
-                                violation(event, ViolationDocument.builder()
-                                    .debugInformation("Banner pattern is too long: " + pattern.getValue().length())
-                                    .punishType(PunishType.KICK)
-                                    .build());
-                                return;
-                            }
-
-                            NBTNumber color = tag.getNumberTagOrNull("Color");
-                            if (color == null) {
-                                violation(event, ViolationDocument.builder()
-                                    .debugInformation("Banner color is null")
-                                    .punishType(PunishType.KICK)
-                                    .build());
-                                return;
-                            }
-
-                            int rgb = 0;
-                            try {
-                                rgb = color.getAsInt();
-                            } catch (Exception exception) {
-                                violation(event, ViolationDocument.builder()
-                                    .debugInformation("BANNER: " + exception.getMessage())
-                                    .punishType(PunishType.KICK)
-                                    .build());
-                            }
-
-                            if (rgb < 0 || rgb > 255) {
-                                violation(event, ViolationDocument.builder()
-                                    .debugInformation("Banner color is invalid: " + rgb)
-                                    .punishType(PunishType.KICK)
-                                    .build());
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
+        if (!isBanner(itemStack) || itemStack.getNBT() == null) {
+            return;
+        }
+        NBTCompound blockEntityTag = itemStack.getNBT().getCompoundTagOrNull("BlockEntityTag");
+        if (blockEntityTag == null) {
+            return;
+        }
+        NBTList<NBTCompound> tagOrNull = blockEntityTag.getCompoundListTagOrNull("Patterns");
+        if (tagOrNull == null) {
+            return;
+        }
+        List<NBTCompound> tags = tagOrNull.getTags();
+        if (tags.size() > MAX_BANNER_LAYERS) {
+            createViolationKick(event, "Too many banner layers");
+            return;
+        }
+        for (NBTCompound tag : tags) {
+            validatePattern(event, tag.getStringTagOrNull("Pattern"));
+            validateColor(event, tag.getNumberTagOrNull("Color"));
         }
     }
 
+    /**
+     * Validates the given pattern for a packet receive event.
+     *
+     * @param event   the packet receive event to validate the pattern for
+     * @param pattern the pattern to validate
+     */
+    private void validatePattern(PacketReceiveEvent event, NBTString pattern) {
+        if (pattern == null || pattern.getValue() == null) {
+            createViolationKick(event, "Banner pattern is null");
+            return;
+        }
+        if (pattern.getValue().length() > MAX_PATTERN_LENGTH) {
+            createViolationKick(event, "Banner pattern is too long: " + pattern.getValue().length());
+        }
+    }
+
+    /**
+     * Validates the given color for a banner.
+     * If the color is null or invalid, it creates a violation event.
+     *
+     * @param event the PacketReceiveEvent object representing the event
+     * @param color the NBTNumber object representing the color of the banner
+     */
+    private void validateColor(PacketReceiveEvent event, NBTNumber color) {
+        if (color == null) {
+            createViolationKick(event, "Banner color is null");
+            return;
+        }
+        try {
+            int rgb = color.getAsInt();
+            if (rgb < MIN_VALID_COLOR || rgb > MAX_VALID_COLOR) {
+                createViolationKick(event, "Banner color is invalid: " + rgb);
+            }
+        } catch (Exception exception) {
+            createViolationKick(event, "BANNER: " + exception.getMessage());
+        }
+    }
+
+    /**
+     * Creates a violation for the given event and debug information.
+     *
+     * @param event             the PacketReceiveEvent associated with the violation
+     * @param debugInformation  the debug information for the violation
+     */
+    private void createViolationKick(PacketReceiveEvent event, String debugInformation) {
+        violation(event, ViolationDocument.builder()
+            .debugInformation(debugInformation)
+            .punishType(PunishType.KICK)
+            .build());
+    }
+
+    /**
+     * Checks if the given ItemStack is a banner.
+     *
+     * @param itemStack the ItemStack to check
+     * @return true if the ItemStack is a banner, false otherwise
+     */
     private boolean isBanner(ItemStack itemStack) {
         try {
             BannerType.valueOf(itemStack.getType().toString());
