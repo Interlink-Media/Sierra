@@ -43,7 +43,6 @@ public class PlayerData implements SierraUser {
     private double packetCount;
     private double packetAllowance = 1000;
 
-    private long skipInvCheckTime = -1;
     private long joinTime         = System.currentTimeMillis();
 
     private boolean receivedPunishment = false;

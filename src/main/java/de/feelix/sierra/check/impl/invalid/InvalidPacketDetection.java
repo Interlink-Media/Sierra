@@ -174,6 +174,9 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      */
     private long lastBookUse = 0L;
 
+    /**
+     * A regular expression pattern used to detect exploit patterns in strings.
+     */
     private static final Pattern EXPLOIT_PATTERN = Pattern.compile("\\$\\{.+}");
 
     /**
@@ -1178,8 +1181,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     /**
      * Checks a given list of NBT tags and performs violation actions based on certain conditions.
      *
-     * @param s The name of the NBT tag list to check.
-     * @param event The PacketReceiveEvent associated with the check.
+     * @param s         The name of the NBT tag list to check.
+     * @param event     The PacketReceiveEvent associated with the check.
      * @param itemStack The ItemStack to extract the NBT tags from.
      */
     private void checkList(String s, PacketReceiveEvent event, ItemStack itemStack) {
@@ -1305,9 +1308,9 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     /**
      * Checks the given byte array in the provided `itemStack` for violations.
      *
-     * @param key        the key to retrieve the byte array from the NBT tag of the `itemStack`
-     * @param event      the PacketReceiveEvent associated with the check
-     * @param itemStack  the ItemStack to check for violations
+     * @param key       the key to retrieve the byte array from the NBT tag of the `itemStack`
+     * @param event     the PacketReceiveEvent associated with the check
+     * @param itemStack the ItemStack to check for violations
      */
     private void checkByteArray(String key, PacketReceiveEvent event, ItemStack itemStack) {
 
@@ -1613,16 +1616,13 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
         } else if (event.getPacketType() == PacketType.Play.Server.WINDOW_ITEMS) {
 
-            WrapperPlayServerWindowItems wrapper = new WrapperPlayServerWindowItems(event);
+            WrapperPlayServerWindowItems wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayServerWindowItems(event), playerData::exceptionDisconnect);
 
             for (ItemStack item : wrapper.getItems()) {
                 if (item.getNBT() == null) continue;
                 checkAttributes(event, item);
             }
-
-        } else if (event.getPacketType() == PacketType.Play.Server.RESPAWN) {
-
-            playerData.setSkipInvCheckTime(System.currentTimeMillis());
 
         } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
 
