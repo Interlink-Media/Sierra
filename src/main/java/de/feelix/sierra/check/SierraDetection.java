@@ -243,7 +243,6 @@ public class SierraDetection implements SierraCheck {
         String     staffAlert = formatStaffAlertMessage(user, punishType, sierraConfig);
         String     username = this.playerData.getUser().getName();
         String     clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
-        int        ticks = FormatUtils.convertMillisToTicks(System.currentTimeMillis() - this.playerData.getJoinTime());
 
         StringBuilder content = new StringBuilder()
             .append(" §7Username: §c")
@@ -256,7 +255,7 @@ public class SierraDetection implements SierraCheck {
             .append(playerData.getBrand())
             .append("\n")
             .append(" §7Exist since: §c")
-            .append(ticks)
+            .append(this.playerData.getTicksExisted())
             .append(" ticks\n")
             .append(" §7Game mode: §c")
             .append(this.playerData.getGameMode().name())
@@ -342,7 +341,8 @@ public class SierraDetection implements SierraCheck {
 
     @Override
     public double setViolations(double violations) {
-        return 0;
+        this.violations = (int) violations;
+        return this.violations;
     }
 
     /**

@@ -7,6 +7,7 @@ import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.CheckManager;
 import de.feelix.sierra.manager.storage.alert.AbstractAlertSetting;
 import de.feelix.sierra.manager.storage.processor.*;
+import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.timing.TimingHandler;
 import de.feelix.sierraapi.user.settings.AlertSettings;
 import io.github.retrooper.packetevents.util.FoliaCompatUtil;
@@ -229,6 +230,15 @@ public class PlayerData implements SierraUser {
                 .getString("punish-command", "ban {username} Crashing")
                 .replace("{username}", this.user.getName())
         ));
+    }
+
+    /**
+     * Retrieves the number of ticks that the PlayerData object has existed for.
+     *
+     * @return The number of ticks as an integer.
+     */
+    public int getTicksExisted() {
+        return FormatUtils.convertMillisToTicks(System.currentTimeMillis() - this.joinTime);
     }
 
     /**

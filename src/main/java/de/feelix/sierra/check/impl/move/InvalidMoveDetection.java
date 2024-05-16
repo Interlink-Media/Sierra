@@ -182,7 +182,9 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
         WrapperPlayClientPlayerFlying wrapper = CastUtil.getSupplierValue(
             () -> new WrapperPlayClientPlayerFlying(event), playerData::exceptionDisconnect);
 
-        sortOutInvalidRotation(wrapper, event);
+        if (wrapper.hasRotationChanged()) {
+            sortOutInvalidRotation(wrapper, event);
+        }
 
         if (!wrapper.hasPositionChanged()) return;
 
@@ -254,7 +256,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
         }
 
         float pitch = wrapper.getLocation().getPitch();
-        float yaw = wrapper.getLocation().getYaw();
+        float yaw   = wrapper.getLocation().getYaw();
 
         // Check if any condition is met
         if (isOutOfRange(yaw) || isOutOfRange(pitch) || yaw == SPECIAL_VALUE || pitch == SPECIAL_VALUE) {
@@ -284,9 +286,8 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      */
     private void sortOutTraveledChunks(double chunkId, PacketReceiveEvent event) {
         long tick = System.currentTimeMillis();
-        if (chunkId == lastChunkId) {
-            return;
-        }
+
+        if (chunkId == lastChunkId) return;
 
         long travelTime = tick - this.lastTick;
         processBufferAndViolation(travelTime, event);
@@ -342,7 +343,6 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
             .punishType(PunishType.KICK)
             .build();
     }
-
 
     /**
      * This method handles a vehicle move packet received from the player.
