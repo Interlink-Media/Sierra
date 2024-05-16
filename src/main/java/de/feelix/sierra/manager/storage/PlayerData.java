@@ -221,6 +221,7 @@ public class PlayerData implements SierraUser {
      */
     private void ban() {
         SierraDataManager.BANS++;
+        //noinspection deprecation
         FoliaCompatUtil.runTask(Sierra.getPlugin(), o -> Bukkit.dispatchCommand(
             Bukkit.getConsoleSender(),
             Sierra.getPlugin()
