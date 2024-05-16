@@ -225,7 +225,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     /**
      * The maximum number of layers allowed for a banner.
      */
-    private static final int MAX_BANNER_LAYERS  = 15;
+    private static final int MAX_BANNER_LAYERS = 15;
 
     /**
      * The maximum length of a pattern.
@@ -235,7 +235,27 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     /**
      * The minimum valid color value.
      */
-    private static final int MIN_VALID_COLOR    = 0;
+    private static final int MIN_VALID_COLOR = 0;
+
+    /**
+     * Represents a content of a list.
+     *
+     * <p>
+     * This variable is an instance of {@link AtomicInteger}.
+     * It provides atomic operations on an integer value that can be used
+     * for synchronization and concurrency control.
+     * </p>
+     *
+     * <p>
+     * This variable is marked as <code>private</code> and <code>final</code>,
+     * meaning it can only be accessed within the class that declares it,
+     * and its value cannot be changed after initialization.
+     * </p>
+     *
+     * @see AtomicInteger
+     * @since Replace with the version number
+     */
+    private final AtomicInteger listContent = new AtomicInteger(0);
 
     /**
      * The maximum valid color value.
@@ -247,7 +267,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * The value of this variable is set to 255, which corresponds to the maximum
      * valid color value in an 8-bit RGB color model (0-255).
      */
-    private static final int MAX_VALID_COLOR    = 255;
+    private static final int MAX_VALID_COLOR = 255;
 
     /**
      * Handles a PacketReceiveEvent and performs various checks and actions based on the packet type and player data.
@@ -1139,129 +1159,57 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * @param itemStack The ItemStack to check for NBT tags.
      */
     private void checkNbtTags(PacketReceiveEvent event, ItemStack itemStack) {
-        AtomicInteger listContent = new AtomicInteger(0);
         if (itemStack.getNBT() != null) {
             itemStack.getNBT().getTags().forEach((s, nbt) -> {
                 if (nbt.getType() == NBTType.LIST) {
-                    listContent.set(listContent.get() + 1);
-                    if (itemStack.getNBT().getCompoundListTagOrNull(s) != null) {
-                        NBTList<NBTCompound> tagOrNull = itemStack.getNBT().getCompoundListTagOrNull(s);
-                        //noinspection DataFlowIssue
-                        if (tagOrNull.getTags().size() > 50) {
-                            violation(event, ViolationDocument.builder()
-                                .debugInformation("Too big nbt list size")
-                                .punishType(PunishType.KICK)
-                                .build());
-                        }
-                        for (NBTCompound tag : tagOrNull.getTags()) {
-                            if (tag == null || tag.toString().equalsIgnoreCase("null")) {
-                                violation(event, ViolationDocument.builder()
-                                    .debugInformation("Null Tag in tag-list")
-                                    .punishType(PunishType.KICK)
-                                    .build());
-                            }
-                            if (tag != null && tag.toString().length() > 900) {
-                                violation(event, ViolationDocument.builder()
-                                    .debugInformation("Too long tag string length")
-                                    .punishType(PunishType.KICK)
-                                    .build());
-                            }
-                        }
-                    }
-
+                    checkList(s, event, itemStack);
                 } else if (nbt.getType() == NBTType.INT_ARRAY) {
-
-                    NBTList<NBTIntArray> tagListOfTypeOrNull = itemStack.getNBT()
-                        .getTagListOfTypeOrNull(s, NBTIntArray.class);
-
-                    if (tagListOfTypeOrNull != null) {
-                        if (tagListOfTypeOrNull.size() > 50) {
-                            violation(event, ViolationDocument.builder()
-                                .debugInformation("Too big int array size")
-                                .punishType(PunishType.KICK)
-                                .build());
-                        }
-
-                        for (NBTIntArray tag : tagListOfTypeOrNull.getTags()) {
-                            if (tag.getValue().length > 150) {
-                                violation(event, ViolationDocument.builder()
-                                    .debugInformation("Invalid integer length")
-                                    .punishType(PunishType.KICK)
-                                    .build());
-                            }
-                            for (int i : tag.getValue()) {
-                                if (i == Integer.MAX_VALUE || i == Integer.MIN_VALUE) {
-                                    violation(event, ViolationDocument.builder()
-                                        .debugInformation("Integer size out of bounds")
-                                        .punishType(PunishType.KICK)
-                                        .build());
-                                }
-                            }
-                        }
-                    }
+                    checkIntArray(s, event, itemStack);
                 } else if (nbt.getType() == NBTType.LONG_ARRAY) {
-
-                    NBTList<NBTLongArray> tagListOfTypeOrNull = itemStack.getNBT()
-                        .getTagListOfTypeOrNull(s, NBTLongArray.class);
-
-                    if (tagListOfTypeOrNull != null) {
-                        if (tagListOfTypeOrNull.size() > 50) {
-                            violation(event, ViolationDocument.builder()
-                                .debugInformation("Too big long array size")
-                                .punishType(PunishType.KICK)
-                                .build());
-                        }
-
-                        for (NBTLongArray tag : tagListOfTypeOrNull.getTags()) {
-                            if (tag.getValue().length > 150) {
-                                violation(event, ViolationDocument.builder()
-                                    .debugInformation("Invalid long length")
-                                    .punishType(PunishType.KICK)
-                                    .build());
-                            }
-                            for (long i : tag.getValue()) {
-                                if (i == Long.MAX_VALUE || i == Long.MIN_VALUE) {
-                                    violation(event, ViolationDocument.builder()
-                                        .debugInformation("Long size out of bounds")
-                                        .punishType(PunishType.KICK)
-                                        .build());
-                                }
-                            }
-                        }
-                    }
-
+                    checkLongArray(s, event, itemStack);
                 } else if (nbt.getType() == NBTType.BYTE_ARRAY) {
-
-                    NBTList<NBTByteArray> tagListOfTypeOrNull = itemStack.getNBT()
-                        .getTagListOfTypeOrNull(s, NBTByteArray.class);
-
-                    if (tagListOfTypeOrNull != null) {
-                        if (tagListOfTypeOrNull.size() > 50) {
-                            violation(event, ViolationDocument.builder()
-                                .debugInformation("Too big byte array size")
-                                .punishType(PunishType.KICK)
-                                .build());
-                        }
-
-                        for (NBTByteArray tag : tagListOfTypeOrNull.getTags()) {
-                            if (tag.getValue().length > 150) {
-                                violation(event, ViolationDocument.builder()
-                                    .debugInformation("Invalid byte length")
-                                    .punishType(PunishType.KICK)
-                                    .build());
-                            }
-                            for (byte i : tag.getValue()) {
-                                if (i == Byte.MAX_VALUE || i == Byte.MIN_VALUE) {
-                                    violation(event, ViolationDocument.builder()
-                                        .debugInformation("Byte size out of bounds")
-                                        .punishType(PunishType.KICK)
-                                        .build());
-                                }
-                            }
-                        }
-                    }
+                    checkByteArray(s, event, itemStack);
                 }
             });
+        }
+        this.listContent.set(0);
+    }
+
+    /**
+     * Checks a given list of NBT tags and performs violation actions based on certain conditions.
+     *
+     * @param s The name of the NBT tag list to check.
+     * @param event The PacketReceiveEvent associated with the check.
+     * @param itemStack The ItemStack to extract the NBT tags from.
+     */
+    private void checkList(String s, PacketReceiveEvent event, ItemStack itemStack) {
+
+        if (itemStack.getNBT() == null) return;
+
+        listContent.set(listContent.get() + 1);
+        if (itemStack.getNBT().getCompoundListTagOrNull(s) != null) {
+            NBTList<NBTCompound> tagOrNull = itemStack.getNBT().getCompoundListTagOrNull(s);
+            //noinspection DataFlowIssue
+            if (tagOrNull.getTags().size() > 50) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Too big nbt list size")
+                    .punishType(PunishType.KICK)
+                    .build());
+            }
+            for (NBTCompound tag : tagOrNull.getTags()) {
+                if (tag == null || tag.toString().equalsIgnoreCase("null")) {
+                    violation(event, ViolationDocument.builder()
+                        .debugInformation("Null Tag in tag-list")
+                        .punishType(PunishType.KICK)
+                        .build());
+                }
+                if (tag != null && tag.toString().length() > 900) {
+                    violation(event, ViolationDocument.builder()
+                        .debugInformation("Too long tag string length")
+                        .punishType(PunishType.KICK)
+                        .build());
+                }
+            }
         }
         if (listContent.get() > 10) {
             violation(event, ViolationDocument.builder()
@@ -1272,9 +1220,133 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     }
 
     /**
+     * Checks the validity of an integer array stored in an ItemStack's NBT data.
+     * If the integer array is invalid, it triggers a violation.
+     *
+     * @param key       the key used to retrieve the integer array from the ItemStack's NBT data
+     * @param event     the PacketReceiveEvent object containing event information
+     * @param itemStack the ItemStack object to check for an integer array
+     */
+    private void checkIntArray(String key, PacketReceiveEvent event, ItemStack itemStack) {
+
+        if (itemStack.getNBT() == null) return;
+
+        NBTList<NBTIntArray> tagListOfTypeOrNull = itemStack.getNBT()
+            .getTagListOfTypeOrNull(key, NBTIntArray.class);
+
+        if (tagListOfTypeOrNull != null) {
+            if (tagListOfTypeOrNull.size() > 50) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Too big int array size")
+                    .punishType(PunishType.KICK)
+                    .build());
+            }
+
+            for (NBTIntArray tag : tagListOfTypeOrNull.getTags()) {
+                if (tag.getValue().length > 150) {
+                    violation(event, ViolationDocument.builder()
+                        .debugInformation("Invalid integer length")
+                        .punishType(PunishType.KICK)
+                        .build());
+                }
+                for (int i : tag.getValue()) {
+                    if (i == Integer.MAX_VALUE || i == Integer.MIN_VALUE) {
+                        violation(event, ViolationDocument.builder()
+                            .debugInformation("Integer size out of bounds")
+                            .punishType(PunishType.KICK)
+                            .build());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks the validity of a long array stored in an ItemStack's NBT data.
+     *
+     * @param key       the key of the long array in the ItemStack's NBT data
+     * @param event     the PacketReceiveEvent associated with the check
+     * @param itemStack the ItemStack containing the NBT data to be checked
+     */
+    private void checkLongArray(String key, PacketReceiveEvent event, ItemStack itemStack) {
+
+        if (itemStack.getNBT() == null) return;
+
+        NBTList<NBTLongArray> tagListOfTypeOrNull = itemStack.getNBT()
+            .getTagListOfTypeOrNull(key, NBTLongArray.class);
+
+        if (tagListOfTypeOrNull != null) {
+            if (tagListOfTypeOrNull.size() > 50) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Too big long array size")
+                    .punishType(PunishType.KICK)
+                    .build());
+            }
+
+            for (NBTLongArray tag : tagListOfTypeOrNull.getTags()) {
+                if (tag.getValue().length > 150) {
+                    violation(event, ViolationDocument.builder()
+                        .debugInformation("Invalid long length")
+                        .punishType(PunishType.KICK)
+                        .build());
+                }
+                for (long i : tag.getValue()) {
+                    if (i == Long.MAX_VALUE || i == Long.MIN_VALUE) {
+                        violation(event, ViolationDocument.builder()
+                            .debugInformation("Long size out of bounds")
+                            .punishType(PunishType.KICK)
+                            .build());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks the given byte array in the provided `itemStack` for violations.
+     *
+     * @param key        the key to retrieve the byte array from the NBT tag of the `itemStack`
+     * @param event      the PacketReceiveEvent associated with the check
+     * @param itemStack  the ItemStack to check for violations
+     */
+    private void checkByteArray(String key, PacketReceiveEvent event, ItemStack itemStack) {
+
+        if (itemStack.getNBT() == null) return;
+
+        NBTList<NBTByteArray> tagListOfTypeOrNull = itemStack.getNBT()
+            .getTagListOfTypeOrNull(key, NBTByteArray.class);
+
+        if (tagListOfTypeOrNull != null) {
+            if (tagListOfTypeOrNull.size() > 50) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Too big byte array size")
+                    .punishType(PunishType.KICK)
+                    .build());
+            }
+
+            for (NBTByteArray tag : tagListOfTypeOrNull.getTags()) {
+                if (tag.getValue().length > 150) {
+                    violation(event, ViolationDocument.builder()
+                        .debugInformation("Invalid byte length")
+                        .punishType(PunishType.KICK)
+                        .build());
+                }
+                for (byte i : tag.getValue()) {
+                    if (i == Byte.MAX_VALUE || i == Byte.MIN_VALUE) {
+                        violation(event, ViolationDocument.builder()
+                            .debugInformation("Byte size out of bounds")
+                            .punishType(PunishType.KICK)
+                            .build());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Checks for any invalid properties in the provided Armor Stand item stack and sends an event if found.
      *
-     * @param event The packet receive event.
+     * @param event     The packet receive event.
      * @param itemStack The item stack to check.
      */
     private void checkForInvalidArmorStand(PacketReceiveEvent event, ItemStack itemStack) {
@@ -1327,7 +1399,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     /**
      * Checks for invalid skull owners in the equipment of the entity.
      *
-     * @param event the PacketReceiveEvent that triggered the check
+     * @param event     the PacketReceiveEvent that triggered the check
      * @param entityTag the NBTCompound representing the tag of the entity
      */
     private void checkInvalidSkullOwner(PacketReceiveEvent event, NBTCompound entityTag) {
@@ -1342,7 +1414,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     /**
      * Checks for invalid rotation of an armor stand entity.
      *
-     * @param event The packet receive event associated with the armor stand entity.
+     * @param event     The packet receive event associated with the armor stand entity.
      * @param entityTag The NBT compound tag containing the rotation information.
      */
     private void checkInvalidRotation(PacketReceiveEvent event, NBTCompound entityTag) {
@@ -1365,7 +1437,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * Check the owner of a skull item and take appropriate action if the owner's name is invalid.
      *
      * @param event The PacketReceiveEvent that triggered the method.
-     * @param item The NBTCompound representing the skull item.
+     * @param item  The NBTCompound representing the skull item.
      */
     private void checkSkullOwner(PacketReceiveEvent event, NBTCompound item) {
         if ("skull".equals(item.getStringTagValueOrNull("id"))) {
@@ -1482,8 +1554,8 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
     /**
      * Creates a violation for the given event and debug information.
      *
-     * @param event             the PacketReceiveEvent associated with the violation
-     * @param debugInformation  the debug information for the violation
+     * @param event            the PacketReceiveEvent associated with the violation
+     * @param debugInformation the debug information for the violation
      */
     private void createViolationKick(PacketReceiveEvent event, String debugInformation) {
         violation(event, ViolationDocument.builder()
