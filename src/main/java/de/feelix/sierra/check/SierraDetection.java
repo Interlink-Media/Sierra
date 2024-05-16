@@ -297,10 +297,23 @@ public class SierraDetection implements SierraCheck {
         }
     }
 
+    /**
+     * Retrieves the alert note from the Sierra configuration.
+     *
+     * @param sierraConfig The SierraConfigEngine object for accessing the configuration options.
+     * @return The alert note from the configuration.
+     */
     private String getAlertNote(SierraConfigEngine sierraConfig) {
         return sierraConfig.config().getString("layout.detection-message.alert-command-note", "&fClick to teleport");
     }
 
+    /**
+     * Retrieves the punishment command for a given user from the Sierra configuration.
+     *
+     * @param sierraConfig The SierraConfigEngine object for accessing the configuration options.
+     * @param username     The username of the user.
+     * @return The punishment command for the user.
+     */
     private String getPunishmentCommand(SierraConfigEngine sierraConfig, String username) {
         return sierraConfig.config()
             .getString("layout.detection-message.alert-command", "/tp {username}")
@@ -339,6 +352,12 @@ public class SierraDetection implements SierraCheck {
         return this.violations;
     }
 
+    /**
+     * Sets the number of violations found by this check.
+     *
+     * @param violations The number of violations to set.
+     * @return The number of violations after setting.
+     */
     @Override
     public double setViolations(double violations) {
         this.violations = (int) violations;
