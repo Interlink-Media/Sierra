@@ -352,7 +352,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             ItemStack itemStack = wrapper.getItemStack();
 
-            wrapper.getSlot();
+            checkGenericNBTLimit(event, itemStack);
             checkAttributes(event, itemStack);
             checkInvalidNbt(event, itemStack);
             checkForInvalidBanner(event, itemStack);
@@ -621,6 +621,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     this.lastBookUse = System.currentTimeMillis();
                 }
 
+                checkGenericNBTLimit(event, itemStack);
                 checkAttributes(event, itemStack);
                 checkInvalidNbt(event, itemStack);
                 checkForInvalidBanner(event, itemStack);
@@ -752,6 +753,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             checkButtonClickPosition(event, wrapper);
 
             ItemStack carriedItemStack = wrapper.getCarriedItemStack();
+            checkGenericNBTLimit(event, carriedItemStack);
             checkAttributes(event, carriedItemStack);
             checkInvalidNbt(event, carriedItemStack);
             checkForInvalidContainer(event, carriedItemStack);
@@ -851,6 +853,34 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         NBTList<NBTCompound> tagOrNull = itemStack.getNBT().getCompoundListTagOrNull("AttributeModifiers");
         //noinspection DataFlowIssue
         return tagOrNull.getTags();
+    }
+
+    /**
+     * Checks the length of the NBT data in the given ItemStack against the
+     * defined limit. If the length exceeds the limit, a violation is generated
+     * and the appropriate action is taken.
+     *
+     * @param event     The packet receive event
+     * @param itemStack The ItemStack to check for NBT data
+     */
+    public void checkGenericNBTLimit(PacketReceiveEvent event, ItemStack itemStack) {
+
+        if(!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("generic-nbt-limit", true)) {
+            return;
+        }
+
+        if (itemStack.getNBT() == null) return;
+
+        int length = FormatUtils.mapToString(itemStack.getNBT().getTags()).length();
+
+        int limit = getPlayerData().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_16) ? 30000 : 25000;
+
+        if (length > limit) {
+            violation(event, ViolationDocument.builder()
+                .debugInformation("length=" + length + ", limit=" + limit)
+                .punishType(PunishType.MITIGATE)
+                .build());
+        }
     }
 
     /**

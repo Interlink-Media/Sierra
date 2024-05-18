@@ -62,6 +62,11 @@ prevent-invalid-move: true
 # activated. If too many players are being kicked, please report it and disable the check
 prevent-timer-cheats: true
 
+# This is a simple NBT length check that simply verifies that the NBT tag does not exceed a certain limit.
+# This check will eliminate many cheap crashers and already stop a large number of people.
+# If there are any issues with the check, please report them on Discord and I will adjust the limit accordingly.
+generic-nbt-limit: true
+
 # This is also a crucial core element of our system, as most crashers operate with books and NBT data.
 # This check must never be deactivated, as it also constitutes a very significant part of our security promise.
 # This check operates very precisely. If you experience any issues with it, please contact us immediately on Discord.
