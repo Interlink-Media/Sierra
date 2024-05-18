@@ -28,7 +28,7 @@ dependencies {
         changing = true
     }
     implementation(project(':api'))
-    implementation "net.kyori:adventure-api:4.16.0"
+    implementation "net.kyori:adventure-api:4.17.0"
     implementation 'club.minnced:discord-webhooks:0.8.4'
     implementation 'com.google.guava:guava:33.2.0-jre'
 
