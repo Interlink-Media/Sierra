@@ -82,12 +82,12 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
     }
 
     /**
-     * Executes the Sierra command.
+     * Executes the command when it is called.
      *
      * @param sender  the command sender
      * @param command the command being executed
-     * @param label   the alias of the command used
-     * @param args    the arguments provided for the command
+     * @param label   the command label
+     * @param args    the command arguments
      * @return true if the command was executed successfully, false otherwise
      */
     @Override
@@ -97,36 +97,109 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
         if (!(sender instanceof Player)) return false;
 
         Player     player     = (Player) sender;
-        User       user       = PacketEvents.getAPI().getPlayerManager().getUser(player);
-        PlayerData playerData = Sierra.getPlugin().getSierraDataManager().getPlayerData(user).get();
+        User       user       = getPlayerUserDetails(player);
+        PlayerData playerData = getPlayerDataFromUser(user);
 
         if (hasNoPermission(sender)) {
-            CommandHelper.sendVersionOutput(user);
+            sendVersionOutputToUser(user);
             return true;
         }
 
-        CompletableFuture.runAsync(() -> {
-            if (args.length > 0) {
-                String         firstInput     = args[0];
-                ISierraCommand iSierraCommand = commands.get(firstInput);
-                if (iSierraCommand != null) {
+        CompletableFuture.runAsync(() -> handleCommandAsync(sender, command, label, args, user, playerData));
 
-                    if (iSierraCommand.permission() != null && !sender.hasPermission(iSierraCommand.permission())) {
-                        CommandHelper.sendVersionOutput(user);
-                        return;
-                    }
-
-                    iSierraCommand.process(user, playerData, new BukkitAbstractCommand(command),
-                                           new SierraLabel(label), new SierraArguments(args)
-                    );
-                } else {
-                    sendMainCommandSyntax(sender);
-                }
-            } else {
-                sendMainCommandSyntax(sender);
-            }
-        });
         return true;
+    }
+
+    /**
+     * Retrieves user details for a given player.
+     *
+     * @param player the player for which to retrieve user details
+     * @return the user details for the given player
+     */
+    private User getPlayerUserDetails(Player player) {
+        return PacketEvents.getAPI().getPlayerManager().getUser(player);
+    }
+
+    /**
+     * Retrieves player data input from a user.
+     *
+     * @param user the user providing the input
+     * @return the player data obtained from the user
+     */
+    private PlayerData getPlayerDataFromUser(User user) {
+        return Sierra.getPlugin().getSierraDataManager().getPlayerData(user).get();
+    }
+
+    /**
+     * Sends the version output to the user.
+     *
+     * @param user the user to send the version output to
+     */
+    private void sendVersionOutputToUser(User user) {
+        CommandHelper.sendVersionOutput(user);
+    }
+
+    /**
+     * Handles a command asynchronously.
+     *
+     * @param sender     the command sender
+     * @param command    the command being executed
+     * @param label      the command label
+     * @param args       the command arguments
+     * @param user       the user associated with the command
+     * @param playerData the player data associated with the user
+     */
+    private void handleCommandAsync(CommandSender sender, Command command, String label, String[] args, User user,
+                                    PlayerData playerData) {
+        if (args.length > 0) {
+            handleWithArg(sender, command, label, args, user, playerData);
+        } else {
+            sendMainCommandSyntax(sender);
+        }
+    }
+
+    /**
+     * Handles a command with arguments.
+     *
+     * @param sender     the command sender
+     * @param command    the command being executed
+     * @param label      the command label
+     * @param args       the command arguments
+     * @param user       the user associated with the command
+     * @param playerData the player data associated with the user
+     */
+    private void handleWithArg(CommandSender sender, Command command, String label, String[] args, User user,
+                               PlayerData playerData) {
+        String         firstInput     = args[0];
+        ISierraCommand iSierraCommand = commands.get(firstInput);
+
+        if (iSierraCommand != null) {
+            processSierraCommand(sender, user, playerData, command, label, args, iSierraCommand);
+        } else {
+            sendMainCommandSyntax(sender);
+        }
+    }
+
+    /**
+     * Processes a Sierra command.
+     *
+     * @param sender         the command sender
+     * @param user           the user associated with the command
+     * @param playerData     the player data associated with the user
+     * @param command        the command being executed
+     * @param label          the command label
+     * @param args           the command arguments
+     * @param iSierraCommand the Sierra command to process
+     */
+    private void processSierraCommand(CommandSender sender, User user, PlayerData playerData, Command command,
+                                      String label, String[] args, ISierraCommand iSierraCommand) {
+        if (iSierraCommand.permission() != null && !sender.hasPermission(iSierraCommand.permission())) {
+            CommandHelper.sendVersionOutput(user);
+            return;
+        }
+        iSierraCommand.process(user, playerData, new BukkitAbstractCommand(command),
+                               new SierraLabel(label), new SierraArguments(args)
+        );
     }
 
     /**
