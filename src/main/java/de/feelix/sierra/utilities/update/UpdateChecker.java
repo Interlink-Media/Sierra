@@ -1,7 +1,7 @@
 package de.feelix.sierra.utilities.update;
 
 import de.feelix.sierra.Sierra;
-import io.github.retrooper.packetevents.util.FoliaCompatUtil;
+import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Getter;
 
 import java.io.BufferedReader;
@@ -41,10 +41,9 @@ public class UpdateChecker {
      * It is a private field of type String.
      * The initial value is "UNKNOWN".
      * -- GETTER --
-     *  Retrieves the latest release version of a given repository on GitHub.
+     * Retrieves the latest release version of a given repository on GitHub.
      *
      * @return the latest release version as a string, or an empty string if an error occurred
-
      */
     private String latestReleaseVersion = "UNKNOWN";
 
@@ -105,8 +104,8 @@ public class UpdateChecker {
      * ticks (55 seconds).
      */
     public void startScheduler() {
-        FoliaCompatUtil.runTaskTimerAsync(Sierra.getPlugin(),
-                                          o -> refreshNewVersion(), 30100, 30100
+        FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(),
+                                                          o -> refreshNewVersion(), 30100, 30100
         );
     }
 

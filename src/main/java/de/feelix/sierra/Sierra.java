@@ -19,7 +19,7 @@ import de.feelix.sierraapi.server.SierraServer;
 import de.feelix.sierraapi.user.UserRepository;
 import io.github.retrooper.packetevents.bstats.Metrics;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
-import io.github.retrooper.packetevents.util.FoliaCompatUtil;
+import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
@@ -294,7 +294,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * Checks for updates to the Sierra plugin asynchronously.
      */
     private void checkForUpdate() {
-        FoliaCompatUtil.runTaskAsync(Sierra.getPlugin(), () -> {
+        FoliaScheduler.getAsyncScheduler().runNow(Sierra.getPlugin(), o -> {
             String localVersion         = Sierra.getPlugin().getDescription().getVersion();
             String latestReleaseVersion = updateChecker.getLatestReleaseVersion();
             if (!localVersion.equalsIgnoreCase(latestReleaseVersion) && !isVersionInvalid()) {

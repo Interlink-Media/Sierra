@@ -5,7 +5,7 @@ import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.check.impl.SierraCheck;
-import io.github.retrooper.packetevents.util.FoliaCompatUtil;
+import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Getter;
 
 /**
@@ -47,11 +47,9 @@ public class Ticker {
      */
     public Ticker() {
         instance = this;
-        //noinspection deprecation
-        FoliaCompatUtil.runTaskTimerAsync(Sierra.getPlugin(), o -> currentTick++, 1, 1);
+        FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(), o -> currentTick++, 1, 1);
 
-        //noinspection deprecation
-        FoliaCompatUtil.runTaskTimerAsync(Sierra.getPlugin(), o -> {
+        FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(), o -> {
             double maxPacketAllowance  = 1000 * 2;
 
             for (PlayerData value : SierraDataManager.getInstance().getPlayerData().values()) {

@@ -10,7 +10,7 @@ import de.feelix.sierra.manager.storage.processor.*;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.timing.TimingHandler;
 import de.feelix.sierraapi.user.settings.AlertSettings;
-import io.github.retrooper.packetevents.util.FoliaCompatUtil;
+import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Data;
 import de.feelix.sierraapi.check.CheckRepository;
 import de.feelix.sierraapi.user.impl.SierraUser;
@@ -221,8 +221,7 @@ public class PlayerData implements SierraUser {
      */
     private void ban() {
         SierraDataManager.BANS++;
-        //noinspection deprecation
-        FoliaCompatUtil.runTask(Sierra.getPlugin(), o -> Bukkit.dispatchCommand(
+        FoliaScheduler.getGlobalRegionScheduler().run(Sierra.getPlugin(), o -> Bukkit.dispatchCommand(
             Bukkit.getConsoleSender(),
             Sierra.getPlugin()
                 .getSierraConfigEngine()

@@ -13,7 +13,7 @@ import de.feelix.sierraapi.events.impl.AsyncHistoryCreateEvent;
 import de.feelix.sierraapi.history.History;
 import de.feelix.sierraapi.history.HistoryType;
 import de.feelix.sierraapi.violation.PunishType;
-import io.github.retrooper.packetevents.util.FoliaCompatUtil;
+import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Getter;
 import de.feelix.sierraapi.user.UserRepository;
 import de.feelix.sierraapi.user.impl.SierraUser;
@@ -104,7 +104,7 @@ public class SierraDataManager implements UserRepository {
      * @param user The user to check for update.
      */
     private void checkForUpdate(User user) {
-        FoliaCompatUtil.runTaskAsync(Sierra.getPlugin(), () -> {
+        FoliaScheduler.getAsyncScheduler().runNow(Sierra.getPlugin(), o -> {
 
             // Sleep task for 1 second
             try {
@@ -217,9 +217,9 @@ public class SierraDataManager implements UserRepository {
      * @param document The history document to be thrown and added.
      */
     private void throwHistory(HistoryDocument document) {
-        FoliaCompatUtil.runTaskAsync(
+        FoliaScheduler.getAsyncScheduler().runNow(
             Sierra.getPlugin(),
-            () -> Sierra.getPlugin().getEventBus().publish(new AsyncHistoryCreateEvent(document))
+            o -> Sierra.getPlugin().getEventBus().publish(new AsyncHistoryCreateEvent(document))
         );
 
         this.histories.add(document);
