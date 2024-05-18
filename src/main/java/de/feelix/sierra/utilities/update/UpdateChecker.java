@@ -2,6 +2,7 @@ package de.feelix.sierra.utilities.update;
 
 import de.feelix.sierra.Sierra;
 import io.github.retrooper.packetevents.util.FoliaCompatUtil;
+import lombok.Getter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.net.URL;
 /**
  * The UpdateChecker class is responsible for checking the latest release version of a given repository on GitHub.
  */
+@Getter
 public class UpdateChecker {
 
     /**
@@ -38,6 +40,11 @@ public class UpdateChecker {
      * The latestReleaseVersion variable stores the latest release version of the Sierra plugin.
      * It is a private field of type String.
      * The initial value is "UNKNOWN".
+     * -- GETTER --
+     *  Retrieves the latest release version of a given repository on GitHub.
+     *
+     * @return the latest release version as a string, or an empty string if an error occurred
+
      */
     private String latestReleaseVersion = "UNKNOWN";
 
@@ -45,15 +52,6 @@ public class UpdateChecker {
      * Represents an unknown version.
      */
     public static final String UNKNOWN_VERSION = "UNKNOWN";
-
-    /**
-     * Retrieves the latest release version of a given repository on GitHub.
-     *
-     * @return the latest release version as a string, or an empty string if an error occurred
-     */
-    public String getLatestReleaseVersion() {
-        return this.latestReleaseVersion;
-    }
 
     /**
      * Refreshes the new version by retrieving the latest release version from the GitHub API.

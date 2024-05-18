@@ -35,9 +35,7 @@ dependencies {
 
 shadowJar {
     minimize()
-
     archiveFileName = "${project.description}-${project.version}.jar"
-    destinationDirectory = file("C://Users/admin/Desktop/server/plugins")
 }
 
 tasks.withType(JavaCompile).configureEach {

@@ -16,6 +16,7 @@ import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.violation.PunishType;
 
+
 // PaperMC
 // net/minecraft/server/network/ServerGamePacketListenerImpl.java:515
 // net/minecraft/server/network/ServerGamePacketListenerImpl.java:1283

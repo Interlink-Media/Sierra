@@ -60,9 +60,7 @@ shadowJar {
     relocate 'com.github.retrooper.packetevents', 'net.square.sierra.packetevents.api'
     relocate 'io.github.retrooper.packetevents', 'net.square.sierra.packetevents.api'
     relocate 'org.bstats', 'net.square.sierra.bstats'
-
     archiveFileName = "${project.name}-${project.version}.jar"
-    destinationDirectory = file("C://Users/admin/Desktop/server/plugins")
 }
 
 tasks.withType(JavaCompile).configureEach {

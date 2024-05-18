@@ -159,6 +159,7 @@ public class SierraDetection implements SierraCheck {
      * @param violationDocument The ViolationDocument containing information about the violation
      */
     private void throwDetectionEvent(ViolationDocument violationDocument) {
+        //noinspection deprecation
         FoliaCompatUtil.runTaskAsync(
             Sierra.getPlugin(),
             () -> Sierra.getPlugin()

@@ -1,6 +1,7 @@
 package de.feelix.sierra.command.impl;
 
 import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierraapi.commands.*;
@@ -38,7 +39,7 @@ public class AlertsCommand implements ISierraCommand {
         PlayerData playerData = getPlayerData(playerSender);
         if (playerData == null) return;
 
-        toggleAlertMessages(playerData, playerSender);
+        toggleAlertMessages(playerData);
     }
 
     /**
@@ -57,15 +58,14 @@ public class AlertsCommand implements ISierraCommand {
      * Toggles the alert messages for a player.
      *
      * @param playerData   the PlayerData object representing the player
-     * @param playerSender the Player object representing the player who executed the command
      */
-    private void toggleAlertMessages(PlayerData playerData, Player playerSender) {
+    private void toggleAlertMessages(PlayerData playerData) {
         if (playerData.getAlertSettings().enabled()) {
             playerData.getAlertSettings().toggle(false);
-            sendMessage(playerSender, true);
+            sendMessage(playerData.getUser(), true);
         } else {
             playerData.getAlertSettings().toggle(true);
-            sendMessage(playerSender, false);
+            sendMessage(playerData.getUser(), false);
         }
     }
 
@@ -75,7 +75,7 @@ public class AlertsCommand implements ISierraCommand {
      * @param player     the player to send the message to
      * @param isDisabled a boolean indicating whether the alert messages are disabled or not
      */
-    private void sendMessage(Player player, boolean isDisabled) {
+    private void sendMessage(User player, boolean isDisabled) {
         String statusWord = isDisabled ? "§cdisabled" : "§aenabled";
         String message    = Sierra.PREFIX + " §fYou have " + statusWord + " §fthe alerts messages";
         player.sendMessage(message);
