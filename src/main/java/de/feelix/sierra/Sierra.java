@@ -250,7 +250,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * @param delay the time taken for initialization in milliseconds
      */
     private void logInitializationTime(long delay) {
-        this.getLogger().log(Level.INFO, "Sierra is ready. (Took: " + delay + "ms)");
+        this.getLogger().info("Sierra is ready. (Took: " + delay + "ms)");
     }
 
     /**
@@ -275,10 +275,10 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      */
     private void logOutdatedVersionMessage(String localVersion, String latestReleaseVersion) {
         Logger logger = Sierra.getPlugin().getLogger();
-        logger.log(Level.WARNING, "You are using an outdated version of Sierra!");
-        logger.log(Level.WARNING, "Please update Sierra to the latest version!");
+        logger.warning("You are using an outdated version of Sierra!");
+        logger.warning("Please update Sierra to the latest version!");
         String format = "Your version: %s, latest is: %s";
-        logger.log(Level.WARNING, String.format(format, localVersion, latestReleaseVersion));
+        logger.warning(String.format(format, localVersion, latestReleaseVersion));
     }
 
     /**
