@@ -16,6 +16,10 @@ import java.util.regex.Pattern;
 
 //Fixes client-side crash books
 
+/**
+ * The CreativeClientBookCrash class represents a book that can crash the client when opened.
+ * It is responsible for handling the check for an item and determining if it contains invalid translation keys.
+ */
 //A book with the nbt from below will crash a client when opened
 //{generation:0,pages:[0:"{translate:translation.test.invalid}",],author:"someone",title:"a",resolved:1b,}
 //{generation:0,pages:[0:"{translate:translation.test.invalid2}",],author:"someone",title:"a",resolved:1b,}
@@ -23,6 +27,15 @@ public class CreativeClientBookCrash implements ItemCheck {
 
     private static final Pattern PATTERN = Pattern.compile("\\s");
 
+    /**
+     * Handles the check for an item and determines if it contains invalid translation keys.
+     *
+     * @param event         The packet receive event.
+     * @param clickedStack  The clicked item stack.
+     * @param nbtCompound   The NBT compound of the item stack.
+     * @param playerData    The player data.
+     * @return A Pair containing a String message and a PunishType if the item contains invalid translation keys, null otherwise.
+     */
     @Override
     public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
                                                 NBTCompound nbtCompound, PlayerData playerData) {
@@ -40,6 +53,12 @@ public class CreativeClientBookCrash implements ItemCheck {
         return null;
     }
 
+    /**
+     * Returns a list of pages from the given NBT compound.
+     *
+     * @param nbtCompound the NBT compound to retrieve pages from
+     * @return a List of String representing the pages, or an empty List if there are no pages
+     */
     private List<String> getPages(NBTCompound nbtCompound) {
         List<String>       pageList = new ArrayList<>();
         NBTList<NBTString> nbtList  = nbtCompound.getStringListTagOrNull("pages");

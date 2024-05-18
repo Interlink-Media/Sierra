@@ -13,12 +13,26 @@ import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
+/**
+ * The EnchantLimit class is responsible for handling the check for valid enchantment levels on a clicked stack.
+ * It implements the ItemCheck interface.
+ */
 public class EnchantLimit implements ItemCheck {
+
     private static final ClientVersion CLIENT_VERSION = PacketEvents.getAPI()
         .getServerManager()
         .getVersion()
         .toClientVersion();
 
+    /**
+     * Handles the check for valid enchantment levels on a clicked stack.
+     *
+     * @param event         The PacketReceiveEvent that triggered the check.
+     * @param clickedStack  The ItemStack that was clicked.
+     * @param nbtCompound   The NBTCompound associated with the clicked stack.
+     * @param playerData    The PlayerData of the player who clicked the stack.
+     * @return A Pair object containing the error message and the PunishType if the enchantment level is invalid, or null if the enchantment level is valid.
+     */
     @Override
     public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
                                                 NBTCompound nbtCompound, PlayerData playerData) {

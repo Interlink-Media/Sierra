@@ -13,8 +13,18 @@ import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
+/**
+ * An implementation of the {@link ItemCheck} interface that checks for invalid NBT data in an ItemStack.
+ */
 public class InvalidPlainNbt implements ItemCheck {
 
+    /**
+     * Checks if a given ItemStack has invalid NBT data and returns the corresponding
+     * punishable property and PunishType.
+     *
+     * @param itemStack the ItemStack to check for invalid NBT data
+     * @return a Pair object representing the punishable property and PunishType, or null if there are no punishable properties
+     */
     private Pair<String, PunishType> invalidNbt(ItemStack itemStack) {
 
         NBTCompound tag = itemStack.getNBT();
@@ -29,6 +39,12 @@ public class InvalidPlainNbt implements ItemCheck {
         return null;
     }
 
+    /**
+     * Checks if a given NBTCompound tag contains a valid map and returns a Pair object representing the punishable property and the PunishType.
+     *
+     * @param nbtTag the NBTCompound tag to check
+     * @return a Pair object representing the punishable property and the PunishType, or null if there are no punishable properties
+     */
     private Pair<String, PunishType> checkValidMap(NBTCompound nbtTag) {
         NBTNumber range       = nbtTag.getNumberTagOrNull("range");
         int       maxMapRange = 15;
@@ -38,55 +54,68 @@ public class InvalidPlainNbt implements ItemCheck {
         return null;
     }
 
+    /**
+     * Checks if a given NBTCompound tag contains punishable properties related to a spawner.
+     *
+     * @param tag the NBTCompound tag to check
+     * @return a Pair object representing the punishable property and the PunishType, or null if there are no punishable properties
+     */
     private Pair<String, PunishType> checkForSpawner(NBTCompound tag) {
+        if (isPunishable(tag.getNumberTagOrNull("MaxNearbyEntities"), Byte.MAX_VALUE))
+            return makePunishablePair("MaxNearbyEntities", tag.getNumberTagOrNull("MaxNearbyEntities").getAsInt());
 
-        NBTNumber spawnRange          = tag.getNumberTagOrNull("SpawnRange");
-        NBTNumber requiredPlayerRange = tag.getNumberTagOrNull("RequiredPlayerRange");
-        NBTNumber maxNearbyEntities   = tag.getNumberTagOrNull("MaxNearbyEntities");
+        if (isPunishable(tag.getNumberTagOrNull("Delay"), Short.MAX_VALUE))
+            return makePunishablePair("Delay", tag.getNumberTagOrNull("Delay").getAsInt());
 
-        if (maxNearbyEntities != null && (maxNearbyEntities.getAsInt() > Byte.MAX_VALUE ||
-                                          maxNearbyEntities.getAsInt() < 0)) {
-            return new Pair<>("MaxNearbyEntities at: " + maxNearbyEntities.getAsInt(), PunishType.BAN);
-        }
+        if (isPunishable(tag.getNumberTagOrNull("MinSpawnDelay"), Short.MAX_VALUE))
+            return makePunishablePair("MinSpawnDelay", tag.getNumberTagOrNull("MinSpawnDelay").getAsInt());
 
-        NBTNumber spawnCount = tag.getNumberTagOrNull("SpawnCount");
-        NBTNumber delay      = tag.getNumberTagOrNull("Delay");
+        if (isPunishable(tag.getNumberTagOrNull("SpawnRange"), 20))
+            return makePunishablePair("SpawnRange", tag.getNumberTagOrNull("SpawnRange").getAsInt());
 
-        if (delay != null && (delay.getAsInt() > Short.MAX_VALUE || delay.getAsInt() < 0)) {
-            return new Pair<>("Delay at: " + delay.getAsInt(), PunishType.BAN);
-        }
+        if (isPunishable(tag.getNumberTagOrNull("MaxSpawnDelay"), 1000))
+            return makePunishablePair("MaxSpawnDelay", tag.getNumberTagOrNull("MaxSpawnDelay").getAsInt());
 
-        NBTNumber maxSpawnDelay = tag.getNumberTagOrNull("MaxSpawnDelay");
-        NBTNumber minSpawnDelay = tag.getNumberTagOrNull("MinSpawnDelay");
+        if (isPunishable(tag.getNumberTagOrNull("SpawnCount"), 30))
+            return makePunishablePair("SpawnCount", tag.getNumberTagOrNull("SpawnCount").getAsInt());
 
-        if (minSpawnDelay != null && (minSpawnDelay.getAsInt() > Short.MAX_VALUE ||
-                                      minSpawnDelay.getAsInt() < 0)) {
-            return new Pair<>("MinSpawnDelay at: " + minSpawnDelay.getAsInt(), PunishType.BAN);
-        }
+        if (isPunishable(tag.getNumberTagOrNull("RequiredPlayerRange"), 16))
+            return makePunishablePair("RequiredPlayerRange", tag.getNumberTagOrNull("RequiredPlayerRange").getAsInt());
 
-        int maxAllowedSpawnRange          = 20;
-        int maxAllowedSpawnDelay          = 1000;
-        int maxAllowedSpawnCount          = 30;
-        int maxAllowedRequiredPlayerRange = 16;
-
-        if (spawnRange != null && (spawnRange.getAsInt() > maxAllowedSpawnRange || spawnRange.getAsInt() < 0))
-            return new Pair<>("SpawnRange at: " + spawnRange.getAsInt(), PunishType.BAN);
-
-        if (maxSpawnDelay != null && (maxSpawnDelay.getAsInt() > maxAllowedSpawnDelay ||
-                                      maxSpawnDelay.getAsInt() < 0)) {
-            return new Pair<>("MaxSpawnDelay at: " + maxSpawnDelay.getAsInt(), PunishType.BAN);
-        }
-
-        if (spawnCount != null && (spawnCount.getAsInt() > maxAllowedSpawnCount || spawnCount.getAsInt() < 0))
-            return new Pair<>("SpawnCount at: " + spawnCount.getAsInt(), PunishType.BAN);
-
-        if (requiredPlayerRange != null && (requiredPlayerRange.getAsInt() > maxAllowedRequiredPlayerRange ||
-                                            requiredPlayerRange.getAsInt() < 0)) {
-            new Pair<>("RequiredPlayerRange at: " + requiredPlayerRange.getAsInt(), PunishType.BAN);
-        }
         return null;
     }
 
+    /**
+     * Determines if a given NBTNumber tag is punishable.
+     *
+     * @param tag      the NBTNumber tag to check
+     * @param maxValue the maximum allowed value for the tag
+     * @return true if the tag is punishable, false otherwise
+     */
+    private boolean isPunishable(NBTNumber tag, int maxValue) {
+        return tag != null && (tag.getAsInt() > maxValue || tag.getAsInt() < 0);
+    }
+
+    /**
+     * Creates a Pair object representing a punishable pair.
+     *
+     * @param property the property associated with the pair
+     * @param value the value associated with the pair
+     * @return a Pair object representing a punishable pair
+     */
+    private Pair<String, PunishType> makePunishablePair(String property, int value) {
+        return new Pair<>(property + " at: " + value, PunishType.BAN);
+    }
+
+    /**
+     * Handles the check based on the given event, clicked stack, NBT compound, and player data.
+     *
+     * @param event         the event representing the received packet
+     * @param clickedStack  the clicked stack item
+     * @param nbtCompound   the NBT compound associated with the item
+     * @param playerData    the player data
+     * @return a pair of strings and a PunishType if there is an invalid NBT compound, null otherwise
+     */
     @Override
     public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
                                                 NBTCompound nbtCompound, PlayerData playerData) {

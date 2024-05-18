@@ -14,9 +14,22 @@ import de.feelix.sierraapi.violation.PunishType;
 import java.util.Base64;
 import java.util.UUID;
 
+/**
+ * The CreativeSkull class implements the ItemCheck interface and represents a check for a creative skull item.
+ * This class checks if the skull owner and properties of the clicked skull are valid.
+ */
 //Fixes crash head / glitch head
 public class CreativeSkull implements ItemCheck {
 
+    /**
+     * This method handles the check for a given packet event, clicked item stack, NBT compound, and player data.
+     *
+     * @param event         the packet receive event
+     * @param clickedStack  the clicked item stack
+     * @param nbtCompound   the NBT compound
+     * @param playerData    the player data
+     * @return a pair of string and PunishType or null
+     */
     @Override
     public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
                                                 NBTCompound nbtCompound, PlayerData playerData) {

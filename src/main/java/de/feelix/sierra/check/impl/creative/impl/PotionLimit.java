@@ -10,8 +10,20 @@ import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
+/**
+ * The PotionLimit class implements the ItemCheck interface to handle custom potion effects.
+ */
 public class PotionLimit implements ItemCheck {
 
+    /**
+     * Handle the check for custom potion effects.
+     *
+     * @param event The packet receive event.
+     * @param clickedStack The clicked item stack.
+     * @param nbtCompound The NBT compound.
+     * @param playerData The player data.
+     * @return A Pair object containing the error message and the punishment type if a check fails, or null if all checks pass.
+     */
     @Override
     public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
                                                 NBTCompound nbtCompound, PlayerData playerData) {
@@ -20,6 +32,8 @@ public class PotionLimit implements ItemCheck {
         }
 
         NBTList<NBTCompound> potionEffects = nbtCompound.getCompoundListTagOrNull("CustomPotionEffects");
+
+        if (potionEffects == null) return null;
 
         int maxPotionEffects = 5;
         //Limit how many custom potion effects a potion can have

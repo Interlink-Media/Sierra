@@ -13,9 +13,25 @@ import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
+/**
+ * The FireworkSize class is an implementation of the ItemCheck interface. It handles the check for an invalid explosion
+ * size in a firework. It checks if the explosion size in a firework exceeds the maximum allowed size and returns an
+ * appropriate result.
+ */
 // PaperMC
 public class FireworkSize implements ItemCheck {
 
+    /**
+     * This method handles the check for an invalid explosion size in a firework.
+     * It checks if the explosion size in a firework exceeds the maximum allowed size and returns a Pair<String, PunishType>.
+     *
+     * @param event          The PacketReceiveEvent that triggered the check.
+     * @param clickedStack   The ItemStack that was clicked.
+     * @param nbtCompound    The NBTCompound associated with the ItemStack.
+     * @param playerData     The PlayerData of the player.
+     * @return A Pair<String, PunishType> which represents the result of the check. If the explosion size is invalid, it returns a Pair with an error message and PunishType.BAN. Otherwise
+     * , it returns null.
+     */
     @Override
     public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
@@ -48,6 +64,13 @@ public class FireworkSize implements ItemCheck {
         return null;
     }
 
+    /**
+     * Checks if an ItemStack has an invalid explosion size in a firework.
+     * It checks if the explosion size exceeds the maximum allowed size.
+     *
+     * @param itemStack The ItemStack to check.
+     * @return {@code true} if the explosion size is invalid, {@code false} otherwise.
+     */
     private boolean invalid(ItemStack itemStack) {
         if (itemStack.getNBT() != null) {
             NBTCompound fireworkNBT = itemStack.getNBT().getCompoundTagOrNull("Fireworks");
