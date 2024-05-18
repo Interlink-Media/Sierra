@@ -214,14 +214,13 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
             sendViolation(event, data.getRecursionCount(), PunishType.BAN);
             return;
         }
-        if (!blockEntityTag.getTags().containsKey(ITEMS_KEY)) {
-            return;
-        }
+
+        if (!blockEntityTag.getTags().containsKey(ITEMS_KEY)) return;
 
         NBTList<NBTCompound> items = blockEntityTag.getCompoundListTagOrNull(ITEMS_KEY);
-        if (items == null) {
-            return;
-        }
+
+        if (items == null) return;
+
         if (exceededMaxItems(items)) {
             sendViolation(event, items.size(), PunishType.BAN);
             return;
@@ -280,7 +279,9 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
         for (int i = 0; i < items.size(); i++) {
             NBTCompound item = items.getTag(i);
             if (item.getTags().containsKey(TAG_KEY)) {
-                if (processTaggedItem(event, data, clickedItem, item)) return;
+                if (processTaggedItem(event, data, clickedItem, item)) {
+                    return;
+                }
             } else if (callDefaultChecks(event, data, clickedItem, item)) {
                 return;
             }
@@ -299,7 +300,11 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
     private boolean processTaggedItem(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
                                       NBTCompound item) {
         NBTCompound tag = item.getCompoundTagOrNull(TAG_KEY);
+
+        if (tag == null) return false;
+
         if (callDefaultChecks(event, data, clickedItem, tag)) return true;
+
         if (tag.getTags().containsKey(BLOCK_ENTITY_TAG_KEY)) {
             NBTCompound recursionBlockEntityTag = tag.getCompoundTagOrNull(BLOCK_ENTITY_TAG_KEY);
             recursion(event, data, clickedItem, recursionBlockEntityTag);
