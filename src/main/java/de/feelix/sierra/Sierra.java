@@ -114,43 +114,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     private static final int PLUGIN_ID = 21527;
 
     /**
-     * The INTERNAL_PUNISHMENT_CONFIG variable represents the name of the internal punishment configuration file in
-     * the Sierra plugin.
-     * This file is used to store and manage punishment settings and configurations for the plugin.
-     * It is a constant string variable and its value is set to "internal-punishment-config".
-     *
-     * @see SierraConfigEngine
-     * @see SierraConfigEngine#config()
-     */
-    private static final String INTERNAL_PUNISHMENT_CONFIG = "internal-punishment-config";
-
-    /**
-     * The HARD_PUNISHMENT_CONFIG variable represents the configuration type for hard punishments.
-     * It is a string constant with the value "HARD".
-     */
-    private static final String HARD_PUNISHMENT_CONFIG = "HARD";
-
-    /**
-     * The BLOCK_REDSTONE_LOOP variable represents the name of the configuration option in the sierra.yml file.
-     * This option is used to identify the configuration value for block redstone loops in the Sierra plugin.
-     * The variable is a string with the value "block-redstone-loops".
-     * <p>
-     * This variable is used in the SierraConfigEngine class to retrieve the configuration value from the sierra.yml
-     * file.
-     * The SierraConfigEngine class initializes the main configuration file and caches it in memory for efficient
-     * access.
-     * The config() method in the SierraConfigEngine class returns a YamlConfiguration object that represents the
-     * sierra.yml file.
-     * The config() method is called to get the value associated with the BLOCK_REDSTONE_LOOP configuration option.
-     * <p>
-     * Example usage:
-     * <p>
-     * SierraConfigEngine configEngine = new SierraConfigEngine();
-     * YamlConfiguration config = configEngine
-     */
-    private static final String BLOCK_REDSTONE_LOOP = "block-redstone-loops";
-
-    /**
      * This method is called when the plugin is being enabled.
      * It initializes various components of the Sierra plugin,
      * registers event priority, and sets up the command executor.
@@ -208,7 +171,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
 
         this.sierraDiscordGateway.setup();
 
-        checkAndUpdatePlugin();
+        FoliaScheduler.getAsyncScheduler().runNow(this, o -> checkAndUpdatePlugin());
 
         long delay = System.currentTimeMillis() - startTime;
         logInitializationTime(delay);
@@ -255,7 +218,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      */
     private void setupPunishmentConfig() {
         this.punishmentConfig = PunishmentConfig.valueOf(
-            this.sierraConfigEngine.config().getString(INTERNAL_PUNISHMENT_CONFIG, HARD_PUNISHMENT_CONFIG));
+            this.sierraConfigEngine.config().getString("internal-punishment-config", "HARD"));
     }
 
     /**
@@ -267,7 +230,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * @see BlockRedstoneListener
      */
     private void blockRedStoneLoops() {
-        if (this.sierraConfigEngine.config().getBoolean(BLOCK_REDSTONE_LOOP, true)) {
+        if (this.sierraConfigEngine.config().getBoolean("block-redstone-loops", true)) {
             Bukkit.getPluginManager().registerEvents(new BlockRedstoneListener(), this);
         }
     }
