@@ -27,7 +27,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -147,6 +146,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
             .kickOnPacketException(sierraConfigEngine.config().getBoolean("kick-on-packet-exception", true))
             .reEncodeByDefault(false)
             .checkForUpdates(false)
+            .debug(false)
             .bStats(true);
     }
 
@@ -177,7 +177,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         logInitializationTime(delay);
 
         SierraApiAccessor.setSierraApiInstance(this);
-        this.getLogger().log(Level.INFO, "API is ready");
+        this.getLogger().info("API is ready");
     }
 
     /**
