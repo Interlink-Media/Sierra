@@ -1,9 +1,5 @@
 package de.feelix.sierra.utilities;
 
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.ChatColor;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -100,14 +96,13 @@ public class FormatUtils {
         return sdf.format(date);
     }
 
-
     /**
      * Translates a given text by replacing any color codes with their corresponding colors.
      *
      * @param text The text to be formatted.
      * @return The formatted text with color codes replaced.
      */
-    public static BaseComponent[] formatColor(String text) {
-        return TextComponent.fromLegacyText(ChatColor.translateAlternateColorCodes('&', text));
+    public static String formatColor(String text) {
+        return text.replace("&", "§");
     }
 }

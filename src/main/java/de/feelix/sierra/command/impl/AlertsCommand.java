@@ -1,11 +1,9 @@
 package de.feelix.sierra.command.impl;
 
-import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
-import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierraapi.commands.*;
-import org.bukkit.entity.Player;
+import de.feelix.sierraapi.user.impl.SierraUser;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,55 +15,35 @@ import java.util.List;
 public class AlertsCommand implements ISierraCommand {
 
     /**
-     * The process method performs the necessary actions to toggle the alert messages for a player.
-     * It first retrieves the sender of the command as a Player using the provided sierraSender object.
-     * If the sender is not a Player, the method returns.
-     * It then retrieves the PlayerData object associated with the player using the getPlayerData method.
-     * If the playerData is null, the method returns.
-     * Finally, it calls the toggleAlertMessages method to toggle the alert messages for the player.
+     * This method processes the given parameters to perform a specific action.
      *
-     * @param sierraSender    the ISierraSender object representing the sender of the command
-     * @param abstractCommand the IBukkitAbstractCommand object representing the executed command
-     * @param sierraLabel     the ISierraLabel object representing the label of the initial symbol
-     * @param sierraArguments the ISierraArguments object representing the arguments passed with the command
+     * @param user              The User object representing the user.
+     * @param sierraUser        The SierraUser object representing the user.
+     * @param abstractCommand   The IBukkitAbstractCommand object representing the command.
+     * @param sierraLabel       The ISierraLabel object representing the label of the initial symbol.
+     * @param sierraArguments   The ISierraArguments object representing the arguments passed with the command.
      */
     @Override
-    public void process(ISierraSender sierraSender, IBukkitAbstractCommand abstractCommand,
+    public void process(User user, SierraUser sierraUser, IBukkitAbstractCommand abstractCommand,
                         ISierraLabel sierraLabel, ISierraArguments sierraArguments) {
 
-        Player playerSender = sierraSender.getSenderAsPlayer();
-        if (playerSender == null) return;
-
-        PlayerData playerData = getPlayerData(playerSender);
-        if (playerData == null) return;
-
-        toggleAlertMessages(playerData);
+        toggleAlertMessages(user, sierraUser);
     }
 
     /**
-     * Retrieves the PlayerData object associated with a player.
+     * Toggles the alert messages for a given user.
      *
-     * @param playerSender the Player object representing the player
-     * @return the PlayerData object associated with the player
+     * @param user        The User object representing the user.
+     * @param sierraUser  The SierraUser object representing the user.
      */
-    private PlayerData getPlayerData(Player playerSender) {
-        return Sierra.getPlugin().getSierraDataManager().getPlayerData(
-            PacketEvents.getAPI().getPlayerManager().getUser(playerSender)
-        ).get();
-    }
+    private void toggleAlertMessages(User user, SierraUser sierraUser) {
 
-    /**
-     * Toggles the alert messages for a player.
-     *
-     * @param playerData   the PlayerData object representing the player
-     */
-    private void toggleAlertMessages(PlayerData playerData) {
-        if (playerData.getAlertSettings().enabled()) {
-            playerData.getAlertSettings().toggle(false);
-            sendMessage(playerData.getUser(), true);
+        if (sierraUser.alertSettings().enabled()) {
+            sendMessage(user, true);
+            sierraUser.alertSettings().toggle(false);
         } else {
-            playerData.getAlertSettings().toggle(true);
-            sendMessage(playerData.getUser(), false);
+            sendMessage(user, false);
+            sierraUser.alertSettings().toggle(true);
         }
     }
 

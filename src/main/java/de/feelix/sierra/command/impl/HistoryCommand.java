@@ -1,64 +1,71 @@
 package de.feelix.sierra.command.impl;
 
 
+import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.history.HistoryDocument;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierra.utilities.pagination.Pagination;
 import de.feelix.sierraapi.commands.*;
 import de.feelix.sierraapi.history.History;
-import net.md_5.bungee.api.chat.BaseComponent;
+import de.feelix.sierraapi.user.impl.SierraUser;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * The HistoryCommand class represents a command that retrieves and displays the history of a player's punishments.
+ * It implements the ISierraCommand interface.
+ */
 public class HistoryCommand implements ISierraCommand {
 
     /**
-     * Process method to show the action history.
+     * This method processes the command by validating the arguments, setting up pagination,
+     * sending the appropriate help syntax if arguments are invalid, sending the pagination message
+     * to the sender, and sending the history messages.
      *
-     * @param sierraSender    The sender object.
-     * @param abstractCommand The abstract command object.
-     * @param sierraLabel     The sierra label object.
-     * @param sierraArguments The sierra arguments object.
+     * @param user            The User object representing the user.
+     * @param sierraUser      The SierraUser object representing the user in the Sierra API.
+     * @param abstractCommand The IBukkitAbstractCommand object representing the wrapped Bukkit Command.
+     * @param sierraLabel     The ISierraLabel object representing the label of the initial symbol.
+     * @param sierraArguments The ISierraArguments object representing the arguments passed with the command.
      */
     @Override
-    public void process(ISierraSender sierraSender, IBukkitAbstractCommand abstractCommand, ISierraLabel sierraLabel,
+    public void process(User user, SierraUser sierraUser, IBukkitAbstractCommand abstractCommand,
+                        ISierraLabel sierraLabel,
                         ISierraArguments sierraArguments) {
 
         if (!validateArguments(sierraArguments)) {
-            sendHelpSyntax(sierraSender);
+            sendHelpSyntax(user);
             return;
         }
 
         Pagination<History> pagination = setupPagination();
 
         int page = correctPage(FormatUtils.toInt(sierraArguments.getArguments().get(1)), pagination.totalPages());
-        sendMessage(sierraSender, page, pagination);
+        sendMessage(user, page, pagination);
 
         List<History> historyDocumentList = pagination.itemsForPage(page);
 
         if (historyDocumentList.isEmpty()) {
-            sierraSender.getSender().sendMessage(Sierra.PREFIX + " §cNo history available");
+            user.sendMessage(Sierra.PREFIX + " §cNo history available");
             return;
         }
 
-        sendHistoryMessages(sierraSender, historyDocumentList);
+        sendHistoryMessages(user, historyDocumentList);
     }
 
     /**
-     * Sends the history messages to the specified sender.
+     * Sends the history messages to the specified user.
      *
-     * @param sierraSender        The ISierraSender object representing the sender.
-     * @param historyDocumentList The list of HistoryDocument objects containing the history information.
+     * @param user               The User object representing the user.
+     * @param historyDocumentList The list of History objects representing the history documents.
      */
-    private void sendHistoryMessages(ISierraSender sierraSender, List<History> historyDocumentList) {
+    private void sendHistoryMessages(User user, List<History> historyDocumentList) {
         for (History historyDocument : historyDocumentList) {
-            sierraSender.getSenderAsPlayer()
-                .spigot()
-                .sendMessage(createHistoryMessage((HistoryDocument) historyDocument));
+            user.sendMessage(createHistoryMessage((HistoryDocument) historyDocument));
         }
     }
 
@@ -100,17 +107,16 @@ public class HistoryCommand implements ISierraCommand {
     }
 
     /**
-     * Sends a formatted message to the provided ISierraSender object using the specified pagination details.
+     * Sends a formatted history message to the given User.
      *
-     * @param sierraSender - The ISierraSender object representing the sender to send the message to.
-     * @param page         - The current page number.
-     * @param pagination   - A Pagination object containing the history documents.
+     * @param user        The User to send the message to.
+     * @param page        The current page number.
+     * @param pagination  The Pagination object containing the history items.
      */
-    private void sendMessage(ISierraSender sierraSender, int page, Pagination<History> pagination) {
+    private void sendMessage(User user, int page, Pagination<History> pagination) {
         int    totalHistory = pagination.getItems().size();
         String unformulated = "%s §fShowing entries: §7(page §c%s §7of §c%d §7- §c%d §7entries)";
-        sierraSender.getSender()
-            .sendMessage(String.format(unformulated, Sierra.PREFIX, page, pagination.totalPages(), totalHistory));
+        user.sendMessage(String.format(unformulated, Sierra.PREFIX, page, pagination.totalPages(), totalHistory));
     }
 
     /**
@@ -119,7 +125,7 @@ public class HistoryCommand implements ISierraCommand {
      * @param historyDocument The HistoryDocument containing the history information.
      * @return The formatted history message.
      */
-    private BaseComponent[] createHistoryMessage(HistoryDocument historyDocument) {
+    private String createHistoryMessage(HistoryDocument historyDocument) {
         return FormatUtils.formatColor(String.format(
             "§7[%s] §c%s §7(%dms) -> §c%s §7(%s)",
             historyDocument.formatTimestamp(),
@@ -131,12 +137,12 @@ public class HistoryCommand implements ISierraCommand {
     }
 
     /**
-     * Sends the help syntax for the command.
+     * Sends the help syntax message to the user.
      *
-     * @param sierraSender The sender object.
+     * @param user The User object representing the user.
      */
-    private void sendHelpSyntax(ISierraSender sierraSender) {
-        sierraSender.getSender().sendMessage(Sierra.PREFIX + " §cInvalid usage, try /sierra history <page>");
+    private void sendHelpSyntax(User user) {
+        user.sendMessage(Sierra.PREFIX + " §cInvalid usage, try /sierra history <page>");
     }
 
     /**

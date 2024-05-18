@@ -21,7 +21,7 @@
 # To make it difficult for those who intend to harm your server, you should hide the plugin version from the public.
 # This way, they won't be able to write version-specific crash exploits.
 # We recommend keeping this setting enabled
-hideVersion: true
+hide-version: true
 
 # The Packet Spam Checks are a collection of frequency and tick-based checks that examine incoming packets
 # for a specific frequency or certain tick variations. These checks have been thoroughly tested for any false

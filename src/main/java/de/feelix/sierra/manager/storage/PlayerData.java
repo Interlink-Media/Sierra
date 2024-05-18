@@ -43,7 +43,7 @@ public class PlayerData implements SierraUser {
     private double packetCount;
     private double packetAllowance = 1000;
 
-    private long joinTime         = System.currentTimeMillis();
+    private long joinTime = System.currentTimeMillis();
 
     private boolean receivedPunishment = false;
     private boolean exempt             = false;
@@ -86,6 +86,16 @@ public class PlayerData implements SierraUser {
     }
 
     /**
+     * Retrieves the brand of the user.
+     *
+     * @return The brand of the user as a String.
+     */
+    @Override
+    public String brand() {
+        return brand;
+    }
+
+    /**
      * Retrieves the entity ID associated with the player.
      *
      * @return the entity ID as an integer
@@ -93,6 +103,16 @@ public class PlayerData implements SierraUser {
     @Override
     public int entityId() {
         return user.getEntityId();
+    }
+
+    @Override
+    public int ping() {
+        return (int) this.getPingProcessor().getPing();
+    }
+
+    @Override
+    public int ticksExisted() {
+        return this.getTicksExisted();
     }
 
     /**
@@ -152,6 +172,11 @@ public class PlayerData implements SierraUser {
         return this.exempt;
     }
 
+    @Override
+    public GameMode gameMode() {
+        return this.getGameMode();
+    }
+
     /**
      * Sets whether the player is exempt from certain actions or checks.
      *
@@ -178,7 +203,6 @@ public class PlayerData implements SierraUser {
      * Retrieves the mitigation settings for the user.
      *
      * @return The mitigation settings for the user as an instance of {@link AlertSettings}.
-     *
      * @see SierraUser#mitigationSettings()
      * @see AlertSettings
      */

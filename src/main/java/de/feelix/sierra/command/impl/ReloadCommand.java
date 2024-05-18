@@ -1,25 +1,32 @@
 package de.feelix.sierra.command.impl;
 
+import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierraapi.commands.*;
+import de.feelix.sierraapi.user.impl.SierraUser;
 
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * The ReloadCommand class implements the ISierraCommand interface and represents a command
+ * that can be used to reload the configuration of the Sierra plugin.
+ */
 public class ReloadCommand implements ISierraCommand {
 
     /**
-     * This method is called to process a reload command. It invalidates the cache
-     * in the SierraConfigEngine, sets the prefix for all messages sent by Sierra, and sends
-     * a success message to the sender.
+     * Processes the command to reload the configuration.
+     * This method removes all cached config files, resets the prefix, and sets up the SierraDiscordGateway.
+     * It also sends a message to the sender indicating that the configuration has been reloaded successfully.
      *
-     * @param sierraSender    The sender of the command.
-     * @param abstractCommand The abstract command being processed.
-     * @param sierraLabel     The label of the command.
-     * @param sierraArguments The arguments of the command.
+     * @param user              the user associated with the command
+     * @param sierraUser        the Sierra user associated with the command
+     * @param abstractCommand   the abstract command associated with the command
+     * @param sierraLabel       the Sierra label associated with the command
+     * @param sierraArguments   the Sierra arguments associated with the command
      */
     @Override
-    public void process(ISierraSender sierraSender, IBukkitAbstractCommand abstractCommand,
+    public void process(User user, SierraUser sierraUser, IBukkitAbstractCommand abstractCommand,
                         ISierraLabel sierraLabel, ISierraArguments sierraArguments) {
 
         // Remove all cached config files
@@ -30,7 +37,7 @@ public class ReloadCommand implements ISierraCommand {
 
         Sierra.getPlugin().getSierraDiscordGateway().setup();
 
-        sierraSender.getSender().sendMessage(Sierra.PREFIX + " §fConfiguration reloaded §asuccessfully");
+        user.sendMessage(Sierra.PREFIX + " §fConfiguration reloaded §asuccessfully");
     }
 
     /**

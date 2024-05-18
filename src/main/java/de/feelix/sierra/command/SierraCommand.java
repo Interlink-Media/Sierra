@@ -1,11 +1,13 @@
 package de.feelix.sierra.command;
 
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.command.api.BukkitAbstractCommand;
 import de.feelix.sierra.command.api.SierraArguments;
 import de.feelix.sierra.command.api.SierraLabel;
-import de.feelix.sierra.command.api.SierraSender;
 import de.feelix.sierra.command.impl.*;
+import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierraapi.commands.ISierraCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -92,10 +94,14 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label,
                              String[] args) {
 
-        SierraSender sierraSender = new SierraSender(sender);
+        if (!(sender instanceof Player)) return false;
+
+        Player     player     = (Player) sender;
+        User       user       = PacketEvents.getAPI().getPlayerManager().getUser(player);
+        PlayerData playerData = Sierra.getPlugin().getSierraDataManager().getPlayerData(user).get();
 
         if (hasNoPermission(sender)) {
-            CommandHelper.sendVersionOutput(sierraSender);
+            CommandHelper.sendVersionOutput(user);
             return true;
         }
 
@@ -106,11 +112,11 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
                 if (iSierraCommand != null) {
 
                     if (iSierraCommand.permission() != null && !sender.hasPermission(iSierraCommand.permission())) {
-                        CommandHelper.sendVersionOutput(sierraSender);
+                        CommandHelper.sendVersionOutput(user);
                         return;
                     }
 
-                    iSierraCommand.process(sierraSender, new BukkitAbstractCommand(command),
+                    iSierraCommand.process(user, playerData, new BukkitAbstractCommand(command),
                                            new SierraLabel(label), new SierraArguments(args)
                     );
                 } else {

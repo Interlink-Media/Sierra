@@ -1,17 +1,16 @@
 package de.feelix.sierra.command.impl;
 
-import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierraapi.commands.*;
 import de.feelix.sierraapi.timing.Timing;
 import de.feelix.sierraapi.timing.TimingHandler;
-import org.bukkit.entity.Player;
+import de.feelix.sierraapi.user.impl.SierraUser;
 
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * MonitorCommand is a class that represents a command that prints monitoring information related to the player.
@@ -21,60 +20,55 @@ import java.util.Objects;
 public class MonitorCommand implements ISierraCommand {
 
     /**
-     * This method processes the command by printing monitoring information related to the player.
+     * The process method is responsible for processing the command and printing the performance monitor information related to the player.
      *
-     * @param sierraSender    The ISierraSender object representing the sender of the command.
-     * @param abstractCommand The IBukkitAbstractCommand object representing the abstract command.
-     * @param sierraLabel     The ISierraLabel object representing the label of the initial symbol.
-     * @param sierraArguments The ISierraArguments object representing the arguments passed with the command.
+     * @param user              the User associated with the command execution
+     * @param sierraUser        the SierraUser representing the user in the Sierra API
+     * @param abstractCommand   the IBukkitAbstractCommand object representing the wrapped Bukkit Command
+     * @param sierraLabel       the ISierraLabel object representing the label of the initial symbol
+     * @param sierraArguments   the ISierraArguments object representing the arguments passed with the command
      */
     @Override
-    public void process(ISierraSender sierraSender, IBukkitAbstractCommand abstractCommand, ISierraLabel sierraLabel,
+    public void process(User user, SierraUser sierraUser, IBukkitAbstractCommand abstractCommand, ISierraLabel sierraLabel,
                         ISierraArguments sierraArguments) {
 
-        if (sierraSender.getSenderAsPlayer() == null) return;
+        user.sendMessage(Sierra.PREFIX + " §fPerformance monitor §7(Your data)");
 
-        Player player = sierraSender.getSenderAsPlayer();
-
-        player.sendMessage(Sierra.PREFIX + " §fPerformance monitor §7(Your data)");
-
-        WeakReference<PlayerData> playerData = Sierra.getPlugin()
-            .getSierraDataManager()
-            .getPlayerData(PacketEvents.getAPI().getPlayerManager().getUser(player));
+        WeakReference<PlayerData> playerData = Sierra.getPlugin().getSierraDataManager().getPlayerData(user);
 
         if (playerData == null || playerData.get() == null) {
-            player.sendMessage(Sierra.PREFIX + " §cNo data found");
+            user.sendMessage(Sierra.PREFIX + " §cNo data found");
             return;
         }
-        printMonitor(Objects.requireNonNull(playerData.get()), player);
-    }
 
-
-    /**
-     * Prints the monitor information related to the player.
-     *
-     * @param playerData the PlayerData object representing the player's data
-     * @param player     the Player object representing the player
-     */
-    private void printMonitor(PlayerData playerData, Player player) {
-
-        TimingHandler timingProcessor = playerData.getTimingProcessor();
-        player.sendMessage(Sierra.PREFIX + " §c§lPackets:");
-        sendTiming(timingProcessor.getPacketReceiveTask(), "Ingoing Packets", player);
-        sendTiming(timingProcessor.getPacketSendTask(), "Outgoing Packets", player);
-        player.sendMessage(Sierra.PREFIX + " §c§lEnvironment:");
-        sendTiming(timingProcessor.getMovementTask(), "Movement Task", player);
+        printMonitor(user, sierraUser);
     }
 
     /**
-     * Sends a timing message to the player.
+     * Prints performance monitor information related to the player.
      *
-     * @param packetReceiveTiming the timing object representing the packet receive timing
-     * @param title               the title of the timing message
-     * @param player              the player to send the timing message to
+     * @param user the User associated with the command execution
+     * @param sierraUser the SierraUser representing the user in the Sierra API
      */
-    private void sendTiming(Timing packetReceiveTiming, String title, Player player) {
-        player.sendMessage(String.format("%s  §8- §f%s §7(%.5fms)", Sierra.PREFIX, title, packetReceiveTiming.delay()));
+    private void printMonitor(User user, SierraUser sierraUser) {
+
+        TimingHandler timingProcessor = sierraUser.timingHandler();
+        user.sendMessage(Sierra.PREFIX + " §c§lPackets:");
+        sendTiming(timingProcessor.getPacketReceiveTask(), "Ingoing Packets", user);
+        sendTiming(timingProcessor.getPacketSendTask(), "Outgoing Packets", user);
+        user.sendMessage(Sierra.PREFIX + " §c§lEnvironment:");
+        sendTiming(timingProcessor.getMovementTask(), "Movement Task", user);
+    }
+
+    /**
+     * Sends a timing message to the user.
+     *
+     * @param packetReceiveTiming the Timing object representing the timing of the received packet
+     * @param title the title of the timing message
+     * @param user the User object to send the message to
+     */
+    private void sendTiming(Timing packetReceiveTiming, String title, User user) {
+        user.sendMessage(String.format("%s  §8- §f%s §7(%.5fms)", Sierra.PREFIX, title, packetReceiveTiming.delay()));
     }
 
     /**

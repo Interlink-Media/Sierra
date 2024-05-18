@@ -1,8 +1,9 @@
 package de.feelix.sierra.command;
 
+import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
-import de.feelix.sierraapi.commands.ISierraSender;
-import org.bukkit.command.CommandSender;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 /**
  * The CommandHelper class provides helper methods for processing and sending commands related to the Sierra plugin.
@@ -10,36 +11,37 @@ import org.bukkit.command.CommandSender;
 public class CommandHelper {
 
     /**
-     * Sends the version output of the Sierra plugin to the specified {@link ISierraSender}.
-     * Includes information about the plugin version and a link to the Discord server.
+     * Sends the version output to the command sender.
      *
-     * @param sierraSender the ISierraSender object representing the sender of the command.
+     * @param user the user containing the command sender
      */
-    public static void sendVersionOutput(ISierraSender sierraSender) {
-        final String  sierraPrefix  = Sierra.PREFIX;
-        Sierra        sierraPlugin  = Sierra.getPlugin();
-        CommandSender commandSender = sierraSender.getSender();
+    public static void sendVersionOutput(User user) {
+        final String sierraPrefix = Sierra.PREFIX;
+        Sierra       sierraPlugin = Sierra.getPlugin();
 
-        String pluginVersionMessage = createVersionMessage(sierraPlugin, commandSender);
+        String pluginVersionMessage = createVersionMessage(sierraPlugin, user);
 
-        commandSender.sendMessage(sierraPrefix + " §fRunning §cSierra " + pluginVersionMessage);
-        commandSender.sendMessage(sierraPrefix + " §fMore info at §cdiscord.gg/squarecode");
+        user.sendMessage(sierraPrefix + " §fRunning §cSierra " + pluginVersionMessage);
+        user.sendMessage(sierraPrefix + " §fMore info at §cdiscord.gg/squarecode");
     }
 
     /**
      * Creates a version message for the Sierra plugin based on the given plugin instance and command sender.
      *
-     * @param sierraPlugin    the instance of the Sierra plugin
-     * @param commandSender   the command sender
+     * @param sierraPlugin  the instance of the Sierra plugin
+     * @param commandSender the command sender
      * @return the version message
      */
-    private static String createVersionMessage(Sierra sierraPlugin, CommandSender commandSender) {
+    private static String createVersionMessage(Sierra sierraPlugin, User user) {
         String pluginVersion = "§7(" + sierraPlugin.getDescription().getVersion() + ")";
         boolean isVersionHidden = sierraPlugin.getSierraConfigEngine().config().getBoolean(
-            "hideVersion",
+            "hide-version",
             true
         );
-        boolean isPermissionGranted = commandSender.hasPermission("sierra.command");
+
+        Player player = Bukkit.getPlayer(user.getUUID());
+
+        boolean isPermissionGranted = player != null && player.hasPermission("sierra.command");
 
         if (isVersionHidden && !isPermissionGranted) {
             pluginVersion = "§7(version hidden)";

@@ -1,5 +1,6 @@
 package de.feelix.sierraapi.user.impl;
 
+import com.github.retrooper.packetevents.protocol.player.GameMode;
 import de.feelix.sierraapi.check.CheckRepository;
 import de.feelix.sierraapi.timing.TimingHandler;
 import de.feelix.sierraapi.user.settings.AlertSettings;
@@ -19,11 +20,32 @@ public interface SierraUser {
     String username();
 
     /**
+     * Retrieves the brand of the user.
+     *
+     * @return The brand of the user as a String.
+     */
+    String brand();
+
+    /**
      * Gets the entity ID of the SierraUser.
      *
      * @return The entity ID of the SierraUser.
      */
     int entityId();
+
+    /**
+     * The ping method sends a ping request and returns the round trip time in milliseconds.
+     *
+     * @return The round trip time in milliseconds as an integer.
+     */
+    int ping();
+
+    /**
+     * Returns the number of ticks that the instance has existed for.
+     *
+     * @return The number of ticks that the instance has existed for.
+     */
+    int ticksExisted();
 
     /**
      * Generates a universally unique identifier (UUID) for the SierraUser.
@@ -61,6 +83,13 @@ public interface SierraUser {
      * @return true if the player is exempt, false otherwise
      */
     boolean isExempt();
+
+    /**
+     * Retrieves the game mode of the player.
+     *
+     * @return The game mode of the player as an instance of GameMode.
+     */
+    GameMode gameMode();
 
     /**
      * Sets whether the player is exempt from certain actions or checks.

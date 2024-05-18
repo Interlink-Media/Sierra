@@ -1,5 +1,8 @@
 package de.feelix.sierraapi.commands;
 
+import com.github.retrooper.packetevents.protocol.player.User;
+import de.feelix.sierraapi.user.impl.SierraUser;
+
 import java.util.List;
 
 /**
@@ -9,14 +12,15 @@ import java.util.List;
 public interface ISierraCommand {
 
     /**
-     * This method is used to process a Sierra command. It executes the specified command when it is called.
+     * This method processes the given inputs.
      *
-     * @param sierraSender an implementation of ISierraSender, representing the sender of the command
-     * @param abstractCommand an implementation of IBukkitAbstractCommand, representing the command being executed
-     * @param sierraLabel an implementation of ISierraLabel, representing the alias of the command used
-     * @param sierraArguments an implementation of ISierraArguments, representing the arguments passed with the command
+     * @param user            the user initiating the process
+     * @param sierraUser      the Sierra user associated with the process
+     * @param abstractCommand the abstract command object used for processing
+     * @param sierraLabel     the Sierra label used for the process
+     * @param sierraArguments the arguments provided for the process
      */
-    void process(ISierraSender sierraSender, IBukkitAbstractCommand abstractCommand,
+    void process(User user, SierraUser sierraUser, IBukkitAbstractCommand abstractCommand,
                  ISierraLabel sierraLabel, ISierraArguments sierraArguments);
 
     /**
