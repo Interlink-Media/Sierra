@@ -42,8 +42,6 @@ public class UpdateChecker {
      * The initial value is "UNKNOWN".
      * -- GETTER --
      * Retrieves the latest release version of a given repository on GitHub.
-     *
-     * @return the latest release version as a string, or an empty string if an error occurred
      */
     private String latestReleaseVersion = "UNKNOWN";
 
