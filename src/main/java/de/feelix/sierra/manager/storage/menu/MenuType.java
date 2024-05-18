@@ -59,6 +59,16 @@ public enum MenuType {
     private final int id;
 
     /**
+     * The MAX_ID_OLD_VERSION variable represents the maximum ID of the old version of the MenuType enum.
+     *
+     * <p>In the MenuType enum, each menu type is associated with a specific ID. This variable stores
+     * the maximum ID of the old version of the MenuType enum.</p>
+     *
+     * @see MenuType#getMaxIdBasedOnVersion(ServerVersion)
+     */
+    private static final int MAX_ID_OLD_VERSION = 23;
+
+    /**
      * Retrieves an array of all available menu types.
      *
      * @return An array of MenuType objects representing the available menu types.
@@ -68,22 +78,38 @@ public enum MenuType {
     }
 
     /**
-     * Retrieves the MenuType based on the given ID.
+     * Gets the menu type based on the provided ID.
      *
      * @param id The ID of the menu type.
-     * @return The MenuType associated with the ID, or UNKNOWN if the ID is invalid.
+     * @return The menu type.
      */
     public static MenuType getMenuType(int id) {
-        if (id < 0) return UNKNOWN;
         ServerVersion version = PacketEvents.getAPI().getServerManager().getVersion();
-        // versions under 1.20.3
-        if (version.isOlderThan(ServerVersion.V_1_20_3)) {
-            if (id > 23) return UNKNOWN;
-            if (id >= 7) id++;
-            return getMenuTypeValues()[id];
-        }
-        // 1.20.3 & greater
-        if (id >= getMenuTypeValues().length) return UNKNOWN;
+        if (isInvalidId(id, version)) return UNKNOWN;
+        if (version.isOlderThan(ServerVersion.V_1_20_3) && id >= 7) id++;
         return getMenuTypeValues()[id];
+    }
+
+    /**
+     * Check if the given id is valid based on the server version.
+     *
+     * @param id      the id to check
+     * @param version the server version
+     * @return true if the id is invalid, false otherwise
+     */
+    // Check if id is valid
+    private static boolean isInvalidId(int id, ServerVersion version) {
+        return id < 0 || id > getMaxIdBasedOnVersion(version) || id >= getMenuTypeValues().length;
+    }
+
+    /**
+     * This method returns the maximum ID based on the given ServerVersion.
+     *
+     * @param version the ServerVersion to compare against
+     * @return the maximum ID based on the ServerVersion
+     */
+    // Get Maximum ID based on ServerVersion
+    private static int getMaxIdBasedOnVersion(ServerVersion version) {
+        return version.isOlderThan(ServerVersion.V_1_20_3) ? MAX_ID_OLD_VERSION : getMenuTypeValues().length - 1;
     }
 }
