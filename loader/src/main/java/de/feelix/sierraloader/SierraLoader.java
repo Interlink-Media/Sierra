@@ -43,8 +43,16 @@ public class SierraLoader extends JavaPlugin {
      */
     @Override
     public void onEnable() {
-        getLogger().info("Loading sierra...");
-        downloadJar();
+        getLogger().info("Starting Sierra Loader...");
+        getLogger().info("Download latest version of sierra...");
+        try {
+            try (InputStream in = formURL().openStream()) {
+                resource.write(in);
+            }
+        } catch (IOException e) {
+            getLogger().warning("Error occurred while downloading JAR: " + e.getMessage());
+        }
+        getLogger().info("Latest version of sierra downloaded! Booting...");
         loadJar();
     }
 
@@ -55,7 +63,6 @@ public class SierraLoader extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("Unloading sierra...");
-
         if (plugin != null) {
             getServer().getPluginManager().disablePlugin(plugin);
             plugin = null;
@@ -136,32 +143,6 @@ public class SierraLoader extends JavaPlugin {
             throw new RuntimeException("The latest release download URL cannot be null");
         }
         return new URL(latestReleaseDownloadUrl);
-    }
-
-    /**
-     * Writes the contents of an InputStream obtained from a given URL to a file using the resource.write() method.
-     *
-     * @param url the URL from which to get the InputStream
-     * @throws IOException if an I/O error occurs
-     */
-    private void writeInputStreamFromURL(URL url) throws IOException {
-        try (InputStream in = url.openStream()) {
-            resource.write(in);
-        }
-    }
-
-    /**
-     * Downloads a JAR file from a URL and writes it to a resource.
-     *
-     * @throws RuntimeException if an error occurs while downloading the JAR file or writing it to a resource
-     */
-    private void downloadJar() {
-        try {
-            writeInputStreamFromURL(formURL());
-        } catch (IOException e) {
-            getLogger().warning(
-                "Error occurred while downloading JAR file or writing it into a resource from URL: " + e.getMessage());
-        }
     }
 
     /**

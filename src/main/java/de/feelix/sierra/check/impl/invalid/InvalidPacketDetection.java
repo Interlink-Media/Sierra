@@ -753,6 +753,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             checkButtonClickPosition(event, wrapper);
 
             ItemStack carriedItemStack = wrapper.getCarriedItemStack();
+
             checkGenericNBTLimit(event, carriedItemStack);
             checkAttributes(event, carriedItemStack);
             checkInvalidNbt(event, carriedItemStack);
