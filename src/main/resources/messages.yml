@@ -22,6 +22,12 @@ commands:
     entry: "&7{timestamp} &c{username} &7({ping}ms) -> &c{punishType} &7({description})"
   reload:
     success: "{prefix} &fConfiguration reloaded &asuccessfully"
+  monitor:
+    header: "{prefix} &fPerformance monitor &7(Your data)"
+    nothing-found: "{prefix} &cNo data found!"
+    packets-header: "{prefix} &c&lPackets:"
+    environment-header: "{prefix} &c&lEnvironment:"
+    entry: "{prefix}  &8- &f{title} &7({delay}ms)"
 
 layout:
 
