@@ -12,7 +12,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.awt.*;
 import java.time.Instant;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -87,7 +86,7 @@ public class SierraDiscordGateway {
         String url = config.getString("discord-webhook-url", "");
 
         if (url.isEmpty()) {
-            Sierra.getPlugin().getLogger().log(Level.SEVERE, "Discord is enabled, but webhook url is empty!");
+            Sierra.getPlugin().getLogger().severe("Discord is enabled, but webhook url is empty!");
             return;
         }
 
@@ -98,7 +97,7 @@ public class SierraDiscordGateway {
         client = WebhookClient.withId(Long.parseUnsignedLong(matcher.group(1)), matcher.group(2));
         client.setTimeout(15000); // Requests expire after 15 seconds
 
-        Sierra.getPlugin().getLogger().log(Level.INFO, "Discord gateway is enabled");
+        Sierra.getPlugin().getLogger().info("Discord gateway is enabled");
     }
 
     /**
@@ -114,7 +113,8 @@ public class SierraDiscordGateway {
         if (client != null) {
 
             WebhookEmbedBuilder embed = new WebhookEmbedBuilder()
-                .setAuthor(new WebhookEmbed.EmbedAuthor("Sierra AntiCrash", "https://i.imgur.com/8ptl4C8.png",
+                .setAuthor(new WebhookEmbed.EmbedAuthor("Sierra AntiCrash",
+                                                        "https://i.imgur.com/8ptl4C8.png",
                                                         "https://github.com/Interlink-Media/Sierra"
                 ))
                 .setImageUrl("https://i.stack.imgur.com/Fzh0w.png") // Constant width
@@ -139,7 +139,7 @@ public class SierraDiscordGateway {
             try {
                 client.send(embed.build());
             } catch (Exception exception) {
-                Sierra.getPlugin().getLogger().log(Level.SEVERE, "Unable to send webhook: " + exception.getMessage());
+                Sierra.getPlugin().getLogger().severe("Unable to send webhook: " + exception.getMessage());
             }
         }
     }

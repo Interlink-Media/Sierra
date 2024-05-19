@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
+import de.feelix.sierra.manager.discord.SierraDiscordGateway;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.impl.SierraCheck;
@@ -20,6 +22,7 @@ import de.feelix.sierraapi.events.impl.AsyncUserDetectionEvent;
 import de.feelix.sierraapi.violation.PunishType;
 import org.bukkit.ChatColor;
 
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -138,17 +141,18 @@ public class SierraDetection implements SierraCheck {
         alert(user, violationDocument);
 
         if (violationDocument.punishType() != PunishType.MITIGATE) {
-            Sierra.getPlugin()
-                .getSierraDataManager()
+
+            Sierra               plugin               = Sierra.getPlugin();
+            SierraDataManager    sierraDataManager    = plugin.getSierraDataManager();
+            SierraDiscordGateway sierraDiscordGateway = plugin.getSierraDiscordGateway();
+
+            sierraDataManager
                 .createPunishmentHistory(
                     playerData.username(), violationDocument.punishType(), playerData.getPingProcessor().getPing(),
                     violationDocument.debugInformation()
                 );
 
-            Sierra.getPlugin()
-                .getSierraDiscordGateway()
-                .sendAlert(playerData, this.checkType(), violationDocument, this.violations());
-
+            sierraDiscordGateway.sendAlert(playerData, this.checkType(), violationDocument, this.violations());
             playerData.punish(violationDocument.punishType());
         }
     }
@@ -239,9 +243,9 @@ public class SierraDetection implements SierraCheck {
     protected void alert(User user, ViolationDocument violationDocument) {
         SierraConfigEngine sierraConfig = Sierra.getPlugin().getSierraConfigEngine();
 
-        PunishType punishType = violationDocument.getPunishType();
-        String     staffAlert = formatStaffAlertMessage(user, punishType, sierraConfig);
-        String     username = this.playerData.getUser().getName();
+        PunishType punishType    = violationDocument.getPunishType();
+        String     staffAlert    = formatStaffAlertMessage(user, punishType, sierraConfig);
+        String     username      = this.playerData.getUser().getName();
         String     clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
 
         StringBuilder content = new StringBuilder()
@@ -274,8 +278,10 @@ public class SierraDetection implements SierraCheck {
 
         String command = getPunishmentCommand(sierraConfig, username);
 
+        Collection<PlayerData> playerDataList = Sierra.getPlugin().getSierraDataManager().getPlayerData().values();
+
         if (punishType == PunishType.MITIGATE) {
-            for (PlayerData playerData : Sierra.getPlugin().getSierraDataManager().getPlayerData().values()) {
+            for (PlayerData playerData : playerDataList) {
                 if (playerData.getMitigationSettings().enabled()) {
                     playerData.getUser().sendMessage(
                         LegacyComponentSerializer.legacy('&')
@@ -285,7 +291,7 @@ public class SierraDetection implements SierraCheck {
                 }
             }
         } else {
-            for (PlayerData playerData : Sierra.getPlugin().getSierraDataManager().getPlayerData().values()) {
+            for (PlayerData playerData : playerDataList) {
                 if (playerData.getAlertSettings().enabled()) {
                     playerData.getUser().sendMessage(
                         LegacyComponentSerializer.legacy('&')
@@ -346,7 +352,6 @@ public class SierraDetection implements SierraCheck {
      *
      * @return The number of violations detected.
      */
-    // Implement interface method for violation count
     @Override
     public double violations() {
         return this.violations;
@@ -369,7 +374,6 @@ public class SierraDetection implements SierraCheck {
      *
      * @return The check type of the instance.
      */
-    // Implement interface method for check type
     @Override
     public CheckType checkType() {
         return this.rawCheckType;
