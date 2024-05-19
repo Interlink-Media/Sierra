@@ -1,7 +1,7 @@
 package de.feelix.sierra.command.impl;
 
 import com.github.retrooper.packetevents.protocol.player.User;
-import de.feelix.sierra.Sierra;
+import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierraapi.commands.*;
 import de.feelix.sierraapi.user.impl.SierraUser;
 
@@ -54,9 +54,12 @@ public class MitigationCommand implements ISierraCommand {
      * @param isDisabled a boolean indicating whether the mitigation messages are disabled
      */
     private void sendMessage(User user, boolean isDisabled) {
-        String statusWord = isDisabled ? "§cdisabled" : "§aenabled";
-        String message    = Sierra.PREFIX + " §fYou have " + statusWord + " §fthe mitigation messages";
-        user.sendMessage(message);
+        user.sendMessage(new ConfigValue(
+            "commands.mitigation.toggle",
+            "{prefix} &fYou have {status} &fthe mitigation messages", true
+        )
+                             .replacePrefix().replace("{status}", isDisabled ? "&cdisabled" : "&aenabled").colorize()
+                             .getMessageValue());
     }
 
     /**

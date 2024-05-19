@@ -1,7 +1,7 @@
 package de.feelix.sierra.command.impl;
 
 import com.github.retrooper.packetevents.protocol.player.User;
-import de.feelix.sierra.Sierra;
+import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierraapi.commands.*;
 import de.feelix.sierraapi.user.impl.SierraUser;
 
@@ -17,11 +17,11 @@ public class AlertsCommand implements ISierraCommand {
     /**
      * This method processes the given parameters to perform a specific action.
      *
-     * @param user              The User object representing the user.
-     * @param sierraUser        The SierraUser object representing the user.
-     * @param abstractCommand   The IBukkitAbstractCommand object representing the command.
-     * @param sierraLabel       The ISierraLabel object representing the label of the initial symbol.
-     * @param sierraArguments   The ISierraArguments object representing the arguments passed with the command.
+     * @param user            The User object representing the user.
+     * @param sierraUser      The SierraUser object representing the user.
+     * @param abstractCommand The IBukkitAbstractCommand object representing the command.
+     * @param sierraLabel     The ISierraLabel object representing the label of the initial symbol.
+     * @param sierraArguments The ISierraArguments object representing the arguments passed with the command.
      */
     @Override
     public void process(User user, SierraUser sierraUser, IBukkitAbstractCommand abstractCommand,
@@ -33,8 +33,8 @@ public class AlertsCommand implements ISierraCommand {
     /**
      * Toggles the alert messages for a given user.
      *
-     * @param user        The User object representing the user.
-     * @param sierraUser  The SierraUser object representing the user.
+     * @param user       The User object representing the user.
+     * @param sierraUser The SierraUser object representing the user.
      */
     private void toggleAlertMessages(User user, SierraUser sierraUser) {
 
@@ -54,9 +54,12 @@ public class AlertsCommand implements ISierraCommand {
      * @param isDisabled a boolean indicating whether the alert messages are disabled or not
      */
     private void sendMessage(User player, boolean isDisabled) {
-        String statusWord = isDisabled ? "§cdisabled" : "§aenabled";
-        String message    = Sierra.PREFIX + " §fYou have " + statusWord + " §fthe alerts messages";
-        player.sendMessage(message);
+        player.sendMessage(new ConfigValue(
+            "commands.alerts.toggle",
+            "{prefix} &fYou have {status} &fthe alerts messages", true
+        )
+                               .replacePrefix().replace("{status}", isDisabled ? "&cdisabled" : "&aenabled").colorize()
+                               .getMessageValue());
     }
 
     /**

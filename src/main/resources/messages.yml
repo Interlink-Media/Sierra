@@ -1,3 +1,21 @@
+#
+#  ███████╗ ██╗ ███████╗ ██████╗  ██████╗   █████╗
+#  ██╔════╝ ██║ ██╔════╝ ██╔══██╗ ██╔══██╗ ██╔══██╗
+#  ███████╗ ██║ █████╗   ██████╔╝ ██████╔╝ ███████║
+#  ╚════██║ ██║ ██╔══╝   ██╔══██╗ ██╔══██╗ ██╔══██║
+#  ███████║ ██║ ███████╗ ██║  ██║ ██║  ██║ ██║  ██║
+#  ╚══════╝ ╚═╝ ╚══════╝ ╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚═╝  ╚═╝
+#
+# Packet Analysis Tool for the Minecraft Protocol by Feelix
+# Documentation: https://sierra.squarecode.de/
+# Learn more at https://discord.gg/squarecode/
+
+commands:
+  alerts:
+    toggle: "{prefix} &fYou have {status} &fthe alerts messages"
+  mitigation:
+    toggle: "{prefix} &fYou have {status} &fthe mitigation messages"
+
 layout:
 
   # The prefix for all plugin messages
