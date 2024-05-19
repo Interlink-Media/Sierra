@@ -2,6 +2,7 @@ package de.feelix.sierra.command.impl;
 
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
+import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierraapi.commands.*;
 import de.feelix.sierraapi.user.impl.SierraUser;
 
@@ -19,11 +20,11 @@ public class ReloadCommand implements ISierraCommand {
      * This method removes all cached config files, resets the prefix, and sets up the SierraDiscordGateway.
      * It also sends a message to the sender indicating that the configuration has been reloaded successfully.
      *
-     * @param user              the user associated with the command
-     * @param sierraUser        the Sierra user associated with the command
-     * @param abstractCommand   the abstract command associated with the command
-     * @param sierraLabel       the Sierra label associated with the command
-     * @param sierraArguments   the Sierra arguments associated with the command
+     * @param user            the user associated with the command
+     * @param sierraUser      the Sierra user associated with the command
+     * @param abstractCommand the abstract command associated with the command
+     * @param sierraLabel     the Sierra label associated with the command
+     * @param sierraArguments the Sierra arguments associated with the command
      */
     @Override
     public void process(User user, SierraUser sierraUser, IBukkitAbstractCommand abstractCommand,
@@ -37,12 +38,16 @@ public class ReloadCommand implements ISierraCommand {
 
         Sierra.getPlugin().getSierraDiscordGateway().setup();
 
-        user.sendMessage(Sierra.PREFIX + " §fConfiguration reloaded §asuccessfully");
+        user.sendMessage(new ConfigValue("commands.reload.success",
+                                         "{prefix} &fConfiguration reloaded &asuccessfully",
+                                         true
+        ).replacePrefix().colorize().getMessageValue());
     }
 
     /**
      * Converts an id to a list of strings based on the given id and arguments.
-     * @param id the id to convert
+     *
+     * @param id   the id to convert
      * @param args the arguments to use during conversion
      * @return a list of strings based on the id and arguments
      */

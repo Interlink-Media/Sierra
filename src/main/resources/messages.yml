@@ -20,6 +20,8 @@ commands:
     invalid: "{prefix} &cInvalid usage, try /sierra history <page>"
     header: "{prefix} &fShowing entries: &7(page &c{current} &7of &c{total} &7- &c{entries} &7entries)"
     entry: "&7{timestamp} &c{username} &7({ping}ms) -> &c{punishType} &7({description})"
+  reload:
+    success: "{prefix} &fConfiguration reloaded &asuccessfully"
 
 layout:
 
