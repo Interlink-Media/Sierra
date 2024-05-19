@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.history.HistoryDocument;
 import de.feelix.sierra.utilities.FormatUtils;
+import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierra.utilities.pagination.Pagination;
 import de.feelix.sierraapi.commands.*;
 import de.feelix.sierraapi.history.History;
@@ -34,8 +35,7 @@ public class HistoryCommand implements ISierraCommand {
      */
     @Override
     public void process(User user, SierraUser sierraUser, IBukkitAbstractCommand abstractCommand,
-                        ISierraLabel sierraLabel,
-                        ISierraArguments sierraArguments) {
+                        ISierraLabel sierraLabel, ISierraArguments sierraArguments) {
 
         if (!validateArguments(sierraArguments)) {
             sendHelpSyntax(user);
@@ -50,17 +50,21 @@ public class HistoryCommand implements ISierraCommand {
         List<History> historyDocumentList = pagination.itemsForPage(page);
 
         if (historyDocumentList.isEmpty()) {
-            user.sendMessage(Sierra.PREFIX + " §cNo history available");
+            user.sendMessage(
+                new ConfigValue("commands.history.empty",
+                                "{prefix} &cNo history available", true
+                ).replacePrefix()
+                    .colorize()
+                    .getMessageValue());
             return;
         }
-
         sendHistoryMessages(user, historyDocumentList);
     }
 
     /**
      * Sends the history messages to the specified user.
      *
-     * @param user               The User object representing the user.
+     * @param user                The User object representing the user.
      * @param historyDocumentList The list of History objects representing the history documents.
      */
     private void sendHistoryMessages(User user, List<History> historyDocumentList) {
@@ -85,9 +89,7 @@ public class HistoryCommand implements ISierraCommand {
      * @return A Pagination object containing the sorted history documents.
      */
     private Pagination<History> setupPagination() {
-        List<History> list = new ArrayList<>(Sierra.getPlugin()
-                                                 .getSierraDataManager()
-                                                 .getHistories());
+        List<History> list = new ArrayList<>(Sierra.getPlugin().getSierraDataManager().getHistories());
         list.sort(Comparator.comparing(History::timestamp).reversed());
         return new Pagination<>(list, 10);
     }
@@ -109,14 +111,20 @@ public class HistoryCommand implements ISierraCommand {
     /**
      * Sends a formatted history message to the given User.
      *
-     * @param user        The User to send the message to.
-     * @param page        The current page number.
-     * @param pagination  The Pagination object containing the history items.
+     * @param user       The User to send the message to.
+     * @param page       The current page number.
+     * @param pagination The Pagination object containing the history items.
      */
     private void sendMessage(User user, int page, Pagination<History> pagination) {
-        int    totalHistory = pagination.getItems().size();
-        String unformulated = "%s §fShowing entries: §7(page §c%s §7of §c%d §7- §c%d §7entries)";
-        user.sendMessage(String.format(unformulated, Sierra.PREFIX, page, pagination.totalPages(), totalHistory));
+        user.sendMessage(new ConfigValue("commands.history.header",
+                                         "{prefix} &fShowing entries: &7(page &c{current} &7of &c{total} &7- "
+                                         + "&c{entries} &7entries)", true
+        ).replacePrefix()
+                             .replace("{current}", String.valueOf(page))
+                             .replace("{total}", String.valueOf(pagination.totalPages()))
+                             .replace("{entries}", String.valueOf(pagination.getItems().size()))
+                             .colorize()
+                             .getMessageValue());
     }
 
     /**
@@ -126,14 +134,20 @@ public class HistoryCommand implements ISierraCommand {
      * @return The formatted history message.
      */
     private String createHistoryMessage(HistoryDocument historyDocument) {
-        return FormatUtils.formatColor(String.format(
-            "§7[%s] §c%s §7(%dms) -> §c%s §7(%s)",
-            historyDocument.formatTimestamp(),
-            historyDocument.username(),
-            historyDocument.ping(),
-            historyDocument.punishType().historyMessage(),
-            historyDocument.shortenDescription()
-        ));
+
+        return new ConfigValue(
+            "commands.history.entry",
+            "&7{timestamp} &c{username} &7({ping}ms) -> &c{punishType} &7({description})",
+            true
+        )
+            .replacePrefix()
+            .replace("{timestamp}", historyDocument.formatTimestamp())
+            .replace("{username}", historyDocument.username())
+            .replace("{ping}", String.valueOf(historyDocument.ping()))
+            .replace("{punishType}", historyDocument.punishType().historyMessage())
+            .replace("{description}", historyDocument.shortenDescription())
+            .colorize()
+            .getMessageValue();
     }
 
     /**
@@ -142,7 +156,12 @@ public class HistoryCommand implements ISierraCommand {
      * @param user The User object representing the user.
      */
     private void sendHelpSyntax(User user) {
-        user.sendMessage(Sierra.PREFIX + " §cInvalid usage, try /sierra history <page>");
+        user.sendMessage(
+            new ConfigValue("commands.history.invalid", "{prefix} &cInvalid usage, try /sierra history <page>",
+                            true
+            ).replacePrefix()
+                .colorize()
+                .getMessageValue());
     }
 
     /**

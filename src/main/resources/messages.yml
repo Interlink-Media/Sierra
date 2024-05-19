@@ -15,6 +15,11 @@ commands:
     toggle: "{prefix} &fYou have {status} &fthe alerts messages"
   mitigation:
     toggle: "{prefix} &fYou have {status} &fthe mitigation messages"
+  history:
+    empty: "{prefix} &cNo history available"
+    invalid: "{prefix} &cInvalid usage, try /sierra history <page>"
+    header: "{prefix} &fShowing entries: &7(page &c{current} &7of &c{total} &7- &c{entries} &7entries)"
+    entry: "&7{timestamp} &c{username} &7({ping}ms) -> &c{punishType} &7({description})"
 
 layout:
 
