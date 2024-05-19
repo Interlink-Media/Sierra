@@ -157,8 +157,7 @@ public class SierraLoader extends JavaPlugin {
      */
     private void downloadJar() {
         try {
-            URL url = formURL();
-            writeInputStreamFromURL(url);
+            writeInputStreamFromURL(formURL());
         } catch (IOException e) {
             getLogger().warning(
                 "Error occurred while downloading JAR file or writing it into a resource from URL: " + e.getMessage());
@@ -173,10 +172,9 @@ public class SierraLoader extends JavaPlugin {
      * @return the latest release download URL as a String, or null if there was an error
      */
     public static String getLatestReleaseDownloadUrl(String repoOwner, String repoName) {
-        String apiUrl = String.format("https://api.github.com/repos/%s/%s/releases/latest", repoOwner, repoName);
         try {
-            StringBuilder responseBuilder = executeGETRequest(apiUrl);
-            return getDownloadURLFromResponse(responseBuilder);
+            return getDownloadURLFromResponse(executeGETRequest(
+                String.format("https://api.github.com/repos/%s/%s/releases/latest", repoOwner, repoName)));
         } catch (IOException e) {
             e.printStackTrace();
             return null;

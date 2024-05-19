@@ -7,6 +7,7 @@ import de.feelix.sierraapi.user.UserRepository;
 /**
  * The SierraApi interface represents an API for accessing the functionality provided by the Sierra plugin.
  */
+@SuppressWarnings("unused")
 public interface SierraApi {
 
     /**

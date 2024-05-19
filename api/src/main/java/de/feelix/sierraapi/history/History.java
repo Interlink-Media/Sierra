@@ -6,6 +6,7 @@ import de.feelix.sierraapi.violation.PunishType;
  * The History interface represents the history of a user's actions or punishments. It includes information such as
  * the username, description, punishment type, and timestamp.
  */
+@SuppressWarnings("unused")
 public interface History {
 
     /**
