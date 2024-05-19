@@ -8,6 +8,7 @@ import de.feelix.sierra.check.CheckManager;
 import de.feelix.sierra.manager.storage.alert.AbstractAlertSetting;
 import de.feelix.sierra.manager.storage.processor.*;
 import de.feelix.sierra.utilities.FormatUtils;
+import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierraapi.timing.TimingHandler;
 import de.feelix.sierraapi.user.settings.AlertSettings;
 import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
@@ -247,11 +248,9 @@ public class PlayerData implements SierraUser {
         SierraDataManager.BANS++;
         FoliaScheduler.getGlobalRegionScheduler().run(Sierra.getPlugin(), o -> Bukkit.dispatchCommand(
             Bukkit.getConsoleSender(),
-            Sierra.getPlugin()
-                .getSierraConfigEngine()
-                .config()
-                .getString("punish-command", "ban {username} Crashing")
+            new ConfigValue("punish-command", "ban {username} Crashing", false)
                 .replace("{username}", this.user.getName())
+                .getMessageValue()
         ));
     }
 

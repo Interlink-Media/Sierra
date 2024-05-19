@@ -1,0 +1,26 @@
+layout:
+
+  # The prefix for all plugin messages
+  prefix: "&8▎ &cSierra &8▏"
+
+  # Notification message for detecting violations
+  detection-message:
+
+    # This message is being sent to all players having the sierra.command.use permission,
+    # once someone is being suspected of crashing.
+    # The {prefix} placeholder gets replaced with the plugin`s prefix
+    # The {username} placeholder gets replaced with the offender's name.
+    # The {mitigation} placeholder gets replaced with the checks punishment result
+    # The {checkname} placeholder gets replaced with the check name
+    # The {violations} placeholder gets replaced with the checks violation count
+    staff-alert: "{prefix} &c{username} &8┃ &f{mitigation} &c{checkname} &8┃ &cx{violations}"
+
+    # What should the notice be in each alert?
+    alert-command-note: "&fClick to teleport"
+
+    # What should the command be that is executed when the message is clicked?
+    # The variable {username} can be used as a substitute for the player's name
+    alert-command: "/tp {username}"
+
+    # Hover information on mitigation / punishment
+    alert-content: " &7Username: &c{username}{n} &7Version: &c{clientVersion}{n} &7Brand: &c{brand}{n} &7Exist since: &c{ticksExisted}{n} &7Game mode: &c{gameMode}{n} &7Tag: &c{tags}{n} &7Debug info: &c{debugInfo}{n}{n} {alertNote}"

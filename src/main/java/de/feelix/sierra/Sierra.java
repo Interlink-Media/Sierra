@@ -11,6 +11,7 @@ import de.feelix.sierra.manager.discord.SierraDiscordGateway;
 import de.feelix.sierra.manager.server.SierraServerManager;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.utilities.Ticker;
+import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierra.utilities.update.UpdateChecker;
 import de.feelix.sierraapi.SierraApi;
 import de.feelix.sierraapi.SierraApiAccessor;
@@ -23,7 +24,6 @@ import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
@@ -218,7 +218,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      */
     private void setupPunishmentConfig() {
         this.punishmentConfig = PunishmentConfig.valueOf(
-            this.sierraConfigEngine.config().getString("internal-punishment-config", "HARD"));
+            new ConfigValue("internal-punishment-config", "HARD", false).getMessageValue());
     }
 
     /**
@@ -296,8 +296,8 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * The prefix is translated using the '&' character as a color code indicator.
      */
     public void setPrefix() {
-        PREFIX = ChatColor.translateAlternateColorCodes('&', sierraConfigEngine.config()
-            .getString("layout.prefix", "&8▎ &cSierra &8▏"));
+        PREFIX = new ConfigValue("layout.prefix", "&8▎ &cSierra &8▏", true)
+            .colorize().getMessageValue();
     }
 
     /**

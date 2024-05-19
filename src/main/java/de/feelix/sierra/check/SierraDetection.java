@@ -4,11 +4,11 @@ import com.github.retrooper.packetevents.event.ProtocolPacketEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.violation.ViolationDocument;
-import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.discord.SierraDiscordGateway;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.utilities.FormatUtils;
+import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.impl.SierraCheck;
 import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
@@ -20,10 +20,8 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.events.impl.AsyncUserDetectionEvent;
 import de.feelix.sierraapi.violation.PunishType;
-import org.bukkit.ChatColor;
 
 import java.util.Collection;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -230,7 +228,7 @@ public class SierraDetection implements SierraCheck {
      */
     private void logToConsole(String message) {
         Logger logger = Sierra.getPlugin().getLogger();
-        logger.log(Level.INFO, message);
+        logger.info(message);
     }
 
 
@@ -241,42 +239,30 @@ public class SierraDetection implements SierraCheck {
      * @param violationDocument The ViolationDocument containing information about the violation.
      */
     protected void alert(User user, ViolationDocument violationDocument) {
-        SierraConfigEngine sierraConfig = Sierra.getPlugin().getSierraConfigEngine();
 
         PunishType punishType    = violationDocument.getPunishType();
-        String     staffAlert    = formatStaffAlertMessage(user, punishType, sierraConfig);
+        String     staffAlert    = formatStaffAlertMessage(user, punishType);
         String     username      = this.playerData.getUser().getName();
         String     clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
 
-        StringBuilder content = new StringBuilder()
-            .append(" §7Username: §c")
-            .append(username)
-            .append("\n")
-            .append(" §7Version: §c")
-            .append(clientVersion)
-            .append("\n")
-            .append(" §7Brand: §c")
-            .append(playerData.getBrand())
-            .append("\n")
-            .append(" §7Exist since: §c")
-            .append(this.playerData.getTicksExisted())
-            .append(" ticks\n")
-            .append(" §7Game mode: §c")
-            .append(this.playerData.getGameMode().name())
-            .append("\n")
-            .append(" §7Tag: §c")
-            .append(this.friendlyName.toLowerCase())
-            .append("\n")
-            .append(" §7Debug info: §c")
-            .append(FormatUtils.shortenString(violationDocument.getDebugInformation()))
-            .append("\n")
-            .append("\n")
-            .append(ChatColor.translateAlternateColorCodes(
-                '&',
-                getAlertNote(sierraConfig)
-            ));
+        String content = new ConfigValue(
+            "layout.detection-message.alert-content",
+            " &7Username: &c{username}{n} &7Version: &c{clientVersion}{n} &7Brand: &c{brand}{n} &7Exist since: "
+            + "&c{ticksExisted} ticks{n} &7Game mode: &c{gameMode}{n} &7Tag: &c{tags}{n} &7Debug info: "
+            + "&c{debugInfo}{n}{n} {alertNote}",
+            true
+        )
+            .replace("{username}", username)
+            .replace("{clientVersion}", clientVersion)
+            .replace("{brand}", this.playerData.brand())
+            .replace("{ticksExisted}", this.playerData.ticksExisted() + " ticks")
+            .replace("{gameMode}", this.playerData.gameMode().name())
+            .replace("{tags}", this.friendlyName.toLowerCase())
+            .replace("{debugInfo}", FormatUtils.shortenString(violationDocument.getDebugInformation()))
+            .replace("{alertNote}", getAlertNote())
+            .stripped().colorize().replacePrefix().getMessageValue();
 
-        String command = getPunishmentCommand(sierraConfig, username);
+        String command = getPunishmentCommand(username);
 
         Collection<PlayerData> playerDataList = Sierra.getPlugin().getSierraDataManager().getPlayerData().values();
 
@@ -287,7 +273,7 @@ public class SierraDetection implements SierraCheck {
                         LegacyComponentSerializer.legacy('&')
                             .deserialize(staffAlert)
                             .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, command))
-                            .hoverEvent(HoverEvent.showText(Component.text(content.toString()))));
+                            .hoverEvent(HoverEvent.showText(Component.text(content))));
                 }
             }
         } else {
@@ -297,7 +283,7 @@ public class SierraDetection implements SierraCheck {
                         LegacyComponentSerializer.legacy('&')
                             .deserialize(staffAlert)
                             .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.RUN_COMMAND, command))
-                            .hoverEvent(HoverEvent.showText(Component.text(content.toString()))));
+                            .hoverEvent(HoverEvent.showText(Component.text(content))));
                 }
             }
         }
@@ -306,45 +292,45 @@ public class SierraDetection implements SierraCheck {
     /**
      * Retrieves the alert note from the Sierra configuration.
      *
-     * @param sierraConfig The SierraConfigEngine object for accessing the configuration options.
      * @return The alert note from the configuration.
      */
-    private String getAlertNote(SierraConfigEngine sierraConfig) {
-        return sierraConfig.config().getString("layout.detection-message.alert-command-note", "&fClick to teleport");
+    private String getAlertNote() {
+        return new ConfigValue(
+            "layout.detection-message.alert-command-note",
+            "&fClick to teleport", true
+        ).colorize().replacePrefix().getMessageValue();
     }
 
     /**
      * Retrieves the punishment command for a given user from the Sierra configuration.
      *
-     * @param sierraConfig The SierraConfigEngine object for accessing the configuration options.
-     * @param username     The username of the user.
+     * @param username The username of the user.
      * @return The punishment command for the user.
      */
-    private String getPunishmentCommand(SierraConfigEngine sierraConfig, String username) {
-        return sierraConfig.config()
-            .getString("layout.detection-message.alert-command", "/tp {username}")
-            .replace("{username}", username);
+    private String getPunishmentCommand(String username) {
+        return new ConfigValue(
+            "layout.detection-message.alert-command",
+            "/tp {username}", true
+        ).replace("{username}", username).getMessageValue();
     }
 
     /**
      * Formats the staff alert message with the given user, punish type, and SierraConfigEngine.
      *
-     * @param user         The User object representing the player.
-     * @param punishType   The PunishType enum representing the type of punishment.
-     * @param sierraConfig The SierraConfigEngine object for accessing configuration options.
+     * @param user       The User object representing the player.
+     * @param punishType The PunishType enum representing the type of punishment.
      * @return The formatted staff alert message.
      */
-    private String formatStaffAlertMessage(User user, PunishType punishType, SierraConfigEngine sierraConfig) {
-        String staffAlertTemplate = sierraConfig.config().getString(
+    private String formatStaffAlertMessage(User user, PunishType punishType) {
+
+        return new ConfigValue(
             "layout.detection-message.staff-alert",
-            "{prefix} &c{username} &8┃ &f{mitigation} &c{checkname} &8┃ &cx{violations}"
-        );
-        return staffAlertTemplate
-            .replace("{prefix}", Sierra.PREFIX)
+            "{prefix} &c{username} &8┃ &f{mitigation} &c{checkname} &8┃ &cx{violations}", true
+        ).colorize().replacePrefix()
             .replace("{username}", user.getName())
             .replace("{mitigation}", punishType.friendlyMessage())
             .replace("{checkname}", this.friendlyName)
-            .replace("{violations}", String.valueOf(violations));
+            .replace("{violations}", String.valueOf(violations)).getMessageValue();
     }
 
     /**

@@ -36,6 +36,8 @@ public class SierraConfigEngine {
     public SierraConfigEngine() {
         //noinspection unused
         YamlConfiguration mainConfig = config();
+        //noinspection unused
+        YamlConfiguration messages   = messages();
     }
 
     /**
@@ -47,6 +49,16 @@ public class SierraConfigEngine {
      */
     public YamlConfiguration config() {
         return getFileFromCache("sierra.yml");
+    }
+
+    /**
+     * The messages method retrieves the "messages.yml" file from the cache.
+     * If the file is not already in the cache, it will be loaded and added to the cache.
+     *
+     * @return A YamlConfiguration object representing the "messages.yml" file
+     */
+    public YamlConfiguration messages() {
+        return getFileFromCache("messages.yml");
     }
 
     /**
