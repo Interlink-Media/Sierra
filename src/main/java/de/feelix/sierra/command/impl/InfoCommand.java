@@ -1,7 +1,7 @@
 package de.feelix.sierra.command.impl;
 
 import com.github.retrooper.packetevents.protocol.player.User;
-import de.feelix.sierra.Sierra;
+import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierraapi.check.impl.SierraCheck;
 import de.feelix.sierraapi.commands.*;
 import de.feelix.sierraapi.user.impl.SierraUser;
@@ -46,7 +46,11 @@ public class InfoCommand implements ISierraCommand {
      * @param sierraUser the SierraUser object representing the user executing the command
      */
     private void sendPlayerInfoMessages(User user, String playerName, SierraUser sierraUser) {
-        user.sendMessage(Sierra.PREFIX + " §7Information for §c" + playerName + "§7:");
+        user.sendMessage(new ConfigValue(
+            "commands.info.header",
+            "{prefix} &7Information for &c{playerName}&7:",
+            true
+        ).replacePrefix().replace("{playerName}", playerName).colorize().getMessageValue());
         sendUserData(user, sierraUser);
         sendCheckInformation(user, sierraUser);
     }
@@ -58,12 +62,24 @@ public class InfoCommand implements ISierraCommand {
      * @param sierraUser the SierraUser object representing the user executing the command
      */
     private void sendUserData(User user, SierraUser sierraUser) {
-        user.sendMessage(Sierra.PREFIX + " §7Version: §c" + sierraUser.version());
-        user.sendMessage(Sierra.PREFIX + " §7Client: §c" + sierraUser.brand());
-        user.sendMessage(Sierra.PREFIX + " §7Ping: §c" + sierraUser.ping() + " ms");
-        user.sendMessage(Sierra.PREFIX + " §7Game mode: §c" + sierraUser.gameMode().name());
-        user.sendMessage(Sierra.PREFIX + " §7Ticks existed: §c" + sierraUser.ticksExisted());
-        user.sendMessage(Sierra.PREFIX + " §c§lCheck information");
+
+        user.sendMessage(new ConfigValue(
+            "commands.info.information",
+            "{prefix} &7Version: &c{clientVersion}{n}{prefix} &7Client: "
+            + "&c{brand}{n}{prefix} &7Ping: "
+            + "&c{ping}ms{n}{prefix} &7Game mode: &c{gameMode}{n}{prefix} &7Ticks "
+            + "existed: "
+            + "&c{ticksExisted}{n}&c&lCheck information",
+            true
+        )
+                             .replacePrefix()
+                             .replace("{clientVersion}", sierraUser.version())
+                             .replace("{brand}", sierraUser.brand())
+                             .replace("{ping}", sierraUser.ping() + " ms")
+                             .replace("{gameMode}", sierraUser.gameMode().name())
+                             .replace("{ticksExisted}", sierraUser.ticksExisted() + " ticks")
+                             .colorize()
+                             .getMessageValue());
     }
 
     /**
@@ -75,15 +91,22 @@ public class InfoCommand implements ISierraCommand {
     private void sendCheckInformation(User user, SierraUser sierraUser) {
         long count = getPlayerDetectionCount(sierraUser);
         if (count == 0) {
-            user.sendMessage(Sierra.PREFIX + " §cNo detections");
+            user.sendMessage(new ConfigValue(
+                "commands.info.no-detections",
+                "{prefix} &cNo detections",
+                true
+            ).replacePrefix().colorize().getMessageValue());
             return;
         }
         for (SierraCheck sierraCheck : sierraUser.checkRepository().availableChecks()) {
             if (sierraCheck.violations() > 0) {
-                user.sendMessage(
-                    String.format("%s  §8- §7%s: §c%s", Sierra.PREFIX, sierraCheck.checkType().getFriendlyName(),
-                                  sierraCheck.violations()
-                    ));
+                user.sendMessage(new ConfigValue(
+                    "commands.info.check-info",
+                    "{prefix}  &8- &7{checkType}: &c{violations}",
+                    true
+                ).replacePrefix().replace("{checkType}", sierraCheck.checkType().getFriendlyName())
+                                     .replace("{violations}", String.valueOf(sierraCheck.violations())
+                                     ).colorize().getMessageValue());
             }
         }
     }
@@ -110,7 +133,9 @@ public class InfoCommand implements ISierraCommand {
      * @param user the User object representing the user to send the message to
      */
     private void sendHelpSyntax(User user) {
-        user.sendMessage(Sierra.PREFIX + " §cInvalid usage, try /sierra info <name>");
+        user.sendMessage(new ConfigValue("commands.info.invalid", "{prefix} &cInvalid usage, try /sierra info <name>",
+                                         true
+        ).replacePrefix().colorize().getMessageValue());
     }
 
     /**
