@@ -21,8 +21,14 @@ public class CommandHelper {
 
         String pluginVersionMessage = createVersionMessage(sierraPlugin, user);
 
-        user.sendMessage(sierraPrefix + " §fRunning §cSierra " + pluginVersionMessage);
-        user.sendMessage(sierraPrefix + " §fMore info at §cdiscord.gg/squarecode");
+        user.sendMessage(sierraPrefix + " §fRunning " + Sierra.getPlugin()
+            .getSierraConfigEngine()
+            .messages()
+            .getString("layout.offset-color", "§c") + "Sierra " + pluginVersionMessage);
+        user.sendMessage(sierraPrefix + " §fMore info at {offset-color}discord.gg/squarecode".replace(
+            "{offset-color}",
+            Sierra.getPlugin().getSierraConfigEngine().messages().getString("layout.offset-color", "§c")
+        ));
     }
 
     /**

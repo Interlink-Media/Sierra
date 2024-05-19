@@ -33,12 +33,16 @@ commands:
     invalid: "{prefix} &cInvalid usage, try /sierra info <name>"
     no-detections: "{prefix} &cNo detections"
     check-info: "{prefix}  &8- &7{checkType}: &c{violations}"
-    information: "{prefix} &7Version: &c{clientVersion}{n}{prefix} &7Client: &c{brand}{n}{prefix} &7Ping: &c{ping}ms{n}{prefix} &7Game mode: &c{gameMode}{n}{prefix} &7Ticks existed: &c{ticksExisted}{n}&c&lCheck information"
+    information: "{prefix} &7Version: &c{clientVersion}{n}{prefix} &7Client: &c{brand}{n}{prefix} &7Ping: &c{ping}ms{n}{prefix} &7Game mode: &c{gameMode}{n}{prefix} &7Ticks existed: &c{ticksExisted}{n}{prefix} &c&lCheck information"
 
 layout:
 
   # The prefix for all plugin messages
   prefix: "&8▎ &cSierra &8▏"
+
+  # Use this field to recolor the remaining accent colors that are not listed here.
+  # Difference here a § must be used instead of an & sign.
+  offset-color: "§c"
 
   # Notification message for detecting violations
   detection-message:

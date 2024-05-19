@@ -55,7 +55,7 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
      * <p>
      * The message will be: "John §cError§7: §fAn error occurred."
      */
-    private static final String MESSAGE_FORMAT = "%s §c%s§7: §f%s";
+    private static final String MESSAGE_FORMAT = "%s {offset-color}%s§7: §f%s";
 
     /**
      * The MESSAGE_PREFIX variable represents the prefix for messages sent by the Sierra plugin.
@@ -214,9 +214,15 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
                 String description = iSierraCommand.description();
 
                 if (iSierraCommand.permission() == null) {
-                    commandSender.sendMessage(String.format(MESSAGE_FORMAT, Sierra.PREFIX, s, description));
+                    commandSender.sendMessage(String.format(MESSAGE_FORMAT.replace("{offset-color}", Sierra.getPlugin()
+                        .getSierraConfigEngine()
+                        .messages()
+                        .getString("layout.offset-color", "§c")), Sierra.PREFIX, s, description));
                 } else if (commandSender.hasPermission(iSierraCommand.permission())) {
-                    commandSender.sendMessage(String.format(MESSAGE_FORMAT, Sierra.PREFIX, s, description));
+                    commandSender.sendMessage(String.format(MESSAGE_FORMAT.replace("{offset-color}", Sierra.getPlugin()
+                        .getSierraConfigEngine()
+                        .messages()
+                        .getString("layout.offset-color", "§c")), Sierra.PREFIX, s, description));
                 }
             }
         });

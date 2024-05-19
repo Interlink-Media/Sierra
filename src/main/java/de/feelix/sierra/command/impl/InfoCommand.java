@@ -69,7 +69,7 @@ public class InfoCommand implements ISierraCommand {
             + "&c{brand}{n}{prefix} &7Ping: "
             + "&c{ping}ms{n}{prefix} &7Game mode: &c{gameMode}{n}{prefix} &7Ticks "
             + "existed: "
-            + "&c{ticksExisted}{n}&c&lCheck information",
+            + "&c{ticksExisted}{n}{prefix} &c&lCheck information",
             true
         )
                              .replacePrefix()
@@ -79,6 +79,7 @@ public class InfoCommand implements ISierraCommand {
                              .replace("{gameMode}", sierraUser.gameMode().name())
                              .replace("{ticksExisted}", sierraUser.ticksExisted() + " ticks")
                              .colorize()
+                             .stripped()
                              .getMessageValue());
     }
 
