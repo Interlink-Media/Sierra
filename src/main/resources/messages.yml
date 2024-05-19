@@ -11,28 +11,99 @@
 # Learn more at https://discord.gg/squarecode/
 
 commands:
+
   alerts:
+    # Message when toggling alert notifications
+    # {prefix}: Message prefix
+    # {status}: Status of alerts (enabled/disabled)
     toggle: "{prefix} &fYou have {status} &fthe alerts messages"
+
   mitigation:
+    # Message when toggling mitigation messages
+    # {prefix}: Message prefix
+    # {status}: Status of mitigation messages (enabled/disabled)
     toggle: "{prefix} &fYou have {status} &fthe mitigation messages"
+
   history:
+    # Message when no history entries are available
+    # {prefix}: Message prefix
     empty: "{prefix} &cNo history available"
+
+    # Message for invalid usage of the history command
+    # {prefix}: Message prefix
     invalid: "{prefix} &cInvalid usage, try /sierra history <page>"
+
+    # Header for history pages
+    # {prefix}: Message prefix
+    # {current}: Current page number
+    # {total}: Total number of pages
+    # {entries}: Number of entries on the current page
     header: "{prefix} &fShowing entries: &7(page &c{current} &7of &c{total} &7- &c{entries} &7entries)"
+
+    # Single history entry
+    # {timestamp}: Timestamp of the entry
+    # {username}: Username
+    # {ping}: User's ping in milliseconds
+    # {punishType}: Type of punishment
+    # {description}: Description of the punishment
     entry: "&7{timestamp} &c{username} &7({ping}ms) -> &c{punishType} &7({description})"
+
   reload:
+    # Success message for reloading the configuration
+    # {prefix}: Message prefix
     success: "{prefix} &fConfiguration reloaded &asuccessfully"
+
   monitor:
+    # Header for the performance monitor
+    # {prefix}: Message prefix
     header: "{prefix} &fPerformance monitor &7(Your data)"
+
+    # Message when no data is found
+    # {prefix}: Message prefix
     nothing-found: "{prefix} &cNo data found!"
+
+    # Header for packet data
+    # {prefix}: Message prefix
     packets-header: "{prefix} &c&lPackets:"
+
+    # Header for environment data
+    # {prefix}: Message prefix
     environment-header: "{prefix} &c&lEnvironment:"
+
+    # Entry in the performance monitor
+    # {prefix}: Message prefix
+    # {title}: Title of the entry
+    # {delay}: Delay in milliseconds
     entry: "{prefix}  &8- &f{title} &7({delay}ms)"
+
   info:
+    # Header for player information
+    # {prefix}: Message prefix
+    # {playerName}: Player's name
     header: "{prefix} &7Information for &c{playerName}&7:"
+
+    # Message for invalid usage of the info command
+    # {prefix}: Message prefix
     invalid: "{prefix} &cInvalid usage, try /sierra info <name>"
+
+    # Message when no detections are found
+    # {prefix}: Message prefix
     no-detections: "{prefix} &cNo detections"
+
+    # Information about checks and violations
+    # {prefix}: Message prefix
+    # {checkType}: Type of check
+    # {violations}: Number of violations
     check-info: "{prefix}  &8- &7{checkType}: &c{violations}"
+
+    # Detailed information about a player
+    # {prefix}: Message prefix
+    # {clientVersion}: Client version
+    # {brand}: Client brand
+    # {ping}: Player's ping in milliseconds
+    # {gameMode}: Player's game mode
+    # {ticksExisted}: Number of ticks the player has existed
+    # {n}: New line
     information: "{prefix} &7Version: &c{clientVersion}{n}{prefix} &7Client: &c{brand}{n}{prefix} &7Ping: &c{ping}ms{n}{prefix} &7Game mode: &c{gameMode}{n}{prefix} &7Ticks existed: &c{ticksExisted}{n}{prefix} &c&lCheck information"
 
 layout:
