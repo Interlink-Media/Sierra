@@ -517,7 +517,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             String channelName = wrapper.getChannelName();
 
             if (channelName.equalsIgnoreCase("MC|ItemName") && !playerData.isHasOpenAnvil()) {
-                violation(event, createViolationKick("Send anvil name, without anvil", PunishType.KICK));
+                violation(event, createViolation("Send anvil name, without anvil", PunishType.KICK));
             }
 
             if (channelName.equals("MC|BEdit")
@@ -865,7 +865,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      */
     public void checkGenericNBTLimit(PacketReceiveEvent event, ItemStack itemStack) {
 
-        if(!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("generic-nbt-limit", true)) {
+        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("generic-nbt-limit", true)) {
             return;
         }
 
@@ -900,15 +900,15 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         if (isAmountInvalid(vanillaMapping, attributeMapper, amount)) {
             violation(
                 event,
-                createViolationKick("Invalid attribute modifier. Amount: " + amount, PunishType.KICK)
+                createViolation("Invalid attribute modifier. Amount: " + amount, PunishType.KICK)
             );
         } else if (!vanillaMapping && isSierraModifierInvalid(amount)) {
             violation(
                 event,
-                createViolationKick("Sierra attribute modifier. Amount: " + amount, PunishType.KICK)
+                createViolation("Sierra attribute modifier. Amount: " + amount, PunishType.KICK)
             );
         } else if (FormatUtils.checkDoublePrecision(amount)) {
-            violation(event, createViolationKick("Double is to precisely", PunishType.KICK));
+            violation(event, createViolation("Double is to precisely", PunishType.KICK));
         }
     }
 
@@ -961,17 +961,17 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         NBTList<NBTCompound> items = nbt.getTagListOfTypeOrNull("Items", NBTCompound.class);
         if (items != null) {
             if (items.size() > 64) {
-                violation(event, createViolationKick("Too big items list", PunishType.MITIGATE));
+                violation(event, createViolation("Too big items list", PunishType.MITIGATE));
             }
 
             for (NBTCompound tag : items.getTags()) {
                 if (tag.getStringTagOrNull("id") != null) {
                     //noinspection DataFlowIssue
                     if (tag.getStringTagOrNull("id").getValue().equalsIgnoreCase("minecraft:air")) {
-                        violation(event, createViolationKick("Invalid item: air", PunishType.MITIGATE));
+                        violation(event, createViolation("Invalid item: air", PunishType.MITIGATE));
                     } else //noinspection DataFlowIssue
                         if (tag.getStringTagOrNull("id").getValue().equalsIgnoreCase("minecraft:bundle")) {
-                            violation(event, createViolationKick("Invalid item: bundle", PunishType.MITIGATE));
+                            violation(event, createViolation("Invalid item: bundle", PunishType.MITIGATE));
                         }
                 }
             }
@@ -986,7 +986,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     NBTString potion = tag1.getStringTagOrNull("Potion");
                     if (potion != null) {
                         if (potion.getValue().endsWith("empty")) {
-                            violation(event, createViolationKick(
+                            violation(event, createViolation(
                                 "Invalid projectile: empty",
                                 PunishType.MITIGATE
                             ));
@@ -1004,12 +1004,19 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
 
             //noinspection ConditionCoveredByFurtherCondition
             if (asInt == Integer.MIN_VALUE || asInt == Integer.MAX_VALUE || asInt < 0) {
-                violation(event, createViolationKick("Invalid custom model data: " + asInt, PunishType.MITIGATE));
+                violation(event, createViolation("Invalid custom model data: " + asInt, PunishType.MITIGATE));
             }
         }
     }
 
-    public ViolationDocument createViolationKick(String debugInformation, PunishType punishType) {
+    /**
+     * Create a violation document with the given debug information and punish type.
+     *
+     * @param debugInformation A string representing the debug information related to the violation.
+     * @param punishType       The type of punishment associated with the violation.
+     * @return A ViolationDocument object containing the debug information and punish type.
+     */
+    public ViolationDocument createViolation(String debugInformation, PunishType punishType) {
         return ViolationDocument.builder()
             .debugInformation(debugInformation)
             .punishType(punishType)
@@ -1423,7 +1430,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         NBTString customName = entityTag.getStringTagOrNull("CustomName");
         if (customName != null && customName.getValue().length() > 70) {
             violation(
-                event, createViolationKick(
+                event, createViolation(
                     "Invalid armor stand name length: " + customName.getValue().length(),
                     PunishType.MITIGATE
                 ));
@@ -1458,7 +1465,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 float armorStandRotation = tag.getAsFloat();
                 if (armorStandRotation < 0 || armorStandRotation > 360) {
                     violation(
-                        event, createViolationKick(
+                        event, createViolation(
                             "Invalid armor stand rotation: " + armorStandRotation,
                             PunishType.KICK
                         ));
@@ -1481,7 +1488,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 if (skullOwner != null) {
                     String name = skullOwner.getValue();
                     if (name.length() < 3 || name.length() > 16 || !name.matches("^[a-zA-Z0-9_\\-.]{3,16}$")) {
-                        violation(event, createViolationKick(
+                        violation(event, createViolation(
                             "Invalid skull owner name: " + name,
                             PunishType.KICK
                         ));
@@ -1507,7 +1514,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 double value = tag.getAsDouble();
                 if (value < -360.0 || value > 360.0) {
                     violation(
-                        event, createViolationKick(
+                        event, createViolation(
                             String.format("Invalid rotation, limb: %s[%s]", limb, value),
                             PunishType.KICK
                         ));
@@ -1538,7 +1545,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
         }
         List<NBTCompound> tags = tagOrNull.getTags();
         if (tags.size() > MAX_BANNER_LAYERS) {
-            createViolationKick(event, "Too many banner layers");
+            createViolation(event, "Too many banner layers");
             return;
         }
         for (NBTCompound tag : tags) {
@@ -1555,11 +1562,11 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      */
     private void validatePattern(PacketReceiveEvent event, NBTString pattern) {
         if (pattern == null || pattern.getValue() == null) {
-            createViolationKick(event, "Banner pattern is null");
+            createViolation(event, "Banner pattern is null");
             return;
         }
         if (pattern.getValue().length() > MAX_PATTERN_LENGTH) {
-            createViolationKick(event, "Banner pattern is too long: " + pattern.getValue().length());
+            createViolation(event, "Banner pattern is too long: " + pattern.getValue().length());
         }
     }
 
@@ -1572,16 +1579,16 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      */
     private void validateColor(PacketReceiveEvent event, NBTNumber color) {
         if (color == null) {
-            createViolationKick(event, "Banner color is null");
+            createViolation(event, "Banner color is null");
             return;
         }
         try {
             int rgb = color.getAsInt();
             if (rgb < MIN_VALID_COLOR || rgb > MAX_VALID_COLOR) {
-                createViolationKick(event, "Banner color is invalid: " + rgb);
+                createViolation(event, "Banner color is invalid: " + rgb);
             }
         } catch (Exception exception) {
-            createViolationKick(event, "BANNER: " + exception.getMessage());
+            createViolation(event, "BANNER: " + exception.getMessage());
         }
     }
 
@@ -1591,7 +1598,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * @param event            the PacketReceiveEvent associated with the violation
      * @param debugInformation the debug information for the violation
      */
-    private void createViolationKick(PacketReceiveEvent event, String debugInformation) {
+    private void createViolation(PacketReceiveEvent event, String debugInformation) {
         violation(event, ViolationDocument.builder()
             .debugInformation(debugInformation)
             .punishType(PunishType.KICK)
