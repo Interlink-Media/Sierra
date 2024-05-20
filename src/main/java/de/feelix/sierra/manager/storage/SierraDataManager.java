@@ -9,6 +9,7 @@ import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.history.HistoryDocument;
 import de.feelix.sierra.utilities.update.UpdateChecker;
+import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.events.impl.AsyncHistoryCreateEvent;
 import de.feelix.sierraapi.history.History;
 import de.feelix.sierraapi.history.HistoryType;
@@ -54,6 +55,31 @@ public class SierraDataManager implements UserRepository {
     private final ArrayList<History> histories = new ArrayList<>();
 
     /**
+     * violationCount is a static variable of type HashMap<String, Integer>.
+     * It represents a map that stores the count of violations for different types of checks.
+     * The keys in the map are the types of checks, represented as strings.
+     * The values in the map are the count of violations for each check type, represented as integers.
+     * <p>
+     * Example usage:
+     * <p>
+     * // Create a new instance of a HashMap
+     * HashMap<String, Integer> violationCount = new HashMap<>();
+     * <p>
+     * // Add a violation count for a check type
+     * violationCount.put("Check Type 1", 5);
+     * <p>
+     * // Increment the violation count for a check type
+     * violationCount.put("Check Type 2", violationCount.getOrDefault("Check Type 2", 0) + 1);
+     * <p>
+     * // Get the violation count for a check type
+     * int count = violationCount.getOrDefault("Check Type 1", 0);
+     * <p>
+     * // Remove a check type and its violation count
+     * violationCount.remove("Check Type 2");
+     */
+    public static HashMap<String, Integer> violationCount = new HashMap<>();
+
+    /**
      * The KICKS variable represents the number of kicks in this session
      * <p>
      * Note: KICKS is a static variable which means it is shared across all instances
@@ -67,7 +93,7 @@ public class SierraDataManager implements UserRepository {
      * Note: BANS is a static variable which means it is shared across all instances
      * of the containing class SierraDataManager.
      */
-    public static int BANS  = 0;
+    public static int BANS = 0;
 
     /**
      * The DataManager function initializes the packet priority.
@@ -174,6 +200,22 @@ public class SierraDataManager implements UserRepository {
      */
     private boolean playerCanUpdate(Player player) {
         return player.hasPermission("sierra.update") || player.isOp();
+    }
+
+    /**
+     * Adds a kick to the violation count for the specified check type.
+     * <p>
+     * If the check type is not already in the violation count map, a new entry is added with a count of 1.
+     * If the check type is already in the violation count map, the count is incremented by 1.
+     *
+     * @param checkType the type of check to add a kick for
+     */
+    public void addKick(CheckType checkType) {
+        if (!violationCount.containsKey(checkType.getFriendlyName())) {
+            violationCount.put(checkType.getFriendlyName(), 1);
+            return;
+        }
+        violationCount.put(checkType.getFriendlyName(), violationCount.get(checkType.getFriendlyName()) + 1);
     }
 
     /**

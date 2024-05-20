@@ -191,6 +191,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
 
         metrics.addCustomChart(new Metrics.SingleLineChart("bans", () -> SierraDataManager.BANS));
         metrics.addCustomChart(new Metrics.SingleLineChart("kicks", () -> SierraDataManager.KICKS));
+        metrics.addCustomChart(new Metrics.AdvancedPie("checktypes", () -> SierraDataManager.violationCount));
 
         PacketEvents.getAPI().getEventManager().registerListener(new PacketListener());
         PacketEvents.getAPI().init();

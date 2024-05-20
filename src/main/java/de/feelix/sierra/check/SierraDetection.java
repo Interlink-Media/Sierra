@@ -137,6 +137,7 @@ public class SierraDetection implements SierraCheck {
         User user = event.getUser();
         consoleLog(user, violationDocument);
         alert(user, violationDocument);
+        Sierra.getPlugin().getSierraDataManager().addKick(this.checkType());
 
         if (violationDocument.punishType() != PunishType.MITIGATE) {
 

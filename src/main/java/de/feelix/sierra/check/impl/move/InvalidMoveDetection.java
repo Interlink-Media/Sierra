@@ -91,19 +91,19 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
     private int buffer = 0;
 
     /**
-     * Last known X coordinate.
+     * Represents the last known location of an entity.
+     * <p>
+     * This variable stores the location object that represents the last known coordinates
+     * of the entity. It is updated whenever the entity's location changes.
+     * </p>
+     * <p>
+     * The location object contains information such as the world, coordinates (x, y, z),
+     * and orientation (yaw, pitch) of the entity.
+     * </p>
+     *
+     * @see Location
      */
-    private Double lastX;
-
-    /**
-     * Last known Y coordinate.
-     */
-    private Double lastY;
-
-    /**
-     * Last known Z coordinate.
-     */
-    private Double lastZ;
+    private Location lastLocation;
 
     /**
      * Constant representing a special value.
@@ -193,12 +193,18 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
         Vector3d position = location.getPosition();
         double   chunkId  = computeChunkId(position);
 
+        if (this.lastLocation != null) {
+            checkDelta(position, event);
+        }
+
         sortOutTraveledChunks(chunkId, event);
         lastChunkId = chunkId;
 
         checkForBorder(position, event);
-        checkDelta(position, event);
         sortOutExtremeValues(location, event);
+
+        this.lastLocation = location;
+
         getPlayerData().getTimingProcessor().getMovementTask().end();
     }
 
@@ -210,22 +216,19 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      */
     private void checkDelta(Vector3d position, PacketReceiveEvent event) {
 
-        if (lastX != null && this.lastY != null && lastZ != null) {
-            double deltaX = Math.max(position.getX(), this.lastX) - Math.min(position.getX(), this.lastX);
-            double deltaY = Math.max(position.getY(), this.lastY) - Math.min(position.getY(), this.lastY);
-            double deltaZ = Math.max(position.getZ(), this.lastZ) - Math.min(position.getZ(), this.lastZ);
+        double deltaX =
+            Math.max(position.getX(), this.lastLocation.getX()) - Math.min(position.getX(), this.lastLocation.getX());
+        double deltaY =
+            Math.max(position.getY(), this.lastLocation.getY()) - Math.min(position.getY(), this.lastLocation.getY());
+        double deltaZ =
+            Math.max(position.getZ(), this.lastLocation.getZ()) - Math.min(position.getZ(), this.lastLocation.getZ());
 
-            if (invalidDeltaValue(deltaX, deltaY, deltaZ)) {
-                violation(event, ViolationDocument.builder()
-                    .punishType(PunishType.KICK)
-                    .debugInformation(String.format("X: %.2f Y: %.2f Z: %.2f", deltaX, deltaY, deltaZ))
-                    .build());
-            }
+        if (invalidDeltaValue(deltaX, deltaY, deltaZ)) {
+            violation(event, ViolationDocument.builder()
+                .punishType(PunishType.KICK)
+                .debugInformation(String.format("X: %.2f Y: %.2f Z: %.2f", deltaX, deltaY, deltaZ))
+                .build());
         }
-
-        this.lastX = position.getX();
-        this.lastY = position.getY();
-        this.lastZ = position.getZ();
     }
 
     /**
