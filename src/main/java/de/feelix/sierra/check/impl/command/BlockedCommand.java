@@ -193,7 +193,7 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
             if (count > 3) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("More than 3 [pos] or [time] placeholders")
-                    .punishType(PunishType.MITIGATE)
+                    .punishType(violations() > 100 ? PunishType.KICK : PunishType.MITIGATE)
                     .build());
             }
         }
