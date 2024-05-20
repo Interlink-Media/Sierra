@@ -20,6 +20,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSe
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowItems;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
+import de.feelix.sierra.check.impl.command.BlockedCommand;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
@@ -484,7 +485,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
 
             // Detecting liquid bounce completion exploit
-            if (new NBTDetector().find(text)) {
+            if (new NBTDetector().find(text) || BlockedCommand.WORLDEDIT_PATTERN.matcher(text).matches()) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Text: " + wrapper.getText())
                     .punishType(PunishType.KICK)

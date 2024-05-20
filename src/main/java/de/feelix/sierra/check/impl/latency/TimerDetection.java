@@ -126,10 +126,10 @@ public class TimerDetection extends SierraDetection implements IngoingProcessor,
                 balance += 50L;
                 balance -= now - lastFlyingTime;
                 if (balance > maxBal) {
-                    createViolation(event, "Movement frequency: bal:~" + balance, PunishType.MITIGATE);
-                    if (violations() > 200) {
-                        createViolation(event, "Movement frequency: bal:~" + balance, PunishType.KICK);
-                    }
+                    createViolation(
+                        event, "Movement frequency: bal:~" + balance,
+                        violations() > 200 ? PunishType.KICK : PunishType.MITIGATE
+                    );
                     balance = balReset;
                 }
             }

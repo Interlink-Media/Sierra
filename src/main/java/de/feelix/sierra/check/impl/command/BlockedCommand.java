@@ -14,6 +14,7 @@ import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,7 +58,7 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      * }
      * ```
      */
-    private static final Pattern WORLDEDIT_PATTERN = Pattern.compile("for\\(.*?\\)\\{.*?}");
+    public static final Pattern WORLDEDIT_PATTERN = Pattern.compile("for\\(.*?\\)\\{.*?}");
 
     /**
      * Regular expression pattern used to match a specific command pattern in the format "/mv ({letter?{number}})%".
@@ -95,6 +96,8 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
     private double count                = 0;
     private String lastCommand          = "";
     private long   sentLastMessageTwice = 0;
+    private long   lastEntry            = 0;
+    private int    commandSpamBuffer    = 0;
 
     /**
      * BlockedCommand is a class representing a specific action to be taken when a blocked command is detected.
@@ -141,6 +144,7 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
             checkForDoubleCommands(event, message);
             checkDisallowedCommand(event, message);
             checkForLog4J(event, message);
+            checkForPluginExploits(event, message);
         } else if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
 
             WrapperPlayClientNameItem wrapper = CastUtil.getSupplierValue(
@@ -159,7 +163,67 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
             checkForDoubleCommands(event, message);
             checkDisallowedCommand(event, wrapper.getCommand());
             checkForLog4J(event, message);
+            checkForPluginExploits(event, message);
         }
+    }
+
+    /**
+     * Checks for plugin exploits in the given command and triggers violations if necessary.
+     *
+     * @param event   the PacketReceiveEvent that triggered the check
+     * @param command the command to be checked for exploits
+     */
+    private void checkForPluginExploits(PacketReceiveEvent event, String command) {
+        command = command.replace("minecraft:", "").replace("/", "");
+
+        if (System.currentTimeMillis() - this.lastEntry < 1000) {
+            this.commandSpamBuffer++;
+            if (this.commandSpamBuffer > 5) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Extreme command spam detected")
+                    .punishType(this.commandSpamBuffer > 50 ? PunishType.KICK : PunishType.MITIGATE)
+                    .build());
+            }
+        } else {
+            this.commandSpamBuffer = 0;
+        }
+
+        for (String placeholder : Arrays.asList("[pos]", "[time]")) {
+            int count = countOccurrences(command, placeholder);
+            if (count > 3) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("More than 3 [pos] or [time] placeholders")
+                    .punishType(PunishType.MITIGATE)
+                    .build());
+            }
+        }
+
+        for (String string : command.split(" ")) {
+            if (string.length() > 30) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Arg too long: " + string.length() + " > 30")
+                    .punishType(PunishType.MITIGATE)
+                    .build());
+            }
+        }
+        this.lastEntry = System.currentTimeMillis();
+    }
+
+    /**
+     * Counts the occurrences of a substring within a given string.
+     *
+     * @param haystack the string in which to search for occurrences
+     * @param needle   the substring to count occurrences for
+     * @return the number of occurrences of the substring within the string
+     */
+    public int countOccurrences(String haystack, String needle) {
+        int count = 0;
+        int idx   = 0;
+        while ((idx = haystack.indexOf(needle, idx)) != -1) {
+            count++;
+            idx += needle.length();
+        }
+        return count;
     }
 
     /**
