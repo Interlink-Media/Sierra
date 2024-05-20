@@ -203,11 +203,15 @@ public class SierraLoader extends JavaPlugin {
         JsonArray  assets       = jsonResponse.getAsJsonArray("assets");
 
         //noinspection SizeReplaceableByIsEmpty
-        if (assets.size() > 0) {
-            JsonElement asset = assets.get(0);
-            return asset.getAsJsonObject().get("browser_download_url").getAsString();
-        } else {
-            throw new RuntimeException("No assets found in the latest release");
+        if (assets == null || assets.size() == 0) return "";
+
+        for (JsonElement asset : assets) {
+            String browserDownloadUrl = asset.getAsJsonObject().get("browser_download_url").getAsString();
+            if (!browserDownloadUrl.contains("Sierra-")) {
+                continue;
+            }
+            return browserDownloadUrl;
         }
+        return "";
     }
 }
