@@ -1,6 +1,7 @@
 package de.feelix.sierra.check.impl.move;
 
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
+import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.util.Vector3d;
@@ -10,6 +11,7 @@ import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
+import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierraapi.check.CheckType;
@@ -21,7 +23,7 @@ import de.feelix.sierraapi.violation.PunishType;
 // net/minecraft/server/network/ServerGamePacketListenerImpl.java:515
 // net/minecraft/server/network/ServerGamePacketListenerImpl.java:1283
 @SierraCheckData(checkType = CheckType.MOVE)
-public class InvalidMoveDetection extends SierraDetection implements IngoingProcessor {
+public class InvalidMoveDetection extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
 
     /**
      * Represents the hard-coded border value used for invalid move detection.
@@ -113,6 +115,9 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      * The value of SPECIAL_VALUE is 9.223372E18d.
      */
     final double SPECIAL_VALUE = 9.223372E18d;
+
+    private long lastTeleportTime = 0;
+    private int  deltaBuffer      = 0;
 
     /**
      * InvalidMoveDetection is a subclass of SierraDetection which is used to detect and handle invalid movement
@@ -223,7 +228,20 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
         double deltaZ =
             Math.max(position.getZ(), this.lastLocation.getZ()) - Math.min(position.getZ(), this.lastLocation.getZ());
 
-        if (invalidDeltaValue(deltaX, deltaY, deltaZ)) {
+        double deltaXZ = Math.hypot(deltaX, deltaZ);
+
+        if (deltaXZ > 5 && System.currentTimeMillis() - this.lastTeleportTime > 1000) {
+            this.deltaBuffer++;
+
+            if (deltaBuffer++ > 10) {
+                this.violation(event, ViolationDocument.builder()
+                    .punishType(PunishType.KICK)
+                    .debugInformation(String.format("Invalid deltaXZ: %.2f", deltaXZ))
+                    .build());
+            }
+        }
+
+        if (invalidDeltaValue(deltaX, deltaY, deltaZ) && System.currentTimeMillis() - this.lastTeleportTime > 1000) {
             violation(event, ViolationDocument.builder()
                 .punishType(PunishType.KICK)
                 .debugInformation(String.format("X: %.2f Y: %.2f Z: %.2f", deltaX, deltaY, deltaZ))
@@ -442,6 +460,13 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
                 .debugInformation(String.format("Pitch at %.2f", Math.abs(pitch)))
                 .punishType(PunishType.KICK)
                 .build());
+        }
+    }
+
+    @Override
+    public void handle(PacketSendEvent event, PlayerData playerData) {
+        if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK) {
+            this.lastTeleportTime = System.currentTimeMillis();
         }
     }
 }
