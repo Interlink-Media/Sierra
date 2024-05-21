@@ -198,9 +198,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
         Vector3d position = location.getPosition();
         double   chunkId  = computeChunkId(position);
 
-        if (this.lastLocation != null) {
-            checkDelta(position, event);
-        }
+        if (this.lastLocation != null) checkDelta(position, event);
 
         sortOutTraveledChunks(chunkId, event);
         lastChunkId = chunkId;

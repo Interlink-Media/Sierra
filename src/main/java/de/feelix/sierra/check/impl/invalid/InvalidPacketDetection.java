@@ -547,15 +547,9 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                 || channelName.equalsIgnoreCase("MC|TrSel")) {
 
                 if (payload.equalsIgnoreCase("N")) {
-                    if (this.violations() > 3) {
-                        violation(event, ViolationDocument.builder()
-                            .debugInformation("Console Spammer of Liquid #2")
-                            .punishType(PunishType.BAN)
-                            .build());
-                    }
                     violation(event, ViolationDocument.builder()
-                        .debugInformation("Console Spammer of Liquid #1")
-                        .punishType(PunishType.MITIGATE)
+                        .debugInformation("Console Spammer of Liquid")
+                        .punishType(this.violations() > 3 ? PunishType.BAN : PunishType.MITIGATE)
                         .build());
                 }
             }

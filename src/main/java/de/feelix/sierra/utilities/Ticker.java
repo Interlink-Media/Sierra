@@ -3,7 +3,6 @@ package de.feelix.sierra.utilities;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.PlayerData;
-import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.check.impl.SierraCheck;
 import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Getter;
@@ -50,7 +49,7 @@ public class Ticker {
         FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(), o -> currentTick++, 1, 1);
 
         FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(), o -> {
-            double maxPacketAllowance  = 1000 * 2;
+            double maxPacketAllowance = 1000 * 2;
 
             for (PlayerData value : SierraDataManager.getInstance().getPlayerData().values()) {
                 value.setPacketAllowance(maxPacketAllowance);
@@ -58,10 +57,8 @@ public class Ticker {
                 value.setBytesSent(0);
 
                 for (SierraCheck sierraCheck : value.getCheckManager().availableChecks()) {
-                    if (sierraCheck.checkType() == CheckType.LATENCY_ABUSE) {
-                        if (sierraCheck.violations() > 0) {
-                            sierraCheck.setViolations(sierraCheck.violations() - 1);
-                        }
+                    if (sierraCheck.violations() > 0) {
+                        sierraCheck.setViolations(sierraCheck.violations() - 1);
                     }
                 }
             }
