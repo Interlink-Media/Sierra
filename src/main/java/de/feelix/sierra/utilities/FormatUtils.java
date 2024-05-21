@@ -95,14 +95,4 @@ public class FormatUtils {
         SimpleDateFormat sdf  = new SimpleDateFormat("MM/dd HH:mm:ss");
         return sdf.format(date);
     }
-
-    /**
-     * Translates a given text by replacing any color codes with their corresponding colors.
-     *
-     * @param text The text to be formatted.
-     * @return The formatted text with color codes replaced.
-     */
-    public static String formatColor(String text) {
-        return text.replace("&", "§");
-    }
 }
