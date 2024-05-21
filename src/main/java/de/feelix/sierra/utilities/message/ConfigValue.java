@@ -12,18 +12,6 @@ import org.bukkit.ChatColor;
 public class ConfigValue {
 
     /**
-     * The messageKey variable represents the key used to retrieve a message value from the plugin configuration.
-     * It is a private final String, which means it cannot be modified once initialized and its value is accessible
-     * only within the class.
-     * The messageKey is used in the ConfigMessage class to fetch the corresponding message value from the plugin
-     * configuration.
-     * The value is set during the construction of a ConfigMessage object and is retrieved using the getter method.
-     * The messageKey is an important attribute as it serves as a reference to identify and retrieve specific
-     * messages from the configuration.
-     */
-    private final String messageKey;
-
-    /**
      * Represents a configurable message value.
      */
     private String messageValue;
@@ -33,7 +21,6 @@ public class ConfigValue {
      * It is used to retrieve and manipulate message values from the plugin configuration.
      */
     public ConfigValue(String messageKey, String messageOnFailure, boolean messages) {
-        this.messageKey = messageKey;
         if (messages) {
             this.messageValue = Sierra.getPlugin()
                 .getSierraConfigEngine()
