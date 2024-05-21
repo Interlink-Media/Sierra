@@ -123,12 +123,12 @@ public class SierraDiscordGateway {
                 .setTitle(new WebhookEmbed.EmbedTitle("**Sierra Report**", null))
                 .setDescription("This is a report about player `" + playerData.username()+"`")
 
-                .addField(new WebhookEmbed.EmbedField(true, "Check",
+                .addField(new WebhookEmbed.EmbedField(false, "Check",
                                                       checkType.getFriendlyName() + "/" + violationDocument.punishType()
                                                           .historyMessage()
                 ))
-                .addField(new WebhookEmbed.EmbedField(true, "Debug information", violationDocument.debugInformation()))
-                .addField(new WebhookEmbed.EmbedField(true, "Violations", String.valueOf(violations)))
+                .addField(new WebhookEmbed.EmbedField(false, "Debug information", violationDocument.debugInformation()))
+                .addField(new WebhookEmbed.EmbedField(false, "Violations", String.valueOf(violations)))
 
                 .setTimestamp(Instant.now())
                 .setFooter(new WebhookEmbed.EmbedFooter(
