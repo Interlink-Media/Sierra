@@ -116,8 +116,26 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      */
     final double SPECIAL_VALUE = 9.223372E18d;
 
+    /**
+     * Represents the timestamp of the last teleport made by the player.
+     * The timestamp is stored as a Unix timestamp in milliseconds.
+     * A value of 0 indicates that no teleport has been made yet.
+     */
     private long lastTeleportTime = 0;
-    private int  deltaBuffer      = 0;
+
+    /**
+     * Represents the buffer for tracking the change in position.
+     * The deltaBuffer is used to store the difference between the current position and the previous position.
+     *
+     * <p>
+     * This variable is used in the InvalidMoveDetection class to detect and handle invalid movement packets from a
+     * player.
+     * It is updated each time a movement packet is received and checked for any suspicious or invalid values.
+     * </p>
+     *
+     * @since 1.0
+     */
+    private int deltaBuffer = 0;
 
     /**
      * InvalidMoveDetection is a subclass of SierraDetection which is used to detect and handle invalid movement
@@ -343,11 +361,11 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      */
     private void sortOutExtremeValues(Location location, PacketReceiveEvent event) {
         if (invalidValue(location.getX(), location.getY(), location.getZ())) {
-            violation(event, buildExtValueBanViolation("Extreme values: double"));
+            violation(event, buildExtValueKickViolation("Extreme values: double"));
         }
 
         if (invalidValue(location.getYaw(), location.getPitch())) {
-            violation(event, buildExtValueBanViolation("Extreme values: float"));
+            violation(event, buildExtValueKickViolation("Extreme values: float"));
         }
     }
 
@@ -357,7 +375,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      * @param debugInfo the debug information related to the violation document
      * @return the built violation document
      */
-    private ViolationDocument buildExtValueBanViolation(String debugInfo) {
+    private ViolationDocument buildExtValueKickViolation(String debugInfo) {
         return ViolationDocument.builder()
             .debugInformation(debugInfo)
             .punishType(PunishType.KICK)
@@ -379,11 +397,11 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
         Vector3d location = wrapper.getPosition();
 
         if (invalidValue(location.getX(), location.getY(), location.getZ())) {
-            violation(event, buildExtValueBanViolation("Extreme values: double"));
+            violation(event, buildExtValueKickViolation("Extreme values: double"));
         }
 
         if (invalidValue(wrapper.getYaw(), wrapper.getPitch())) {
-            violation(event, buildExtValueBanViolation("Extreme values: float"));
+            violation(event, buildExtValueKickViolation("Extreme values: float"));
         }
     }
 
