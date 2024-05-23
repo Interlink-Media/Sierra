@@ -75,7 +75,7 @@ public class InfoCommand implements ISierraCommand {
                              .replacePrefix()
                              .replace("{clientVersion}", sierraUser.version())
                              .replace("{brand}", sierraUser.brand())
-                             .replace("{ping}", sierraUser.ping() + " ms")
+                             .replace("{ping}", String.valueOf(sierraUser.ping()))
                              .replace("{gameMode}", sierraUser.gameMode().name())
                              .replace("{ticksExisted}", sierraUser.ticksExisted() + " ticks")
                              .colorize()
