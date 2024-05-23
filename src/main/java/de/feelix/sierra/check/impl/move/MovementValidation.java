@@ -23,7 +23,7 @@ import de.feelix.sierraapi.violation.PunishType;
 // net/minecraft/server/network/ServerGamePacketListenerImpl.java:515
 // net/minecraft/server/network/ServerGamePacketListenerImpl.java:1283
 @SierraCheckData(checkType = CheckType.MOVEMENT_VALIDATION)
-public class InvalidMoveDetection extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
+public class MovementValidation extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
 
     /**
      * Represents the hard-coded border value used for invalid move detection.
@@ -66,7 +66,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      * The value is initialized to -1, indicating that no tick has occurred yet.
      * </p>
      *
-     * @see InvalidMoveDetection
+     * @see MovementValidation
      * @since 1.0
      */
     private long lastTick = -1;
@@ -74,7 +74,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
     /**
      * Represents a private integer variable named buffer.
      * <p>
-     * The buffer variable stores an integer value that is used within the class {@link InvalidMoveDetection}.
+     * The buffer variable stores an integer value that is used within the class {@link MovementValidation}.
      * The purpose of this variable is not specified in the given code snippet.
      * </p>
      * <p>
@@ -87,7 +87,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      * It is important to note that the buffer variable is not returned or used in any example code provided.
      * </p>
      *
-     * @see InvalidMoveDetection
+     * @see MovementValidation
      * @since 1.0
      */
     private int buffer = 0;
@@ -193,7 +193,7 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
      *
      * @param playerData The PlayerData object containing the player's data
      */
-    public InvalidMoveDetection(PlayerData playerData) {
+    public MovementValidation(PlayerData playerData) {
         super(playerData);
     }
 

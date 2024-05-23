@@ -10,7 +10,7 @@ public enum CheckType {
 
     FREQUENCY(1, "Frequency"),
     PROTOCOL_VALIDATION(2, "Protocol Validation"),
-    BOOK(3, "Book Crasher"),
+    BOOK_VALIDATION(3, "Book Validation"),
     COMMAND_VALIDATION(4, "Command Validation"),
     CREATIVE(5, "Creative Crasher"),
     MOVEMENT_VALIDATION(6, "Movement Validation");

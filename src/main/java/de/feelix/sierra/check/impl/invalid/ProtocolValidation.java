@@ -20,7 +20,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSe
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowItems;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
-import de.feelix.sierra.check.impl.command.BlockedCommand;
+import de.feelix.sierra.check.impl.command.CommandValidation;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
@@ -131,14 +131,14 @@ import java.util.regex.Pattern;
  * - true if the server version is supported, false otherwise
  */
 @SierraCheckData(checkType = CheckType.PROTOCOL_VALIDATION)
-public class InvalidPacketDetection extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
+public class ProtocolValidation extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
 
     /**
      * Constructs a new InvalidPacketDetection instance for a given player.
      *
      * @param playerData the data of the player who triggered the detection
      */
-    public InvalidPacketDetection(PlayerData playerData) {
+    public ProtocolValidation(PlayerData playerData) {
         super(playerData);
     }
 
@@ -490,7 +490,7 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
             }
 
             // Detecting liquid bounce completion exploit
-            if (new NBTDetector().find(text) || BlockedCommand.WORLDEDIT_PATTERN.matcher(text).matches()) {
+            if (new NBTDetector().find(text) || CommandValidation.WORLDEDIT_PATTERN.matcher(text).matches()) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Text: " + wrapper.getText())
                     .punishType(PunishType.KICK)

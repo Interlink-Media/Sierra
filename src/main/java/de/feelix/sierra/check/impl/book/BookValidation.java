@@ -32,8 +32,8 @@ import java.util.Objects;
 
 // PaperMC
 // net.minecraft.server.network.ServerGamePacketListenerImpl#handleEditBook
-@SierraCheckData(checkType = CheckType.BOOK)
-public class MassiveBook extends SierraDetection implements IngoingProcessor {
+@SierraCheckData(checkType = CheckType.BOOK_VALIDATION)
+public class BookValidation extends SierraDetection implements IngoingProcessor {
 
     /**
      * The lastContent variable stores the last content string.
@@ -69,7 +69,7 @@ public class MassiveBook extends SierraDetection implements IngoingProcessor {
      *
      * @param playerData The PlayerData associated with the book.
      */
-    public MassiveBook(PlayerData playerData) {
+    public BookValidation(PlayerData playerData) {
         super(playerData);
     }
 

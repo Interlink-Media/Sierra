@@ -31,7 +31,7 @@ import java.util.List;
  * It extends the SierraDetection class and implements the IngoingProcessor interface.
  */
 @SierraCheckData(checkType = CheckType.CREATIVE)
-public class ItemDetectionRunner extends SierraDetection implements IngoingProcessor {
+public class CreativeCrasher extends SierraDetection implements IngoingProcessor {
 
     /**
      * List of ItemCheck instances used to perform item checks.
@@ -101,7 +101,7 @@ public class ItemDetectionRunner extends SierraDetection implements IngoingProce
      *
      * @param playerData The PlayerData object containing the player's data
      */
-    public ItemDetectionRunner(PlayerData playerData) {
+    public CreativeCrasher(PlayerData playerData) {
         super(playerData);
 
         this.addCreativeChecks(

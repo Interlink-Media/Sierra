@@ -26,12 +26,12 @@ import java.util.HashMap;
  * This class is responsible for detecting packet spamming based on various multipliers.
  */
 @SierraCheckData(checkType = CheckType.FREQUENCY)
-public class PacketSpamDetection extends SierraDetection implements IngoingProcessor {
+public class FrequencyDetection extends SierraDetection implements IngoingProcessor {
 
     /**
      * The PacketSpamDetection class is responsible for detecting packet spamming based on various multipliers.
      */
-    public PacketSpamDetection(PlayerData playerData) {
+    public FrequencyDetection(PlayerData playerData) {
         super(playerData);
 
         multiplierMap.put(PacketType.Play.Client.valueOf("PLAYER_POSITION"), 0.5);

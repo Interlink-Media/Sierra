@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @SierraCheckData(checkType = CheckType.COMMAND_VALIDATION)
-public class BlockedCommand extends SierraDetection implements IngoingProcessor {
+public class CommandValidation extends SierraDetection implements IngoingProcessor {
 
     /**
      * Regular expression pattern for excluding plugins in the BlockedCommand class.
@@ -104,7 +104,7 @@ public class BlockedCommand extends SierraDetection implements IngoingProcessor 
      *
      * @param playerData The PlayerData associated with the player
      */
-    public BlockedCommand(PlayerData playerData) {
+    public CommandValidation(PlayerData playerData) {
         super(playerData);
     }
 
