@@ -134,7 +134,7 @@ public class InfoCommand implements ISierraCommand {
      * @param user the User object representing the user to send the message to
      */
     private void sendHelpSyntax(User user) {
-        user.sendMessage(new ConfigValue("commands.info.invalid", "{prefix} &cInvalid usage, try /sierra info <name>",
+        user.sendMessage(new ConfigValue("commands.info.protocol", "{prefix} &cInvalid usage, try /sierra info <name>",
                                          true
         ).replacePrefix().colorize().getMessageValue());
     }

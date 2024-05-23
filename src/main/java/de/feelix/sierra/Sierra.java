@@ -283,9 +283,9 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     }
 
     /**
-     * Checks if the version of the plugin is invalid.
+     * Checks if the version of the plugin is protocol.
      *
-     * @return true if the version is invalid, false otherwise
+     * @return true if the version is protocol, false otherwise
      */
     private boolean isVersionInvalid() {
         return this.updateChecker.getLatestReleaseVersion().equalsIgnoreCase(UpdateChecker.UNKNOWN_VERSION);

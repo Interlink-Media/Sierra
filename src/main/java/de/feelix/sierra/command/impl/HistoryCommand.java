@@ -24,7 +24,7 @@ public class HistoryCommand implements ISierraCommand {
 
     /**
      * This method processes the command by validating the arguments, setting up pagination,
-     * sending the appropriate help syntax if arguments are invalid, sending the pagination message
+     * sending the appropriate help syntax if arguments are protocol, sending the pagination message
      * to the sender, and sending the history messages.
      *
      * @param user            The User object representing the user.
@@ -157,7 +157,7 @@ public class HistoryCommand implements ISierraCommand {
      */
     private void sendHelpSyntax(User user) {
         user.sendMessage(
-            new ConfigValue("commands.history.invalid", "{prefix} &cInvalid usage, try /sierra history <page>",
+            new ConfigValue("commands.history.protocol", "{prefix} &cInvalid usage, try /sierra history <page>",
                             true
             ).replacePrefix()
                 .colorize()

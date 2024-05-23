@@ -14,15 +14,15 @@ import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
 /**
- * An implementation of the {@link ItemCheck} interface that checks for invalid NBT data in an ItemStack.
+ * An implementation of the {@link ItemCheck} interface that checks for protocol NBT data in an ItemStack.
  */
 public class InvalidPlainNbt implements ItemCheck {
 
     /**
-     * Checks if a given ItemStack has invalid NBT data and returns the corresponding
+     * Checks if a given ItemStack has protocol NBT data and returns the corresponding
      * punishable property and PunishType.
      *
-     * @param itemStack the ItemStack to check for invalid NBT data
+     * @param itemStack the ItemStack to check for protocol NBT data
      * @return a Pair object representing the punishable property and PunishType, or null if there are no punishable properties
      */
     private Pair<String, PunishType> invalidNbt(ItemStack itemStack) {
@@ -114,7 +114,7 @@ public class InvalidPlainNbt implements ItemCheck {
      * @param clickedStack  the clicked stack item
      * @param nbtCompound   the NBT compound associated with the item
      * @param playerData    the player data
-     * @return a pair of strings and a PunishType if there is an invalid NBT compound, null otherwise
+     * @return a pair of strings and a PunishType if there is an protocol NBT compound, null otherwise
      */
     @Override
     public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,

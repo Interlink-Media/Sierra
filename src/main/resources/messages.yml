@@ -29,7 +29,7 @@ commands:
     # {prefix}: Message prefix
     empty: "{prefix} &cNo history available"
 
-    # Message for invalid usage of the history command
+    # Message for protocol usage of the history command
     # {prefix}: Message prefix
     invalid: "{prefix} &cInvalid usage, try /sierra history <page>"
 
@@ -82,7 +82,7 @@ commands:
     # {playerName}: Player's name
     header: "{prefix} &7Information for &c{playerName}&7:"
 
-    # Message for invalid usage of the info command
+    # Message for protocol usage of the info command
     # {prefix}: Message prefix
     invalid: "{prefix} &cInvalid usage, try /sierra info <name>"
 

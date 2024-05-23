@@ -1,4 +1,4 @@
-package de.feelix.sierra.check.impl.invalid;
+package de.feelix.sierra.check.impl.protocol;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
@@ -46,7 +46,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
- * The InvalidPacketDetection class is responsible for detecting and handling invalid packets received from players.
+ * The InvalidPacketDetection class is responsible for detecting and handling protocol packets received from players.
  * It extends several super classes: SierraDetection, IngoingProcessor, and OutgoingProcessor.
  * <p>
  * Class Fields:
@@ -72,7 +72,7 @@ import java.util.regex.Pattern;
  * - playerData: The PlayerData object containing the player information
  * <p>
  * private void checkForInvalidSlot(PacketReceiveEvent event, WrapperPlayClientClickWindow wrapper)
- * - Private method to check for invalid slots in the packet event
+ * - Private method to check for protocol slots in the packet event
  * - Parameters:
  * - event: The PacketReceiveEvent object representing the received packet event
  * - wrapper: The WrapperPlayClientClickWindow object representing the packet wrapper
@@ -90,25 +90,25 @@ import java.util.regex.Pattern;
  * - itemStack: The ItemStack object representing the item being checked
  * <p>
  * private void checkForInvalidShulker(PacketReceiveEvent event, ItemStack itemStack)
- * - Private method to check for invalid shulker packets
+ * - Private method to check for protocol shulker packets
  * - Parameters:
  * - event: The PacketReceiveEvent object representing the received packet event
  * - itemStack: The ItemStack object representing the item being checked
  * <p>
  * private void checkForInvalidContainer(PacketReceiveEvent event, ItemStack itemStack)
- * - Private method to check for invalid container packets
+ * - Private method to check for protocol container packets
  * - Parameters:
  * - event: The PacketReceiveEvent object representing the received packet event
  * - itemStack: The ItemStack object representing the item being checked
  * <p>
  * private void checkNbtTags(PacketReceiveEvent event, ItemStack itemStack)
- * - Private method to check for invalid NBT tags in packets
+ * - Private method to check for protocol NBT tags in packets
  * - Parameters:
  * - event: The PacketReceiveEvent object representing the received packet event
  * - itemStack: The ItemStack object representing the item being checked
  * <p>
  * private void checkForInvalidBanner(PacketReceiveEvent event, ItemStack itemStack)
- * - Private method to check for invalid banner packets
+ * - Private method to check for protocol banner packets
  * - Parameters:
  * - event: The PacketReceiveEvent object representing the received packet event
  * - itemStack: The ItemStack object representing the item being checked
@@ -186,7 +186,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
      * <p>
      * The containerType variable is an integer that represents the type of container.
      * It is used to differentiate between different types of containers, such as inventories or chests.
-     * The default value is -1, indicating an invalid container type.
+     * The default value is -1, indicating an protocol container type.
      * </p>
      * <p>
      * This variable is used in the class InvalidPacketDetection of the SierraCheckData project.
@@ -197,7 +197,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     /**
      * Represents the ID of the container.
      * The container ID is used to identify a specific container instance.
-     * A negative value (-1) indicates that the container ID is invalid or uninitialized.
+     * A negative value (-1) indicates that the container ID is protocol or uninitialized.
      */
     private int containerId = -1;
 
@@ -291,7 +291,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         if (!Sierra.getPlugin()
             .getSierraConfigEngine()
             .config()
-            .getBoolean("prevent-invalid-packet", true)) {
+            .getBoolean("prevent-protocol-packet", true)) {
             return;
         }
 
@@ -508,7 +508,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             final int index;
             if (text.length() > 64 && ((index = text.indexOf(' ')) == -1 || index >= 64)) {
                 violation(event, ViolationDocument.builder()
-                    .debugInformation("(invalid) length=" + length)
+                    .debugInformation("(protocol) length=" + length)
                     .punishType(PunishType.KICK)
                     .build());
             }
@@ -566,7 +566,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
             if (channelName.contains("${")) {
                 violation(event, ViolationDocument.builder()
-                    .debugInformation("Send invalid channel in plugin message")
+                    .debugInformation("Send protocol channel in plugin message")
                     .punishType(PunishType.KICK)
                     .build());
             }
@@ -951,29 +951,29 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks if the amount is invalid based on the specified vanilla mapping flag, attribute mapper, and amount.
+     * Checks if the amount is protocol based on the specified vanilla mapping flag, attribute mapper, and amount.
      *
      * @param vanillaMapping  A flag indicating whether vanilla attribute mapping is used.
      * @param attributeMapper The AttributeMapper to handle violations based on attribute modifiers.
      * @param amount          The amount to check.
-     * @return true if the amount is invalid, false otherwise.
+     * @return true if the amount is protocol, false otherwise.
      */
     private boolean isAmountInvalid(boolean vanillaMapping, AttributeMapper attributeMapper, double amount) {
         return vanillaMapping && (amount > attributeMapper.getMax() || amount < attributeMapper.getMin());
     }
 
     /**
-     * Checks if the given amount is considered invalid for a Sierra attribute modifier.
+     * Checks if the given amount is considered protocol for a Sierra attribute modifier.
      *
      * @param amount The amount to check.
-     * @return true if the amount is invalid, false otherwise.
+     * @return true if the amount is protocol, false otherwise.
      */
     private boolean isSierraModifierInvalid(double amount) {
         return Math.abs(amount) > 5.000;
     }
 
     /**
-     * Checks the given ItemStack for invalid NBT tags and handles violations accordingly.
+     * Checks the given ItemStack for protocol NBT tags and handles violations accordingly.
      *
      * @param event     The PacketReceiveEvent that triggered the check.
      * @param itemStack The ItemStack to check for NBT tags.
@@ -1050,7 +1050,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks for an invalid slot and handles violations.
+     * Checks for an protocol slot and handles violations.
      *
      * @param event   The PacketReceiveEvent.
      * @param wrapper The WrapperPlayClientClickWindow.
@@ -1132,7 +1132,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks for an invalid shulker and handles violations.
+     * Checks for an protocol shulker and handles violations.
      *
      * @param event     The PacketReceiveEvent.
      * @param itemStack The ItemStack to check.
@@ -1169,7 +1169,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks for an invalid container in the given ItemStack and performs necessary actions.
+     * Checks for an protocol container in the given ItemStack and performs necessary actions.
      *
      * @param event     The PacketReceiveEvent.
      * @param itemStack The ItemStack to check.
@@ -1184,10 +1184,10 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks if the given ItemStack is an invalid item.
+     * Checks if the given ItemStack is an protocol item.
      *
      * @param itemStack The ItemStack to check.
-     * @return true if the item is invalid, false otherwise.
+     * @return true if the item is protocol, false otherwise.
      */
     private boolean isContainerItem(ItemStack itemStack) {
         return itemStack.getType() == ItemTypes.CHEST
@@ -1197,7 +1197,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks for an invalid size and presence of Wurstclient in the given string.
+     * Checks for an protocol size and presence of Wurstclient in the given string.
      * If the byte size of the string exceeds the maximum byte size, a violation is triggered with a kick punish type.
      * If the string contains the URL of Wurstclient, a violation is triggered with a ban punish type.
      *
@@ -1288,7 +1288,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     /**
      * Checks the validity of an integer array stored in an ItemStack's NBT data.
-     * If the integer array is invalid, it triggers a violation.
+     * If the integer array is protocol, it triggers a violation.
      *
      * @param key       the key used to retrieve the integer array from the ItemStack's NBT data
      * @param event     the PacketReceiveEvent object containing event information
@@ -1411,7 +1411,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks for any invalid properties in the provided Armor Stand item stack and sends an event if found.
+     * Checks for any protocol properties in the provided Armor Stand item stack and sends an event if found.
      *
      * @param event     The packet receive event.
      * @param itemStack The item stack to check.
@@ -1428,7 +1428,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks for invalid poses in the given entity tag and raises events accordingly.
+     * Checks for protocol poses in the given entity tag and raises events accordingly.
      *
      * @param event     The PacketReceiveEvent object associated with the entity tag.
      * @param entityTag The NBTCompound object representing the entity tag.
@@ -1446,8 +1446,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks if the custom name of an entity is invalid.
-     * If the custom name exceeds the character limit of 70, it is considered invalid.
+     * Checks if the custom name of an entity is protocol.
+     * If the custom name exceeds the character limit of 70, it is considered protocol.
      *
      * @param event     The packet receive event.
      * @param entityTag The NBT compound tag of the entity.
@@ -1464,7 +1464,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks for invalid skull owners in the equipment of the entity.
+     * Checks for protocol skull owners in the equipment of the entity.
      *
      * @param event     the PacketReceiveEvent that triggered the check
      * @param entityTag the NBTCompound representing the tag of the entity
@@ -1479,7 +1479,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks for invalid rotation of an armor stand entity.
+     * Checks for protocol rotation of an armor stand entity.
      *
      * @param event     The packet receive event associated with the armor stand entity.
      * @param entityTag The NBT compound tag containing the rotation information.
@@ -1501,7 +1501,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Check the owner of a skull item and take appropriate action if the owner's name is invalid.
+     * Check the owner of a skull item and take appropriate action if the owner's name is protocol.
      *
      * @param event The PacketReceiveEvent that triggered the method.
      * @param item  The NBTCompound representing the skull item.
@@ -1530,7 +1530,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
      * @param event The PacketReceiveEvent associated with the pose angles check.
      * @param pose  The NBTCompound representing the pose.
      * @param limb  The name of the limb for which to check the pose angles.
-     * @throws IllegalStateException if the pose angles for the limb are invalid.
+     * @throws IllegalStateException if the pose angles for the limb are protocol.
      */
     private void invalidPoseAngles(PacketReceiveEvent event, NBTCompound pose,
                                    String limb) throws IllegalStateException {
@@ -1551,7 +1551,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks for an invalid banner and handles violations.
+     * Checks for an protocol banner and handles violations.
      *
      * @param event     The PacketReceiveEvent.
      * @param itemStack The ItemStack to check.
@@ -1598,7 +1598,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     /**
      * Validates the given color for a banner.
-     * If the color is null or invalid, it creates a violation event.
+     * If the color is null or protocol, it creates a violation event.
      *
      * @param event the PacketReceiveEvent object representing the event
      * @param color the NBTNumber object representing the color of the banner
@@ -1611,7 +1611,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         try {
             int rgb = color.getAsInt();
             if (rgb < MIN_VALID_COLOR || rgb > MAX_VALID_COLOR) {
-                createViolation(event, "Banner color is invalid: " + rgb);
+                createViolation(event, "Banner color is protocol: " + rgb);
             }
         } catch (Exception exception) {
             createViolation(event, "BANNER: " + exception.getMessage());
@@ -1658,7 +1658,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         if (!Sierra.getPlugin()
             .getSierraConfigEngine()
             .config()
-            .getBoolean("prevent-invalid-packet", true)) {
+            .getBoolean("prevent-protocol-packet", true)) {
             return;
         }
 

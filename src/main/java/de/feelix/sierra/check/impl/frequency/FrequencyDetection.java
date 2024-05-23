@@ -1,4 +1,4 @@
-package de.feelix.sierra.check.impl.spam;
+package de.feelix.sierra.check.impl.frequency;
 
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -42,7 +42,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
 
     /**
      * Private final field storing a HashMap that maps PacketTypeCommon to Double values.
-     * This map is used to store multipliers for different packet types in a spam detection system.
+     * This map is used to store multipliers for different packet types in a frequency detection system.
      * Each packet type corresponds to a specific Double value representing the multiplier.
      *
      * @see PacketTypeCommon
@@ -58,7 +58,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
 
-        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-packet-spam", true)) {
+        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-packet-frequency", true)) {
             return;
         }
 
@@ -145,9 +145,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks if the current packet is considered invalid based on the last book edit tick.
+     * Checks if the current packet is considered protocol based on the last book edit tick.
      *
-     * @return true if the packet is considered invalid, false otherwise
+     * @return true if the packet is considered protocol, false otherwise
      */
     private boolean invalid() {
         int currentTick = Ticker.getInstance().getCurrentTick();

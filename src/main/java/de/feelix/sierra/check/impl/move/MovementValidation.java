@@ -26,7 +26,7 @@ import de.feelix.sierraapi.violation.PunishType;
 public class MovementValidation extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
 
     /**
-     * Represents the hard-coded border value used for invalid move detection.
+     * Represents the hard-coded border value used for protocol move detection.
      *
      * <p>
      * The HARD_CODED_BORDER variable is a private constant in the InvalidMoveDetection class.
@@ -35,11 +35,11 @@ public class MovementValidation extends SierraDetection implements IngoingProces
      *
      * <p>
      * The hard-coded border value is used to check if a player's movement exceeds the valid boundary.
-     * If the player's position is greater than the hard-coded border value, it is considered an invalid move.
+     * If the player's position is greater than the hard-coded border value, it is considered an protocol move.
      * </p>
      *
      * <p>
-     * This variable is used in various methods within the InvalidMoveDetection class to handle and detect invalid
+     * This variable is used in various methods within the InvalidMoveDetection class to handle and detect protocol
      * moves.
      * </p>
      */
@@ -128,9 +128,9 @@ public class MovementValidation extends SierraDetection implements IngoingProces
      * The deltaBuffer is used to store the difference between the current position and the previous position.
      *
      * <p>
-     * This variable is used in the InvalidMoveDetection class to detect and handle invalid movement packets from a
+     * This variable is used in the InvalidMoveDetection class to detect and handle protocol movement packets from a
      * player.
-     * It is updated each time a movement packet is received and checked for any suspicious or invalid values.
+     * It is updated each time a movement packet is received and checked for any suspicious or protocol values.
      * </p>
      *
      * @since 1.0
@@ -187,9 +187,9 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     private static final long balSubOnTp = 50;
 
     /**
-     * InvalidMoveDetection is a subclass of SierraDetection which is used to detect and handle invalid movement
+     * InvalidMoveDetection is a subclass of SierraDetection which is used to detect and handle protocol movement
      * packets from a player.
-     * It examines the player's movement data and checks for any suspicious or invalid values.
+     * It examines the player's movement data and checks for any suspicious or protocol values.
      *
      * @param playerData The PlayerData object containing the player's data
      */
@@ -198,7 +198,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * This method handles the PacketReceiveEvent by checking for invalid movement and taking appropriate actions.
+     * This method handles the PacketReceiveEvent by checking for protocol movement and taking appropriate actions.
      *
      * @param event the PacketReceiveEvent triggered by receiving a packet from the player
      * @param data  the PlayerData object containing the player's data
@@ -218,7 +218,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * This method handles abuse of latency in movement by checking for invalid values and taking appropriate actions.
+     * This method handles abuse of latency in movement by checking for protocol values and taking appropriate actions.
      *
      * @param event the PacketReceiveEvent triggered by receiving a packet from the player
      * @param data  the PlayerData object containing the player's data
@@ -245,12 +245,12 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Determines if the prevent-invalid-move feature is disabled.
+     * Determines if the prevent-protocol-move feature is disabled.
      *
-     * @return true if the prevent-invalid-move feature is disabled, false otherwise.
+     * @return true if the prevent-protocol-move feature is disabled, false otherwise.
      */
     private boolean isPreventInvalidMoveDisabled() {
-        return !Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-invalid-move", true);
+        return !Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-protocol-move", true);
     }
 
     /**
@@ -348,10 +348,10 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks if the given deltas are invalid.
+     * Checks if the given deltas are protocol.
      *
      * @param deltas the delta values to check
-     * @return true if any of the deltas are invalid, false otherwise
+     * @return true if any of the deltas are protocol, false otherwise
      */
     public boolean invalidDeltaValue(double... deltas) {
         for (double delta : deltas) {
@@ -365,7 +365,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Sorts out invalid rotation data from a flying packet.
+     * Sorts out protocol rotation data from a flying packet.
      *
      * @param wrapper the WrapperPlayClientPlayerFlying object containing the flying packet data
      * @param event   the PacketReceiveEvent triggered by receiving the packet from the player
@@ -466,7 +466,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
     /**
      * This method handles a vehicle move packet received from the player.
-     * It checks for invalid movement values and takes appropriate actions.
+     * It checks for protocol movement values and takes appropriate actions.
      *
      * @param event      The PacketReceiveEvent triggered by receiving the vehicle move packet from the player
      * @param playerData The PlayerData object containing the player's data
@@ -546,9 +546,9 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks for invalid pitch in the given location and handles violation if necessary.
+     * Checks for protocol pitch in the given location and handles violation if necessary.
      *
-     * @param location The location to check for invalid pitch
+     * @param location The location to check for protocol pitch
      * @param event    The PacketReceiveEvent triggered by receiving a packet from the player
      */
     private void checkInvalidPitch(Location location, PacketReceiveEvent event) {

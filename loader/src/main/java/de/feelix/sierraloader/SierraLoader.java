@@ -104,8 +104,8 @@ public class SierraLoader extends JavaPlugin {
      *
      * @param jarFile the JAR file to load
      * @return true if the JAR file was loaded successfully, false otherwise
-     * @throws InvalidPluginException      if the plugin is invalid
-     * @throws InvalidDescriptionException if the plugin description is invalid
+     * @throws InvalidPluginException      if the plugin is protocol
+     * @throws InvalidDescriptionException if the plugin description is protocol
      */
     private boolean loadJarToPlugin(File jarFile) throws InvalidPluginException, InvalidDescriptionException {
         plugin = getServer().getPluginManager().loadPlugin(jarFile);

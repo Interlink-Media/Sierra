@@ -47,7 +47,7 @@ public class GameModeProcessor {
 
                 int gameMode = (int) packet.getValue();
 
-                // Some plugins send invalid values such as -1, this is what the client does
+                // Some plugins send protocol values such as -1, this is what the client does
                 if (gameMode < 0 || gameMode >= GameMode.values().length) {
                     playerData.setGameMode(GameMode.SURVIVAL);
                 } else {

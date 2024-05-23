@@ -95,7 +95,7 @@ public enum MenuType {
      *
      * @param id      the id to check
      * @param version the server version
-     * @return true if the id is invalid, false otherwise
+     * @return true if the id is protocol, false otherwise
      */
     // Check if id is valid
     private static boolean isInvalidId(int id, ServerVersion version) {

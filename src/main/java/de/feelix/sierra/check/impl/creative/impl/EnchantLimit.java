@@ -31,7 +31,7 @@ public class EnchantLimit implements ItemCheck {
      * @param clickedStack  The ItemStack that was clicked.
      * @param nbtCompound   The NBTCompound associated with the clicked stack.
      * @param playerData    The PlayerData of the player who clicked the stack.
-     * @return A Pair object containing the error message and the PunishType if the enchantment level is invalid, or null if the enchantment level is valid.
+     * @return A Pair object containing the error message and the PunishType if the enchantment level is protocol, or null if the enchantment level is valid.
      */
     @Override
     public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,

@@ -20,8 +20,8 @@ import de.feelix.sierraapi.violation.PunishType;
  * NBTList of NBTCompounds associated with the "Decorations" key. It then iterates through each NBTCompound in the
  * list and checks if it contains a key called "type". If it does, it retrieves the value associated with the "type"
  * key as an NBTByte. If the NBTByte is null, it returns a Pair object with a message indicating that the NBT type field
- * is invalid and a PunishType of BAN. If the NBTByte is less than 0, it returns a Pair object with a message indicating
- * an invalid byte size in the map and a PunishType of BAN. If none of these conditions are met, it returns null.
+ * is protocol and a PunishType of BAN. If the NBTByte is less than 0, it returns a Pair object with a message indicating
+ * an protocol byte size in the map and a PunishType of BAN. If none of these conditions are met, it returns null.
  * <p>
  * This class is used to mitigate the exploit related to creative maps by checking the NBT data of clicked items in
  * order to identify any potential issues and take appropriate actions.
@@ -41,7 +41,7 @@ public class CreativeMap implements ItemCheck {
      * @param clickedStack  The clicked stack
      * @param nbtCompound   The NBT compound
      * @param playerData    The player data
-     * @return A Pair object with an error message and the PunishType set to BAN if invalid NBT type field
+     * @return A Pair object with an error message and the PunishType set to BAN if protocol NBT type field
      *                      or negative byte size is detected, null otherwise
      */
     @Override
@@ -54,7 +54,7 @@ public class CreativeMap implements ItemCheck {
                 if (decoration.getTags().containsKey("type")) {
                     NBTByte nbtByte = decoration.getTagOfTypeOrNull("type", NBTType.BYTE.getNBTClass());
                     if (nbtByte == null) {
-                        return new Pair<>("Contains invalid nbt type field", PunishType.BAN);
+                        return new Pair<>("Contains protocol nbt type field", PunishType.BAN);
                     } else if (nbtByte.getAsByte() < 0) {
                         return new Pair<>("Invalid byte size in map", PunishType.BAN);
                     }

@@ -180,7 +180,7 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
             this.commandSpamBuffer++;
             if (this.commandSpamBuffer > 5) {
                 violation(event, ViolationDocument.builder()
-                    .debugInformation("Extreme command spam detected")
+                    .debugInformation("Extreme command frequency detected")
                     .punishType(this.commandSpamBuffer > 50 ? PunishType.KICK : PunishType.MITIGATE)
                     .build());
             }

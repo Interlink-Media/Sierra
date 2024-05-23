@@ -43,7 +43,7 @@ public class SierraDetection implements SierraCheck {
      * The rawCheckType variable is declared as private and final, meaning its value cannot be modified once set.
      * It is a constant that determines the type of check being performed by the SierraDetection class.
      * <p>
-     * For example, a rawCheckType value of CheckType.SPAM represents a check for packet spam,
+     * For example, a rawCheckType value of CheckType.SPAM represents a check for packet frequency,
      * and a value of CheckType.SIGN represents a check for sign crashing.
      */
     private final CheckType rawCheckType;
@@ -191,14 +191,14 @@ public class SierraDetection implements SierraCheck {
 
     /**
      * Creates a general message for a given user and punish type.
-     * The message is formatted as "Player [username] got [friendlyMessage] sending an invalid packet".
+     * The message is formatted as "Player [username] got [friendlyMessage] sending an protocol packet".
      *
      * @param user       The User object representing the player.
      * @param punishType The PunishType enum representing the type of punishment.
      * @return A string representing the general message.
      */
     private String createGeneralMessage(User user, PunishType punishType) {
-        return "Player " + user.getName() + " got " + punishType.friendlyMessage() + " sending an invalid packet";
+        return "Player " + user.getName() + " got " + punishType.friendlyMessage() + " sending an protocol packet";
     }
 
     /**

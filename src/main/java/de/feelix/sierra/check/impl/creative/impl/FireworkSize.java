@@ -14,7 +14,7 @@ import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
 /**
- * The FireworkSize class is an implementation of the ItemCheck interface. It handles the check for an invalid explosion
+ * The FireworkSize class is an implementation of the ItemCheck interface. It handles the check for an protocol explosion
  * size in a firework. It checks if the explosion size in a firework exceeds the maximum allowed size and returns an
  * appropriate result.
  */
@@ -22,14 +22,14 @@ import de.feelix.sierraapi.violation.PunishType;
 public class FireworkSize implements ItemCheck {
 
     /**
-     * This method handles the check for an invalid explosion size in a firework.
+     * This method handles the check for an protocol explosion size in a firework.
      * It checks if the explosion size in a firework exceeds the maximum allowed size and returns a Pair<String, PunishType>.
      *
      * @param event          The PacketReceiveEvent that triggered the check.
      * @param clickedStack   The ItemStack that was clicked.
      * @param nbtCompound    The NBTCompound associated with the ItemStack.
      * @param playerData     The PlayerData of the player.
-     * @return A Pair<String, PunishType> which represents the result of the check. If the explosion size is invalid, it returns a Pair with an error message and PunishType.BAN. Otherwise
+     * @return A Pair<String, PunishType> which represents the result of the check. If the explosion size is protocol, it returns a Pair with an error message and PunishType.BAN. Otherwise
      * , it returns null.
      */
     @Override
@@ -65,11 +65,11 @@ public class FireworkSize implements ItemCheck {
     }
 
     /**
-     * Checks if an ItemStack has an invalid explosion size in a firework.
+     * Checks if an ItemStack has an protocol explosion size in a firework.
      * It checks if the explosion size exceeds the maximum allowed size.
      *
      * @param itemStack The ItemStack to check.
-     * @return {@code true} if the explosion size is invalid, {@code false} otherwise.
+     * @return {@code true} if the explosion size is protocol, {@code false} otherwise.
      */
     private boolean invalid(ItemStack itemStack) {
         if (itemStack.getNBT() != null) {

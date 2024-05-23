@@ -58,7 +58,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
      * String[] translations = MOJANG_CRASH_TRANSLATIONS;
      * <p>
      * Example:
-     * translations[0] = "translation.test.invalid";
+     * translations[0] = "translation.test.protocol";
      * translations[1] = "translation.test.invalid2";
      */
     private static final String[] MOJANG_CRASH_TRANSLATIONS = {"translation.test.invalid", "translation.test.invalid2"};
@@ -348,7 +348,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             String strippedContent = ChatColor.stripColor(pageContent.replaceAll("\\+", ""));
             //noinspection ConstantValue
             if (strippedContent == null || strippedContent.equals("null")) {
-                return new Pair<>("Contains invalid color code", PunishType.BAN);
+                return new Pair<>("Contains protocol color code", PunishType.BAN);
             }
 
             Pair<String, PunishType> invalidColor = isInvalidColor(strippedContent);
@@ -408,10 +408,10 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
     }
 
     /**
-     * Determines if the given page size is invalid.
+     * Determines if the given page size is protocol.
      *
      * @param contentLength The length of the page content.
-     * @return The CrashDetails object if the page size is invalid, null otherwise.
+     * @return The CrashDetails object if the page size is protocol, null otherwise.
      * @see Pair
      */
     private static @Nullable Pair<String, PunishType>  isInvalidPageSize(int contentLength) {
@@ -470,10 +470,10 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
     }
 
     /**
-     * Checks if the given strippedContent is an invalid color code signature.
+     * Checks if the given strippedContent is an protocol color code signature.
      *
      * @param strippedContent The stripped content to check.
-     * @return A CrashDetails object if the color code signature is invalid, null otherwise.
+     * @return A CrashDetails object if the color code signature is protocol, null otherwise.
      * @see Pair
      */
     private static @Nullable Pair<String, PunishType>  isInvalidColor(String strippedContent) {
@@ -505,10 +505,10 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
 
 
     /**
-     * Checks if the title or author of the given ItemStack is invalid.
+     * Checks if the title or author of the given ItemStack is protocol.
      *
      * @param itemStack The ItemStack to check.
-     * @return {@code true} if the title or author is invalid, {@code false} otherwise.
+     * @return {@code true} if the title or author is protocol, {@code false} otherwise.
      */
     private boolean invalidTitleOrAuthor(ItemStack itemStack) {
         if (itemStack.getNBT() != null) {

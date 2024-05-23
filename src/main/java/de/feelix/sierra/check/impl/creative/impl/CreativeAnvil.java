@@ -16,10 +16,10 @@ import de.feelix.sierraapi.violation.PunishType;
 public class CreativeAnvil implements ItemCheck {
 
     /**
-     * Determines whether the given ItemStack is an invalid anvil item.
+     * Determines whether the given ItemStack is an protocol anvil item.
      *
      * @param itemStack The ItemStack to check.
-     * @return true if the given ItemStack is an invalid anvil item, false otherwise.
+     * @return true if the given ItemStack is an protocol anvil item, false otherwise.
      */
     // This prevents the creation of buggy anvils that crash the client when placed
     // https://bugs.mojang.com/browse/MC-82677

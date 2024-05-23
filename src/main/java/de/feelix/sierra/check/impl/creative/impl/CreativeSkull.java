@@ -43,7 +43,7 @@ public class CreativeSkull implements ItemCheck {
 
         NBTCompound skullOwner = nbtCompound.getCompoundTagOrNull("SkullOwner");
         if (skullOwner == null) {
-            return new Pair<>("Contains invalid skull owner", PunishType.KICK);
+            return new Pair<>("Contains protocol skull owner", PunishType.KICK);
         }
 
         if (skullOwner.getTags().containsKey("Id")) {

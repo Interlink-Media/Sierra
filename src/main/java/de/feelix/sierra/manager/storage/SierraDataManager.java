@@ -149,9 +149,9 @@ public class SierraDataManager implements UserRepository {
     }
 
     /**
-     * Checks if the version of the plugin Sierra is invalid.
+     * Checks if the version of the plugin Sierra is protocol.
      *
-     * @return true if the version is invalid, false otherwise
+     * @return true if the version is protocol, false otherwise
      */
     private boolean isVersionInvalid() {
         return Sierra.getPlugin()
