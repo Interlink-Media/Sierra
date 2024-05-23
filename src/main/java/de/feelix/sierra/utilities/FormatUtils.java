@@ -40,6 +40,12 @@ public class FormatUtils {
         }
     }
 
+    /**
+     * Checks if the precision of a double number is greater than 3 decimal places.
+     *
+     * @param number The double number to check the precision of.
+     * @return True if the precision of the number is greater than 3 decimal places, False otherwise.
+     */
     public static boolean checkDoublePrecision(double number) {
         String numberStr = Double.toString(number);
         if (!numberStr.contains(".")) {
