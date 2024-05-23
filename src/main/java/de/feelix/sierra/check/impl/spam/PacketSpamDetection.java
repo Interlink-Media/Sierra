@@ -38,9 +38,6 @@ public class PacketSpamDetection extends SierraDetection implements IngoingProce
         multiplierMap.put(PacketType.Play.Client.valueOf("PLAYER_POSITION_AND_ROTATION"), 0.5);
         multiplierMap.put(PacketType.Play.Client.valueOf("PLAYER_ROTATION"), 0.5);
         multiplierMap.put(PacketType.Play.Client.valueOf("PLAYER_FLYING"), 0.5);
-        // multiplierMap.put(PacketType.Play.Client.valueOf("INTERACT_ENTITY"), 0.5); // beta
-        multiplierMap.put(PacketType.Play.Client.valueOf("HELD_ITEM_CHANGE"), (double) 1);
-        multiplierMap.put(PacketType.Play.Client.valueOf("ANIMATION"), (double) 1);
     }
 
     /**

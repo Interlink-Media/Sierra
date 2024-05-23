@@ -138,6 +138,55 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
     private int deltaBuffer = 0;
 
     /**
+     * Represents the last time the player was flying.
+     */
+    private long lastFlyingTime = 0L;
+
+    /**
+     * Represents the balance of a player.
+     * <p>
+     * The balance is used to track the movement frequency of the player. It is updated when the player is flying and
+     * is decremented when the player is teleported. If the balance exceeds a certain threshold, a violation is created.
+     */
+    private long balance = 0L;
+
+    /**
+     * Represents the maximum balance of a player.
+     * <p>
+     * The maximum balance is used to determine the threshold at which a violation is created for movement frequency.
+     * If the player's balance exceeds the maximum balance, a violation is generated.
+     */
+    private static final long maxBal = 0;
+
+    /**
+     * The balReset variable represents the balance reset value.
+     *
+     * <p>
+     * This variable is a constant and is used to define the balance value at which a reset should occur.
+     * </p>
+     *
+     * <p>
+     * The value of balReset is -50.
+     * </p>
+     *
+     * <p>
+     * It is used in the TimerDetection class as one of the fields.
+     * </p>
+     *
+     * @since 1.0
+     */
+    private static final long balReset = -50;
+
+    /**
+     * The balSubOnTp variable represents the balance decrease value when a player is teleported.
+     * <p>
+     * The balance is used to track the movement frequency of the player. It is updated when the player is flying and
+     * is decremented when the player is teleported. If the balance
+     * exceeds a certain threshold, a violation is created.
+     */
+    private static final long balSubOnTp = 50;
+
+    /**
      * InvalidMoveDetection is a subclass of SierraDetection which is used to detect and handle invalid movement
      * packets from a player.
      * It examines the player's movement data and checks for any suspicious or invalid values.
@@ -162,9 +211,37 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
         if (isFlying(event)) {
             getPlayerData().getTimingProcessor().getMovementTask().prepare();
             handleFlyingPacket(event, data);
+            handleLatencyAbuse(event, data);
         } else if (isVehicleMovePacket(event)) {
             handleVehicleMovePacket(event, data);
         }
+    }
+
+    /**
+     * This method handles abuse of latency in movement by checking for invalid values and taking appropriate actions.
+     *
+     * @param event the PacketReceiveEvent triggered by receiving a packet from the player
+     * @param data the PlayerData object containing the player's data
+     */
+    private void handleLatencyAbuse(PacketReceiveEvent event, PlayerData data) {
+
+        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-timer-cheats", true)) {
+            return;
+        }
+
+        if (this.lastFlyingTime != 0L && System.currentTimeMillis() - data.getJoinTime() > 1000) {
+            final long now = System.currentTimeMillis();
+            balance += 50L;
+            balance -= now - lastFlyingTime;
+            if (balance > maxBal) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Movement frequency: bal:~" + balance)
+                    .punishType(violations() > 200 ? PunishType.KICK : PunishType.MITIGATE)
+                    .build());
+                balance = balReset;
+            }
+        }
+        lastFlyingTime = System.currentTimeMillis();
     }
 
     /**
@@ -483,6 +560,10 @@ public class InvalidMoveDetection extends SierraDetection implements IngoingProc
     public void handle(PacketSendEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK) {
             this.lastTeleportTime = System.currentTimeMillis();
+        }
+        if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
+            || event.getPacketType() == PacketType.Play.Server.ENTITY_VELOCITY) {
+            balance -= balSubOnTp;
         }
     }
 }
