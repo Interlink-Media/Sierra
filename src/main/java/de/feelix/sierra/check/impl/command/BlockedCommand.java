@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@SierraCheckData(checkType = CheckType.COMMAND)
+@SierraCheckData(checkType = CheckType.COMMAND_VALIDATION)
 public class BlockedCommand extends SierraDetection implements IngoingProcessor {
 
     /**

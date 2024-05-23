@@ -22,7 +22,7 @@ import de.feelix.sierraapi.violation.PunishType;
 // PaperMC
 // net/minecraft/server/network/ServerGamePacketListenerImpl.java:515
 // net/minecraft/server/network/ServerGamePacketListenerImpl.java:1283
-@SierraCheckData(checkType = CheckType.MOVE)
+@SierraCheckData(checkType = CheckType.MOVEMENT_VALIDATION)
 public class InvalidMoveDetection extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
 
     /**

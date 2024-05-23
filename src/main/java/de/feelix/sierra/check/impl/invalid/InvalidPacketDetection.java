@@ -130,7 +130,7 @@ import java.util.regex.Pattern;
  * - Returns:
  * - true if the server version is supported, false otherwise
  */
-@SierraCheckData(checkType = CheckType.INVALID)
+@SierraCheckData(checkType = CheckType.PROTOCOL_VALIDATION)
 public class InvalidPacketDetection extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
 
     /**
@@ -241,6 +241,11 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
      * The minimum valid color value.
      */
     private static final int MIN_VALID_COLOR = 0;
+
+    /**
+     * The maximum length of a sign in characters.
+     */
+    private static final int MAX_SIGN_LENGTH = 45;
 
     /**
      * Represents a content of a list.
@@ -506,6 +511,31 @@ public class InvalidPacketDetection extends SierraDetection implements IngoingPr
                     .debugInformation("(invalid) length=" + length)
                     .punishType(PunishType.KICK)
                     .build());
+            }
+
+        } else if (event.getPacketType() == PacketType.Play.Client.UPDATE_SIGN) {
+
+
+            WrapperPlayClientUpdateSign wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientUpdateSign(event), playerData::exceptionDisconnect);
+
+            if (wrapper == null) return;
+
+            for (String textLine : wrapper.getTextLines()) {
+
+                if (textLine.toLowerCase().contains("run_command")) {
+                    violation(
+                        event,
+                        createViolation("Sign contains json command", PunishType.KICK)
+                    );
+                }
+
+                if (textLine.length() > MAX_SIGN_LENGTH) {
+                    violation(
+                        event,
+                        createViolation("Sign length: " + textLine.length(), PunishType.BAN)
+                    );
+                }
             }
 
         } else if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {

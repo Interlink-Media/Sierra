@@ -8,15 +8,12 @@ import lombok.Getter;
 @Getter
 public enum CheckType {
 
-    SPAM(1, "Packet Spam"),
-    SIGN(2, "Sign Crasher"),
-    INVALID(3, "Invalid Protocol"),
-    BOOK(4, "Book Crasher"),
-    COMMAND(5, "Blocked Command"),
-    CREATIVE(6, "Creative Crasher"),
-    MOVE(7, "Move Crasher"),
-    LATENCY_ABUSE(8, "Timer");
-
+    FREQUENCY(1, "Frequency"),
+    PROTOCOL_VALIDATION(2, "Protocol Validation"),
+    BOOK(3, "Book Crasher"),
+    COMMAND_VALIDATION(4, "Command Validation"),
+    CREATIVE(5, "Creative Crasher"),
+    MOVEMENT_VALIDATION(6, "Movement Validation");
     /**
      * Represents the unique identifier for a check type.
      */

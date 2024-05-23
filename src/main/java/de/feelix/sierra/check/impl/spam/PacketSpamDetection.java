@@ -25,7 +25,7 @@ import java.util.HashMap;
 /**
  * This class is responsible for detecting packet spamming based on various multipliers.
  */
-@SierraCheckData(checkType = CheckType.SPAM)
+@SierraCheckData(checkType = CheckType.FREQUENCY)
 public class PacketSpamDetection extends SierraDetection implements IngoingProcessor {
 
     /**

@@ -29,11 +29,6 @@ hide-version: true
 # from the support team, as they provide a significant fundamental protection against malicious attacks.
 prevent-packet-spam: true
 
-# The Sign Crasher is a method from the old days to crash a server. Even though hardly anyone uses this nowadays, we still
-# have this check in our inventory. We recommend keeping this check always enabled, as it cannot give false
-# positives and can only bring about positive effects.
-prevent-sign-crasher: true
-
 # This is the core of our system. This is the check that examines all incoming and outgoing packets for
 # incorrect values, faulty NBT tags, or protocol variations. Under no circumstances should this check be deactivated,
 # as it performs the majority of the work by far. This check operates incredibly precisely. If there are any issues

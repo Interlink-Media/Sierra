@@ -8,7 +8,6 @@ import de.feelix.sierra.check.impl.creative.ItemDetectionRunner;
 import de.feelix.sierra.check.impl.latency.TimerDetection;
 import de.feelix.sierra.check.impl.move.InvalidMoveDetection;
 import de.feelix.sierra.check.impl.invalid.InvalidPacketDetection;
-import de.feelix.sierra.check.impl.sign.SignDetection;
 import de.feelix.sierra.check.impl.spam.PacketSpamDetection;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierraapi.check.impl.SierraCheck;
