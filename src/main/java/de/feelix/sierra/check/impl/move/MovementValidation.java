@@ -221,7 +221,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
      * This method handles abuse of latency in movement by checking for invalid values and taking appropriate actions.
      *
      * @param event the PacketReceiveEvent triggered by receiving a packet from the player
-     * @param data the PlayerData object containing the player's data
+     * @param data  the PlayerData object containing the player's data
      */
     private void handleLatencyAbuse(PacketReceiveEvent event, PlayerData data) {
 
@@ -323,7 +323,10 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
         double deltaXZ = Math.hypot(deltaX, deltaZ);
 
-        if (deltaXZ > 5 && System.currentTimeMillis() - this.lastTeleportTime > 1000) {
+        if (!(System.currentTimeMillis() - this.lastTeleportTime > 1000)) return;
+
+
+        if (deltaXZ > 5) {
             this.deltaBuffer++;
 
             if (deltaBuffer++ > 10) {
@@ -332,9 +335,11 @@ public class MovementValidation extends SierraDetection implements IngoingProces
                     .debugInformation(String.format("Invalid deltaXZ: %.2f", deltaXZ))
                     .build());
             }
+        } else {
+            deltaBuffer = deltaBuffer > 0 ? deltaBuffer - 1 : 0;
         }
 
-        if (invalidDeltaValue(deltaX, deltaY, deltaZ) && System.currentTimeMillis() - this.lastTeleportTime > 1000) {
+        if (invalidDeltaValue(deltaX, deltaY, deltaZ)) {
             violation(event, ViolationDocument.builder()
                 .punishType(PunishType.KICK)
                 .debugInformation(String.format("X: %.2f Y: %.2f Z: %.2f", deltaX, deltaY, deltaZ))
