@@ -231,11 +231,12 @@ public class SierraDataManager implements UserRepository {
      * @param checkType the type of check to add a kick for
      */
     public void addKick(CheckType checkType) {
-        if (!violationCount.containsKey(checkType.getFriendlyName())) {
-            violationCount.put(checkType.getFriendlyName(), 1);
+        String name = checkType.getFriendlyName().replace(" ", "");
+        if (!violationCount.containsKey(name)) {
+            violationCount.put(name, 1);
             return;
         }
-        violationCount.put(checkType.getFriendlyName(), violationCount.get(checkType.getFriendlyName()) + 1);
+        violationCount.put(name, violationCount.get(name) + 1);
     }
 
     /**

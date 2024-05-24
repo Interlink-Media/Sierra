@@ -196,16 +196,26 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     private void initializePacketEvents() {
         Metrics metrics = new Metrics(this, PLUGIN_ID);
 
-        metrics.addCustomChart(new Metrics.SingleLineChart("bans", () -> {
-            int bans = SierraDataManager.BANS;
-            SierraDataManager.BANS = 0;
-            return bans;
-        }));
-        metrics.addCustomChart(new Metrics.SingleLineChart("kicks", () -> {
-            int kicks = SierraDataManager.KICKS;
-            SierraDataManager.KICKS = 0;
-            return kicks;
-        }));
+        metrics.addCustomChart(new Metrics.SingleLineChart(
+            "bans",
+            () -> {
+                int bans = SierraDataManager.BANS;
+                SierraDataManager.BANS = 0;
+                return bans;
+            }
+        ));
+        metrics.addCustomChart(new Metrics.SingleLineChart(
+            "kicks",
+            () -> {
+                int kicks = SierraDataManager.KICKS;
+                SierraDataManager.KICKS = 0;
+                return kicks;
+            }
+        ));
+        metrics.addCustomChart(new Metrics.AdvancedPie(
+            "active_check_types",
+            () -> SierraDataManager.violationCount
+        ));
 
         PacketEvents.getAPI().getEventManager().registerListener(new PacketListener());
         PacketEvents.getAPI().init();
