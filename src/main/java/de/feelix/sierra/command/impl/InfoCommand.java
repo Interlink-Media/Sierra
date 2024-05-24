@@ -50,7 +50,7 @@ public class InfoCommand implements ISierraCommand {
             "commands.info.header",
             "{prefix} &7Information for &b{playerName}&7:",
             true
-        ).replacePrefix().replace("{playerName}", playerName).colorize().getMessageValue());
+        ).replacePrefix().replace("{playerName}", playerName).colorize().getMessage());
         sendUserData(user, sierraUser);
         sendCheckInformation(user, sierraUser);
     }
@@ -78,7 +78,7 @@ public class InfoCommand implements ISierraCommand {
                              .replace("{ticksExisted}", sierraUser.ticksExisted() + " ticks")
                              .colorize()
                              .stripped()
-                             .getMessageValue());
+                             .getMessage());
     }
 
     /**
@@ -94,7 +94,7 @@ public class InfoCommand implements ISierraCommand {
                 "commands.info.no-detections",
                 "{prefix} &cNo detections",
                 true
-            ).replacePrefix().colorize().getMessageValue());
+            ).replacePrefix().colorize().getMessage());
             return;
         }
         for (SierraCheck sierraCheck : sierraUser.checkRepository().availableChecks()) {
@@ -105,7 +105,7 @@ public class InfoCommand implements ISierraCommand {
                     true
                 ).replacePrefix().replace("{checkType}", sierraCheck.checkType().getFriendlyName())
                                      .replace("{violations}", String.valueOf(sierraCheck.violations())
-                                     ).colorize().getMessageValue());
+                                     ).colorize().getMessage());
             }
         }
     }
@@ -134,7 +134,7 @@ public class InfoCommand implements ISierraCommand {
     private void sendHelpSyntax(User user) {
         user.sendMessage(new ConfigValue("commands.info.protocol", "{prefix} &cInvalid usage, try /sierra info <name>",
                                          true
-        ).replacePrefix().colorize().getMessageValue());
+        ).replacePrefix().colorize().getMessage());
     }
 
     /**

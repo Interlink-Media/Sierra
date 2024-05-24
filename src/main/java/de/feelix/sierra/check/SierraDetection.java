@@ -261,7 +261,7 @@ public class SierraDetection implements SierraCheck {
             .replace("{tags}", this.friendlyName.toLowerCase())
             .replace("{debugInfo}", FormatUtils.shortenString(violationDocument.getDebugInformation()))
             .replace("{alertNote}", getAlertNote())
-            .stripped().colorize().replacePrefix().getMessageValue();
+            .stripped().colorize().replacePrefix().getMessage();
 
         String command = getPunishmentCommand(username);
 
@@ -299,7 +299,7 @@ public class SierraDetection implements SierraCheck {
         return new ConfigValue(
             "layout.detection-message.alert-command-note",
             "&fClick to teleport", true
-        ).colorize().replacePrefix().getMessageValue();
+        ).colorize().replacePrefix().getMessage();
     }
 
     /**
@@ -312,7 +312,7 @@ public class SierraDetection implements SierraCheck {
         return new ConfigValue(
             "layout.detection-message.alert-command",
             "/tp {username}", true
-        ).replace("{username}", username).getMessageValue();
+        ).replace("{username}", username).getMessage();
     }
 
     /**
@@ -331,7 +331,7 @@ public class SierraDetection implements SierraCheck {
             .replace("{username}", user.getName())
             .replace("{mitigation}", punishType.friendlyMessage())
             .replace("{checkname}", this.friendlyName)
-            .replace("{violations}", String.valueOf(violations)).getMessageValue();
+            .replace("{violations}", String.valueOf(violations)).getMessage();
     }
 
     /**

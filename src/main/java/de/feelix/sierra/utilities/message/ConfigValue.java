@@ -14,20 +14,20 @@ public class ConfigValue {
     /**
      * Represents a configurable message value.
      */
-    private String messageValue;
+    private String message;
 
     /**
      * The ConfigValue class represents a configurable message in the plugin.
      * It is used to retrieve and manipulate message values from the plugin configuration.
      */
-    public ConfigValue(String messageKey, String messageOnFailure, boolean messages) {
-        if (messages) {
-            this.messageValue = Sierra.getPlugin()
+    public ConfigValue(String messageKey, String messageOnFailure, boolean messageFile) {
+        if (messageFile) {
+            this.message = Sierra.getPlugin()
                 .getSierraConfigEngine()
                 .messages()
                 .getString(messageKey, messageOnFailure);
         } else {
-            this.messageValue = Sierra.getPlugin()
+            this.message = Sierra.getPlugin()
                 .getSierraConfigEngine()
                 .config()
                 .getString(messageKey, messageOnFailure);
@@ -42,7 +42,7 @@ public class ConfigValue {
      * @return The ConfigMessage object with the colorized message value.
      */
     public ConfigValue colorize() {
-        this.messageValue = ChatColor.translateAlternateColorCodes('&', this.messageValue);
+        this.message = ChatColor.translateAlternateColorCodes('&', this.message);
         return this;
     }
 
@@ -66,7 +66,7 @@ public class ConfigValue {
      * @return The updated ConfigMessage object after the replacement.
      */
     public ConfigValue replace(String key, String value) {
-        this.messageValue = this.messageValue.replace(key, value);
+        this.message = this.message.replace(key, value);
         return this;
     }
 

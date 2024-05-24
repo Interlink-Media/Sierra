@@ -59,7 +59,7 @@ public class AlertsCommand implements ISierraCommand {
             "{prefix} &fYou have {status} &fthe alerts messages", true
         )
                                .replacePrefix().replace("{status}", isDisabled ? "&cdisabled" : "&aenabled").colorize()
-                               .getMessageValue());
+                               .getMessage());
     }
 
     /**

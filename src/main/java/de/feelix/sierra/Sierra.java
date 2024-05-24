@@ -219,7 +219,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      */
     private void setupPunishmentConfig() {
         this.punishmentConfig = PunishmentConfig.valueOf(
-            new ConfigValue("internal-punishment-config", "HARD", false).getMessageValue());
+            new ConfigValue("internal-punishment-config", "HARD", false).getMessage());
     }
 
     /**
@@ -298,7 +298,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      */
     public void setPrefix() {
         PREFIX = new ConfigValue("layout.prefix", "&3Sierra &7>", true)
-            .colorize().getMessageValue();
+            .colorize().getMessage();
     }
 
     /**

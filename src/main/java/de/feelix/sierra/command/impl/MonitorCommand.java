@@ -39,7 +39,7 @@ public class MonitorCommand implements ISierraCommand {
             "commands.monitor.header",
             "{prefix} &fPerformance monitor &7(Your data)",
             true
-        ).replacePrefix().colorize().getMessageValue());
+        ).replacePrefix().colorize().getMessage());
 
         WeakReference<PlayerData> playerData = Sierra.getPlugin().getSierraDataManager().getPlayerData(user);
 
@@ -49,7 +49,7 @@ public class MonitorCommand implements ISierraCommand {
                     "commands.monitor.nothing-found",
                     "{prefix} &cNo data found!",
                     true
-                ).replacePrefix().colorize().getMessageValue());
+                ).replacePrefix().colorize().getMessage());
             return;
         }
         printMonitor(user, sierraUser);
@@ -69,7 +69,7 @@ public class MonitorCommand implements ISierraCommand {
                 "commands.monitor.packets-header",
                 "{prefix} &b&lPackets:",
                 true
-            ).replacePrefix().colorize().getMessageValue());
+            ).replacePrefix().colorize().getMessage());
         sendTiming(timingProcessor.getPacketReceiveTask(), "Ingoing Packets", user);
         sendTiming(timingProcessor.getPacketSendTask(), "Outgoing Packets", user);
         user.sendMessage(
@@ -77,7 +77,7 @@ public class MonitorCommand implements ISierraCommand {
                 "commands.monitor.environment-header",
                 "{prefix} &b&lEnvironment:",
                 true
-            ).replacePrefix().colorize().getMessageValue());
+            ).replacePrefix().colorize().getMessage());
         sendTiming(timingProcessor.getMovementTask(), "Movement Task", user);
     }
 
@@ -97,7 +97,7 @@ public class MonitorCommand implements ISierraCommand {
             ).replacePrefix()
                 .replace("{title}", title)
                 .replace("{delay}", String.format("%.5f", packetReceiveTiming.delay()))
-                .colorize().getMessageValue());
+                .colorize().getMessage());
     }
 
     /**
