@@ -48,7 +48,7 @@ public class InfoCommand implements ISierraCommand {
     private void sendPlayerInfoMessages(User user, String playerName, SierraUser sierraUser) {
         user.sendMessage(new ConfigValue(
             "commands.info.header",
-            "{prefix} &7Information for &c{playerName}&7:",
+            "{prefix} &7Information for &b{playerName}&7:",
             true
         ).replacePrefix().replace("{playerName}", playerName).colorize().getMessageValue());
         sendUserData(user, sierraUser);
@@ -65,11 +65,9 @@ public class InfoCommand implements ISierraCommand {
 
         user.sendMessage(new ConfigValue(
             "commands.info.information",
-            "{prefix} &7Version: &c{clientVersion}{n}{prefix} &7Client: "
-            + "&c{brand}{n}{prefix} &7Ping: "
-            + "&c{ping}ms{n}{prefix} &7Game mode: &c{gameMode}{n}{prefix} &7Ticks "
-            + "existed: "
-            + "&c{ticksExisted}{n}{prefix} &c&lCheck information",
+            "{prefix} &7Version: &b{clientVersion}{n}{prefix} &7Client: &b{brand}{n}{prefix} &7Ping: "
+            + "&b{ping}ms{n}{prefix} &7Game mode: &b{gameMode}{n}{prefix} &7Ticks existed: "
+            + "&b{ticksExisted}{n}{prefix} &b&lCheck information",
             true
         )
                              .replacePrefix()
@@ -103,7 +101,7 @@ public class InfoCommand implements ISierraCommand {
             if (sierraCheck.violations() > 0) {
                 user.sendMessage(new ConfigValue(
                     "commands.info.check-info",
-                    "{prefix}  &8- &7{checkType}: &c{violations}",
+                    "{prefix}  &8- &7{checkType}: &b{violations}",
                     true
                 ).replacePrefix().replace("{checkType}", sierraCheck.checkType().getFriendlyName())
                                      .replace("{violations}", String.valueOf(sierraCheck.violations())

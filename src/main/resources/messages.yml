@@ -27,7 +27,7 @@ commands:
   history:
     # Message when no history entries are available
     # {prefix}: Message prefix
-    empty: "{prefix} &bNo history available"
+    empty: "{prefix} &cNo history available"
 
     # Message for protocol usage of the history command
     # {prefix}: Message prefix
@@ -60,7 +60,7 @@ commands:
 
     # Message when no data is found
     # {prefix}: Message prefix
-    nothing-found: "{prefix} &bNo data found!"
+    nothing-found: "{prefix} &cNo data found!"
 
     # Header for packet data
     # {prefix}: Message prefix
@@ -88,7 +88,7 @@ commands:
 
     # Message when no detections are found
     # {prefix}: Message prefix
-    no-detections: "{prefix} &bNo detections"
+    no-detections: "{prefix} &cNo detections"
 
     # Information about checks and violations
     # {prefix}: Message prefix

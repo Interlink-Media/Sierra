@@ -117,8 +117,9 @@ public class HistoryCommand implements ISierraCommand {
      */
     private void sendMessage(User user, int page, Pagination<History> pagination) {
         user.sendMessage(new ConfigValue("commands.history.header",
-                                         "{prefix} &fShowing entries: &7(page &c{current} &7of &c{total} &7- "
-                                         + "&c{entries} &7entries)", true
+                                         "{prefix} &fShowing entries: &7(page &b{current} &7of &b{total} &7- "
+                                         + "&3{entries} &7entries)",
+                                         true
         ).replacePrefix()
                              .replace("{current}", String.valueOf(page))
                              .replace("{total}", String.valueOf(pagination.totalPages()))
@@ -137,7 +138,7 @@ public class HistoryCommand implements ISierraCommand {
 
         return new ConfigValue(
             "commands.history.entry",
-            "&7{timestamp} &c{username} &7({ping}ms) -> &c{punishType} &7({description})",
+            "&7{timestamp} &3{username} &7({ping}ms) -> &b{punishType} &7({description})",
             true
         )
             .replacePrefix()

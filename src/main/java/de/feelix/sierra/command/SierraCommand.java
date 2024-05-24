@@ -217,12 +217,12 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
                     commandSender.sendMessage(String.format(MESSAGE_FORMAT.replace("{offset-color}", Sierra.getPlugin()
                         .getSierraConfigEngine()
                         .messages()
-                        .getString("layout.offset-color", "§c")), Sierra.PREFIX, s, description));
+                        .getString("layout.offset-color", "§b")), Sierra.PREFIX, s, description));
                 } else if (commandSender.hasPermission(iSierraCommand.permission())) {
                     commandSender.sendMessage(String.format(MESSAGE_FORMAT.replace("{offset-color}", Sierra.getPlugin()
                         .getSierraConfigEngine()
                         .messages()
-                        .getString("layout.offset-color", "§c")), Sierra.PREFIX, s, description));
+                        .getString("layout.offset-color", "§b")), Sierra.PREFIX, s, description));
                 }
             }
         });

@@ -248,9 +248,9 @@ public class SierraDetection implements SierraCheck {
 
         String content = new ConfigValue(
             "layout.detection-message.alert-content",
-            " &7Username: &c{username}{n} &7Version: &c{clientVersion}{n} &7Brand: &c{brand}{n} &7Exist since: "
-            + "&c{ticksExisted} ticks{n} &7Game mode: &c{gameMode}{n} &7Tag: &c{tags}{n} &7Debug info: "
-            + "&c{debugInfo}{n}{n} {alertNote}",
+            " &7Username: &b{username}{n} &7Version: &b{clientVersion}{n} &7Brand: &b{brand}{n} &7Exist since: "
+            + "&b{ticksExisted}{n} &7Game mode: &b{gameMode}{n} &7Tag: &b{tags}{n} &7Debug info: &b{debugInfo}{n}{n} "
+            + "{alertNote}",
             true
         )
             .replace("{username}", username)
@@ -326,7 +326,7 @@ public class SierraDetection implements SierraCheck {
 
         return new ConfigValue(
             "layout.detection-message.staff-alert",
-            "{prefix} &c{username} &8┃ &f{mitigation} &c{checkname} &8┃ &cx{violations}", true
+            "{prefix} &b{username} &8┃ &f{mitigation} &b{checkname} &8┃ &3x{violations}", true
         ).colorize().replacePrefix()
             .replace("{username}", user.getName())
             .replace("{mitigation}", punishType.friendlyMessage())

@@ -24,10 +24,10 @@ public class CommandHelper {
         user.sendMessage(sierraPrefix + " §fRunning " + Sierra.getPlugin()
             .getSierraConfigEngine()
             .messages()
-            .getString("layout.offset-color", "§c") + "Sierra " + pluginVersionMessage);
+            .getString("layout.offset-color", "§b") + "Sierra " + pluginVersionMessage);
         user.sendMessage(sierraPrefix + " §fMore info at {offset-color}discord.gg/squarecode".replace(
             "{offset-color}",
-            Sierra.getPlugin().getSierraConfigEngine().messages().getString("layout.offset-color", "§c")
+            Sierra.getPlugin().getSierraConfigEngine().messages().getString("layout.offset-color", "§b")
         ));
     }
 

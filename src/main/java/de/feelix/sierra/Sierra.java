@@ -297,7 +297,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * The prefix is translated using the '&' character as a color code indicator.
      */
     public void setPrefix() {
-        PREFIX = new ConfigValue("layout.prefix", "&8▎ &cSierra &8▏", true)
+        PREFIX = new ConfigValue("layout.prefix", "&3Sierra &7>", true)
             .colorize().getMessageValue();
     }
 

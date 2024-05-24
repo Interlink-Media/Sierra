@@ -67,7 +67,7 @@ public class MonitorCommand implements ISierraCommand {
         user.sendMessage(
             new ConfigValue(
                 "commands.monitor.packets-header",
-                "{prefix} &c&lPackets:",
+                "{prefix} &b&lPackets:",
                 true
             ).replacePrefix().colorize().getMessageValue());
         sendTiming(timingProcessor.getPacketReceiveTask(), "Ingoing Packets", user);
@@ -75,7 +75,7 @@ public class MonitorCommand implements ISierraCommand {
         user.sendMessage(
             new ConfigValue(
                 "commands.monitor.environment-header",
-                "{prefix} &c&lEnvironment:",
+                "{prefix} &b&lEnvironment:",
                 true
             ).replacePrefix().colorize().getMessageValue());
         sendTiming(timingProcessor.getMovementTask(), "Movement Task", user);
