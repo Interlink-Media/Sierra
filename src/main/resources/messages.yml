@@ -31,7 +31,7 @@ commands:
 
     # Message for protocol usage of the history command
     # {prefix}: Message prefix
-    invalid: "{prefix} &bInvalid usage, try /sierra history <page>"
+    invalid: "{prefix} &cInvalid usage, try /sierra history <page>"
 
     # Header for history pages
     # {prefix}: Message prefix
@@ -84,7 +84,7 @@ commands:
 
     # Message for protocol usage of the info command
     # {prefix}: Message prefix
-    invalid: "{prefix} &bInvalid usage, try /sierra info <name>"
+    invalid: "{prefix} &cInvalid usage, try /sierra info <name>"
 
     # Message when no detections are found
     # {prefix}: Message prefix

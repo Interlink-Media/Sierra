@@ -14,6 +14,7 @@ public enum CheckType {
     COMMAND_VALIDATION(4, "Command Validation"),
     CREATIVE(5, "Creative Crasher"),
     MOVEMENT_VALIDATION(6, "Movement Validation");
+
     /**
      * Represents the unique identifier for a check type.
      */
