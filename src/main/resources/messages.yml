@@ -27,18 +27,18 @@ commands:
   history:
     # Message when no history entries are available
     # {prefix}: Message prefix
-    empty: "{prefix} &cNo history available"
+    empty: "{prefix} &bNo history available"
 
     # Message for protocol usage of the history command
     # {prefix}: Message prefix
-    invalid: "{prefix} &cInvalid usage, try /sierra history <page>"
+    invalid: "{prefix} &bInvalid usage, try /sierra history <page>"
 
     # Header for history pages
     # {prefix}: Message prefix
     # {current}: Current page number
     # {total}: Total number of pages
     # {entries}: Number of entries on the current page
-    header: "{prefix} &fShowing entries: &7(page &c{current} &7of &c{total} &7- &c{entries} &7entries)"
+    header: "{prefix} &fShowing entries: &7(page &b{current} &7of &b{total} &7- &3{entries} &7entries)"
 
     # Single history entry
     # {timestamp}: Timestamp of the entry
@@ -46,7 +46,7 @@ commands:
     # {ping}: User's ping in milliseconds
     # {punishType}: Type of punishment
     # {description}: Description of the punishment
-    entry: "&7{timestamp} &c{username} &7({ping}ms) -> &c{punishType} &7({description})"
+    entry: "&7{timestamp} &3{username} &7({ping}ms) -> &b{punishType} &7({description})"
 
   reload:
     # Success message for reloading the configuration
@@ -60,15 +60,15 @@ commands:
 
     # Message when no data is found
     # {prefix}: Message prefix
-    nothing-found: "{prefix} &cNo data found!"
+    nothing-found: "{prefix} &bNo data found!"
 
     # Header for packet data
     # {prefix}: Message prefix
-    packets-header: "{prefix} &c&lPackets:"
+    packets-header: "{prefix} &b&lPackets:"
 
     # Header for environment data
     # {prefix}: Message prefix
-    environment-header: "{prefix} &c&lEnvironment:"
+    environment-header: "{prefix} &b&lEnvironment:"
 
     # Entry in the performance monitor
     # {prefix}: Message prefix
@@ -80,21 +80,21 @@ commands:
     # Header for player information
     # {prefix}: Message prefix
     # {playerName}: Player's name
-    header: "{prefix} &7Information for &c{playerName}&7:"
+    header: "{prefix} &7Information for &b{playerName}&7:"
 
     # Message for protocol usage of the info command
     # {prefix}: Message prefix
-    invalid: "{prefix} &cInvalid usage, try /sierra info <name>"
+    invalid: "{prefix} &bInvalid usage, try /sierra info <name>"
 
     # Message when no detections are found
     # {prefix}: Message prefix
-    no-detections: "{prefix} &cNo detections"
+    no-detections: "{prefix} &bNo detections"
 
     # Information about checks and violations
     # {prefix}: Message prefix
     # {checkType}: Type of check
     # {violations}: Number of violations
-    check-info: "{prefix}  &8- &7{checkType}: &c{violations}"
+    check-info: "{prefix}  &8- &7{checkType}: &b{violations}"
 
     # Detailed information about a player
     # {prefix}: Message prefix
@@ -104,16 +104,16 @@ commands:
     # {gameMode}: Player's game mode
     # {ticksExisted}: Number of ticks the player has existed
     # {n}: New line
-    information: "{prefix} &7Version: &c{clientVersion}{n}{prefix} &7Client: &c{brand}{n}{prefix} &7Ping: &c{ping}ms{n}{prefix} &7Game mode: &c{gameMode}{n}{prefix} &7Ticks existed: &c{ticksExisted}{n}{prefix} &c&lCheck information"
+    information: "{prefix} &7Version: &b{clientVersion}{n}{prefix} &7Client: &b{brand}{n}{prefix} &7Ping: &b{ping}ms{n}{prefix} &7Game mode: &b{gameMode}{n}{prefix} &7Ticks existed: &b{ticksExisted}{n}{prefix} &b&lCheck information"
 
 layout:
 
   # The prefix for all plugin messages
-  prefix: "&8▎ &cSierra &8▏"
+  prefix: "&3Sierra &7>"
 
   # Use this field to recolor the remaining accent colors that are not listed here.
   # Difference here a § must be used instead of an & sign.
-  offset-color: "§c"
+  offset-color: "§b"
 
   # Notification message for detecting violations
   detection-message:
@@ -125,7 +125,7 @@ layout:
     # The {mitigation} placeholder gets replaced with the checks punishment result
     # The {checkname} placeholder gets replaced with the check name
     # The {violations} placeholder gets replaced with the checks violation count
-    staff-alert: "{prefix} &c{username} &8┃ &f{mitigation} &c{checkname} &8┃ &cx{violations}"
+    staff-alert: "{prefix} &b{username} &8┃ &f{mitigation} &b{checkname} &8┃ &3x{violations}"
 
     # What should the notice be in each alert?
     alert-command-note: "&fClick to teleport"
@@ -135,4 +135,4 @@ layout:
     alert-command: "/tp {username}"
 
     # Hover information on mitigation / punishment
-    alert-content: " &7Username: &c{username}{n} &7Version: &c{clientVersion}{n} &7Brand: &c{brand}{n} &7Exist since: &c{ticksExisted}{n} &7Game mode: &c{gameMode}{n} &7Tag: &c{tags}{n} &7Debug info: &c{debugInfo}{n}{n} {alertNote}"
+    alert-content: " &7Username: &b{username}{n} &7Version: &b{clientVersion}{n} &7Brand: &b{brand}{n} &7Exist since: &b{ticksExisted}{n} &7Game mode: &b{gameMode}{n} &7Tag: &b{tags}{n} &7Debug info: &b{debugInfo}{n}{n} {alertNote}"
