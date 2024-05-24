@@ -151,8 +151,25 @@ public class SierraDetection implements SierraCheck {
                     violationDocument.debugInformation()
                 );
 
+            blockAddressIfEnabled(violationDocument);
+
             sierraDiscordGateway.sendAlert(playerData, this.checkType(), violationDocument, this.violations());
             playerData.punish(violationDocument.punishType());
+        }
+    }
+
+    /**
+     * Block the player's address if the punishment type is set to BAN, the ban feature is enabled in the
+     * punishment configuration, and the "block-connections-after-ban" property is set to true in the Sierra configuration.
+     *
+     * @param violationDocument The ViolationDocument object containing information about the violation.
+     */
+    private void blockAddressIfEnabled(ViolationDocument violationDocument) {
+        if (violationDocument.punishType() == PunishType.BAN && Sierra.getPlugin().getPunishmentConfig().isBan()
+            && Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("block-connections-after-ban", true)) {
+            Sierra.getPlugin()
+                .getAddressStorage()
+                .addIPAddress(this.playerData.getUser().getAddress().getAddress().getHostAddress());
         }
     }
 

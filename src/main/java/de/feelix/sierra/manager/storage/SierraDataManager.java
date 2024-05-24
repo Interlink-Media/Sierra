@@ -113,8 +113,10 @@ public class SierraDataManager implements UserRepository {
         PacketEvents.getAPI().getEventManager().registerListener(new PacketListenerCommon() {
             @Override
             public void onUserConnect(UserConnectEvent event) {
-                addPlayerData(event.getUser());
-                checkForUpdate(event.getUser());
+                User user = event.getUser();
+                addPlayerData(user);
+                checkIfBlocked(user, event);
+                checkForUpdate(user);
             }
 
             @Override
@@ -122,6 +124,24 @@ public class SierraDataManager implements UserRepository {
                 removePlayerData(event.getUser());
             }
         });
+    }
+
+    /**
+     * Checks if the connection of a user should be blocked based on the ban configuration.
+     *
+     * @param user  The user whose connection needs to be checked.
+     * @param event The UserConnectEvent associated with the connection.
+     */
+    private void checkIfBlocked(User user, UserConnectEvent event) {
+        if (Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("block-connections-after-ban", true)) {
+            String hostAddress = user.getAddress().getAddress().getHostAddress();
+            if (Sierra.getPlugin().getAddressStorage().invalid(hostAddress)) {
+                Sierra.getPlugin()
+                    .getLogger()
+                    .info("Connection of " + hostAddress + " got blocked, cause it was punished recently");
+                event.setCancelled(true);
+            }
+        }
     }
 
     /**

@@ -9,6 +9,7 @@ import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.discord.SierraDiscordGateway;
 import de.feelix.sierra.manager.server.SierraServerManager;
+import de.feelix.sierra.manager.storage.AddressStorage;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.utilities.Ticker;
 import de.feelix.sierra.utilities.message.ConfigValue;
@@ -111,6 +112,12 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      * Note: This documentation does not include example code or author/version tags.
      */
     private static final int PLUGIN_ID = 21527;
+
+    /**
+     * The AddressStorage class is responsible for storing and managing IP addresses
+     * along with their corresponding added time.
+     */
+    private AddressStorage addressStorage = new AddressStorage();
 
     /**
      * This method is called when the plugin is being enabled.

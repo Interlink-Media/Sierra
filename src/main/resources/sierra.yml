@@ -109,6 +109,12 @@ redstone-tick-limit: 60
 # Should we log any action of sierra in console? Recommended in case of errors!
 log-violation-to-console: true
 
+# Should we block future connections after a player got punished? Recommended
+block-connections-after-ban: true
+
+# Blocking time in minutes
+connection-block-time: 15 # Time in minutes
+
 # This is a list of commands that, in the past, led to crashes due to the incompetence
 # of the developers of those plugins. We have listed and blocked these commands here.
 # You can add or remove commands as you wish
