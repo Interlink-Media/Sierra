@@ -250,7 +250,7 @@ public class PlayerData implements SierraUser {
             Bukkit.getConsoleSender(),
             new ConfigValue("punish-command", "ban {username} Crashing", false)
                 .replace("{username}", this.user.getName())
-                .getMessage()
+                .message()
         ));
     }
 

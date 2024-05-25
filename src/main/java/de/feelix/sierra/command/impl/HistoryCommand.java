@@ -55,7 +55,7 @@ public class HistoryCommand implements ISierraCommand {
                                 "{prefix} &cNo history available", true
                 ).replacePrefix()
                     .colorize()
-                    .getMessage());
+                    .message());
             return;
         }
         sendHistoryMessages(user, historyDocumentList);
@@ -125,7 +125,7 @@ public class HistoryCommand implements ISierraCommand {
                              .replace("{total}", String.valueOf(pagination.totalPages()))
                              .replace("{entries}", String.valueOf(pagination.getItems().size()))
                              .colorize()
-                             .getMessage());
+                             .message());
     }
 
     /**
@@ -148,7 +148,7 @@ public class HistoryCommand implements ISierraCommand {
             .replace("{punishType}", historyDocument.punishType().historyMessage())
             .replace("{description}", historyDocument.shortenDescription())
             .colorize()
-            .getMessage();
+            .message();
     }
 
     /**
@@ -162,7 +162,7 @@ public class HistoryCommand implements ISierraCommand {
                             true
             ).replacePrefix()
                 .colorize()
-                .getMessage());
+                .message());
     }
 
     /**

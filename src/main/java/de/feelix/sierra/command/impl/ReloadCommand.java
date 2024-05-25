@@ -41,7 +41,7 @@ public class ReloadCommand implements ISierraCommand {
         user.sendMessage(new ConfigValue("commands.reload.success",
                                          "{prefix} &fConfiguration reloaded &asuccessfully",
                                          true
-        ).replacePrefix().colorize().getMessage());
+        ).replacePrefix().colorize().message());
     }
 
     /**
