@@ -481,18 +481,18 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             String    text   = wrapper.getText();
             final int length = text.length();
 
-            // general length limit
-            if (length > 256) {
+            // Detecting liquid bounce completion exploit
+            if (areBracketsTooFrequent(text, 15) || CommandValidation.WORLDEDIT_PATTERN.matcher(text).matches()) {
                 violation(event, ViolationDocument.builder()
-                    .debugInformation("(length) length=" + length)
+                    .debugInformation("Text: " + wrapper.getText())
                     .punishType(PunishType.KICK)
                     .build());
             }
 
-            // Detecting liquid bounce completion exploit
-            if (new NBTDetector().find(text) || CommandValidation.WORLDEDIT_PATTERN.matcher(text).matches()) {
+            // general length limit
+            if (length > 256) {
                 violation(event, ViolationDocument.builder()
-                    .debugInformation("Text: " + wrapper.getText())
+                    .debugInformation("(length) length=" + length)
                     .punishType(PunishType.KICK)
                     .build());
             }
@@ -1086,6 +1086,25 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 .punishType(PunishType.KICK)
                 .build());
         }
+    }
+
+    /**
+     * Checks if the frequency of brackets in the given input exceeds the specified threshold.
+     *
+     * @param input     the input string to be checked
+     * @param threshold the maximum allowed frequency of brackets
+     * @return true if the frequency of brackets exceeds the threshold, false otherwise
+     */
+    public boolean areBracketsTooFrequent(String input, int threshold) {
+        int count = 0;
+
+        for (char c : input.toCharArray()) {
+            if (c == '[' || c == ']') {
+                count++;
+            }
+        }
+
+        return count > threshold;
     }
 
     /**

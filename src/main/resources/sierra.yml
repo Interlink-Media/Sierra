@@ -115,6 +115,9 @@ block-connections-after-ban: true
 # Blocking time in minutes
 connection-block-time: 15 # Time in minutes
 
+# Use bypass permission to skip all checks (Not recommended!)
+enable-bypass-permission: false # sierra.bypass
+
 # This is a list of commands that, in the past, led to crashes due to the incompetence
 # of the developers of those plugins. We have listed and blocked these commands here.
 # You can add or remove commands as you wish

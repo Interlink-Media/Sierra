@@ -7,6 +7,7 @@ import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierraapi.check.impl.SierraCheck;
+import org.bukkit.entity.Player;
 
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -35,6 +36,11 @@ public class PacketListener extends PacketListenerAbstract {
 
         if (playerData == null) {
             disconnectUninitializedPlayer(event);
+            return;
+        }
+
+        if (bypassPermission(event)) {
+            event.setCancelled(false);
             return;
         }
 
@@ -85,6 +91,11 @@ public class PacketListener extends PacketListenerAbstract {
 
         if (playerData == null || handleExemptOrBlockedPlayer(playerData, event)) return;
 
+        if (bypassPermission(event)) {
+            event.setCancelled(false);
+            return;
+        }
+
         playerData.getTimingProcessor().getPacketSendTask().prepare();
 
         playerData.getGameModeProcessor().process(event);
@@ -92,6 +103,16 @@ public class PacketListener extends PacketListenerAbstract {
 
         processAvailableChecksSend(playerData, event);
         playerData.getTimingProcessor().getPacketSendTask().end();
+    }
+
+    private boolean bypassPermission(ProtocolPacketEvent<Object> event) {
+        if (Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("enable-bypass-permission", false)) {
+            Player player = (Player) event.getPlayer();
+            if (player != null) {
+                return player.hasPermission("sierra.bypass");
+            }
+        }
+        return false;
     }
 
     /**
