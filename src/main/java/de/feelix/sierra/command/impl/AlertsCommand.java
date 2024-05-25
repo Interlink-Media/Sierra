@@ -57,8 +57,7 @@ public class AlertsCommand implements ISierraCommand {
         player.sendMessage(new ConfigValue(
             "commands.alerts.toggle",
             "{prefix} &fYou have {status} &fthe alerts messages", true
-        )
-                               .replacePrefix().replace("{status}", isDisabled ? "&cdisabled" : "&aenabled").colorize()
+        ).replacePrefix().replace("{status}", isDisabled ? "&cdisabled" : "&aenabled").colorize()
                                .message());
     }
 

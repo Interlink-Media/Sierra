@@ -272,7 +272,13 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
         return !sender.hasPermission("sierra.command");
     }
 
-
+    /**
+     * Retrieves the generated keys for the given command sender and arguments.
+     *
+     * @param commandSender the command sender
+     * @param args the command arguments
+     * @return a list of generated keys
+     */
     private List<String> getGeneratedKeys(CommandSender commandSender, String[] args) {
         List<String> keys = new ArrayList<>();
         commands.forEach((s, iSierraCommand) -> {

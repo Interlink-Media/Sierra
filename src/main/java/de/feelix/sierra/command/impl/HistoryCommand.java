@@ -51,11 +51,11 @@ public class HistoryCommand implements ISierraCommand {
 
         if (historyDocumentList.isEmpty()) {
             user.sendMessage(
-                new ConfigValue("commands.history.empty",
-                                "{prefix} &cNo history available", true
-                ).replacePrefix()
-                    .colorize()
-                    .message());
+                new ConfigValue(
+                    "commands.history.empty",
+                    "{prefix} &cNo history available",
+                    true
+                ).replacePrefix().colorize().message());
             return;
         }
         sendHistoryMessages(user, historyDocumentList);
@@ -116,10 +116,11 @@ public class HistoryCommand implements ISierraCommand {
      * @param pagination The Pagination object containing the history items.
      */
     private void sendMessage(User user, int page, Pagination<History> pagination) {
-        user.sendMessage(new ConfigValue("commands.history.header",
-                                         "{prefix} &fShowing entries: &7(page &b{current} &7of &b{total} &7- "
-                                         + "&3{entries} &7entries)",
-                                         true
+        user.sendMessage(new ConfigValue(
+            "commands.history.header",
+            "{prefix} &fShowing entries: &7(page &b{current} &7of &b{total} &7- "
+            + "&3{entries} &7entries)",
+            true
         ).replacePrefix()
                              .replace("{current}", String.valueOf(page))
                              .replace("{total}", String.valueOf(pagination.totalPages()))
@@ -140,8 +141,7 @@ public class HistoryCommand implements ISierraCommand {
             "commands.history.entry",
             "&7{timestamp} &3{username} &7({ping}ms) -> &b{punishType} &7({description})",
             true
-        )
-            .replacePrefix()
+        ).replacePrefix()
             .replace("{timestamp}", historyDocument.formatTimestamp())
             .replace("{username}", historyDocument.username())
             .replace("{ping}", String.valueOf(historyDocument.ping()))
@@ -158,8 +158,10 @@ public class HistoryCommand implements ISierraCommand {
      */
     private void sendHelpSyntax(User user) {
         user.sendMessage(
-            new ConfigValue("commands.history.protocol", "{prefix} &cInvalid usage, try /sierra history <page>",
-                            true
+            new ConfigValue(
+                "commands.history.protocol",
+                "{prefix} &cInvalid usage, try /sierra history <page>",
+                true
             ).replacePrefix()
                 .colorize()
                 .message());
