@@ -82,29 +82,6 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     private int lastBookEditTick = 0;
 
     /**
-     * The packetAllowance variable represents the maximum number of packets allowed.
-     * It is used for detecting packet spamming based on various multipliers.
-     * The variable is of type double and has an initial value of 1000.
-     * <p>
-     * This variable is a private field and is defined in the class FrequencyDetection.
-     * <p>
-     * Containing class:
-     * - Class name: FrequencyDetection
-     * - Class fields: multiplierMap, lastBookEditTick, packetAllowance, lastDropItemTick, lastCraftRequestTick,
-     * dropCount, packetCount
-     * - Class methods: handle(PacketReceiveEvent event, PlayerData playerData), invalid()
-     * - Super classes: SierraDetection, IngoingProcessor
-     * <p>
-     * SierraCheckData declaration:
-     *
-     * @SierraCheckData(checkType = CheckType.SPAM)
-     * <p>
-     * CheckType declaration:
-     * Enumeration representing different types of checks.
-     */
-    private double packetAllowance = 1000;
-
-    /**
      * Represents the tick value of the last dropped item.
      *
      * <p>
@@ -142,11 +119,6 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
      * <
      */
     private int dropCount = 0;
-
-    /**
-     * Represents the count of packets received.
-     */
-    private double packetCount = 0;
 
     /**
      * Handles the packet receive event and performs various checks to detect packet spamming.
@@ -228,17 +200,17 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
         }
 
         double multiplier      = multiplierMap.getOrDefault(event.getPacketType(), 1.0D);
-        double packetAllowance = this.packetAllowance;
-        packetCount = packetCount + (1 * multiplier);
+        double packetAllowance = playerData.getPacketAllowance();
+        playerData.setPacketCount(playerData.getPacketCount() + (1 * multiplier));
 
-        if (packetCount > packetAllowance) {
+        if (playerData.getPacketCount() > packetAllowance) {
             violation(event, ViolationDocument.builder()
-                .debugInformation("Send: " + packetCount + ", allowed: " + packetAllowance)
+                .debugInformation("Send: " + playerData.getPacketCount() + ", allowed: " + packetAllowance)
                 .punishType(PunishType.KICK)
                 .build()
             );
         } else {
-            this.packetAllowance = packetAllowance - 1;
+            playerData.setPacketAllowance(packetAllowance - 1);
         }
     }
 

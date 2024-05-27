@@ -248,11 +248,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private static final int MAX_SIGN_LENGTH = 45;
 
     /**
-     * The number of bytes that have been sent.
-     */
-    private int bytesSent = 0;
-
-    /**
      * Indicates whether the Anvil is open or not.
      */
     private boolean hasOpenAnvil = false;
@@ -324,10 +319,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         int readableBytes     = ByteBufHelper.readableBytes(event.getByteBuf());
         int maxBytesPerSecond = 64000 * (playerData.getClientVersion().isOlderThan(ClientVersion.V_1_8) ? 2 : 1);
 
-        bytesSent += readableBytes;
-        if (bytesSent > maxBytesPerSecond) {
+        playerData.setBytesSent(playerData.getBytesSent() + readableBytes);
+
+        if (playerData.getBytesSent() > maxBytesPerSecond) {
             violation(event, ViolationDocument.builder()
-                .debugInformation("Bytes Sent: " + bytesSent + " Max Bytes/s: " + maxBytesPerSecond)
+                .debugInformation("Bytes Sent: " + playerData.getBytesSent() + " Max Bytes/s: " + maxBytesPerSecond)
                 .punishType(PunishType.KICK)
                 .build());
         }

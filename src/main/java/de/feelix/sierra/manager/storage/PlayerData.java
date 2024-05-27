@@ -29,19 +29,20 @@ import java.util.logging.Level;
 @Data
 public class PlayerData implements SierraUser {
 
-    private       User        user;
-    private final Set<String> channels = new HashSet<>();
+    private       User          user;
+    private       GameMode      gameMode;
+    private       ClientVersion clientVersion;
+    private       String        brand    = "vanilla";
+    private final Set<String>   channels = new HashSet<>();
+    private final long          joinTime = System.currentTimeMillis();
 
     private boolean receivedPunishment = false;
     private boolean exempt             = false;
     private boolean nameChecked        = false;
 
-    private String brand = "vanilla";
-
-    private ClientVersion clientVersion;
-    private GameMode      gameMode;
-
-    private final long joinTime = System.currentTimeMillis();
+    private double packetCount     = 0;
+    private double packetAllowance = 1000;
+    private double bytesSent       = 0;
 
     private final AlertSettings alertSettings      = new AbstractAlertSetting();
     private final AlertSettings mitigationSettings = new AbstractAlertSetting();
