@@ -21,6 +21,9 @@ permissions:
   sierra.command:
     description: General permission for the main command
     default: op
+  sierra.command.info:
+    description: Permission for the info sub-command
+    default: op
   sierra.command.monitor:
     description: Permission for the monitor sub-command
     default: op
@@ -46,5 +49,6 @@ permissions:
       - sierra.command.monitor
       - sierra.command.alerts
       - sierra.command.history
+      - sierra.command.info
       - sierra.command.reload
       - sierra.command

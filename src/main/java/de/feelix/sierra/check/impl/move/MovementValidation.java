@@ -325,7 +325,6 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
         if (!(System.currentTimeMillis() - this.lastTeleportTime > 1000)) return;
 
-
         if (deltaXZ > 7) {
             this.deltaBuffer++;
 
