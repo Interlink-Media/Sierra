@@ -696,7 +696,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
             if (wrapper.getEntityId() < 0 || entityId == wrapper.getEntityId()) {
                 violation(event, ViolationDocument.builder()
-                    .punishType(PunishType.BAN)
+                    .punishType(PunishType.KICK)
                     .debugInformation("Id at " + wrapper.getEntityId() + ", player id: " + entityId)
                     .build());
             }
