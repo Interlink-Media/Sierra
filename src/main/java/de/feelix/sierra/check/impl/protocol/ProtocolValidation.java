@@ -248,6 +248,16 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private static final int MAX_SIGN_LENGTH = 45;
 
     /**
+     * The number of bytes that have been sent.
+     */
+    private int bytesSent = 0;
+
+    /**
+     * Indicates whether the Anvil is open or not.
+     */
+    private boolean hasOpenAnvil = false;
+
+    /**
      * Represents a content of a list.
      *
      * <p>
@@ -313,10 +323,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         //https://netty.io/4.1/api/io/netty/buffer/ByteBuf.html//Sequential Access Indexing
         int readableBytes     = ByteBufHelper.readableBytes(event.getByteBuf());
         int maxBytesPerSecond = 64000 * (playerData.getClientVersion().isOlderThan(ClientVersion.V_1_8) ? 2 : 1);
-        playerData.setBytesSent(playerData.getBytesSent() + readableBytes);
-        if (playerData.getBytesSent() > maxBytesPerSecond) {
+
+        bytesSent += readableBytes;
+        if (bytesSent > maxBytesPerSecond) {
             violation(event, ViolationDocument.builder()
-                .debugInformation("Bytes Sent: " + playerData.getBytesSent() + " Max Bytes/s: " + maxBytesPerSecond)
+                .debugInformation("Bytes Sent: " + bytesSent + " Max Bytes/s: " + maxBytesPerSecond)
                 .punishType(PunishType.KICK)
                 .build());
         }
@@ -547,7 +558,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
             String channelName = wrapper.getChannelName();
 
-            if (channelName.equalsIgnoreCase("MC|ItemName") && !playerData.isHasOpenAnvil()) {
+            if (channelName.equalsIgnoreCase("MC|ItemName") && !hasOpenAnvil) {
                 violation(event, createViolation("Send anvil name, without anvil", PunishType.KICK));
             }
 
@@ -627,9 +638,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 playerData::exceptionDisconnect
             );
 
-            if (wrapper.getSequence() < 0 && isSupportedVersion(ServerVersion.V_1_19, event.getUser(),
-                                                                ClientVersion.V_1_19
-            )) {
+            if (wrapper.getSequence() < 0
+                && isSupportedVersion(ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Invalid sequence in block place")
                     .punishType(PunishType.BAN)
@@ -823,7 +833,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         } else if (event.getPacketType() == PacketType.Play.Client.CLOSE_WINDOW) {
 
             // Reset this state to prevent false positives
-            playerData.setHasOpenAnvil(false);
+            hasOpenAnvil = false;
         }
     }
 
@@ -1719,12 +1729,12 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 .getVersion()
                 .isNewerThanOrEquals(ServerVersion.V_1_14)) {
                 if (window.getType() == MenuType.ANVIL.getId()) {
-                    playerData.setHasOpenAnvil(true);
+                    hasOpenAnvil = true;
                 }
             } else {
                 String legacyType = window.getLegacyType();
                 if (legacyType.contains("anvil")) {
-                    playerData.setHasOpenAnvil(true);
+                    hasOpenAnvil = true;
                 }
             }
 

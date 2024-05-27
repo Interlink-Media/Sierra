@@ -75,6 +75,19 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
     private static final String TAG_KEY = "tag";
 
     /**
+     * Represents the recursion count for a specific operation.
+     *
+     * <p>
+     * The recursion count is used to keep track of the number of times a recursive operation has been performed.
+     * </p>
+     *
+     * <p>
+     * This variable is private and is only accessible within the containing class, CreativeCrasher.
+     * </p>
+     */
+    private int recursionCount = 0;
+
+    /**
      * Represents the key used for the block entity tag in the Sierra system.
      * The block entity tag stores additional data for a specific block entity in Minecraft.
      */
@@ -182,7 +195,7 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
         if (compound != null && compound.getTags().containsKey("BlockEntityTag")) {
             NBTCompound blockEntityTag = compound.getCompoundTagOrNull("BlockEntityTag");
             //reset recursion count to prevent false kicks
-            playerData.setRecursionCount(0);
+            recursionCount = 0;
             recursion(event, playerData, itemStack, blockEntityTag);
         } else if (compound != null) {
             //if this gets called, it's not a container, so we don't need to do recursion
@@ -211,7 +224,7 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
                            NBTCompound blockEntityTag) {
 
         if (exceededRecursionMax(data)) {
-            sendViolation(event, data.getRecursionCount(), PunishType.BAN);
+            sendViolation(event, recursionCount, PunishType.BAN);
             return;
         }
 
@@ -236,9 +249,8 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
      * @return true if the recursion count has exceeded the maximum limit, false otherwise
      */
     private boolean exceededRecursionMax(PlayerData data) {
-        int newCount = data.getRecursionCount() + 1;
-        data.setRecursionCount(newCount);
-        return newCount > MAX_RECURSIONS;
+        recursionCount++;
+        return recursionCount > MAX_RECURSIONS;
     }
 
     /**
@@ -342,19 +354,18 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
      */
     private void sendViolationDocument(PacketReceiveEvent event, PlayerData data,
                                        Pair<String, PunishType> crashDetails) {
-        violation(event, buildViolationDocument(data, crashDetails));
+        violation(event, buildViolationDocument(crashDetails));
     }
 
     /**
      * Builds a ViolationDocument object with the provided player data and crash details.
      *
-     * @param data         The PlayerData object containing the player's data.
      * @param crashDetails The CrashDetails object containing crash details associated with the violation.
      * @return A ViolationDocument object with the provided player data and crash details.
      */
-    private ViolationDocument buildViolationDocument(PlayerData data, Pair<String, PunishType> crashDetails) {
+    private ViolationDocument buildViolationDocument(Pair<String, PunishType> crashDetails) {
         return ViolationDocument.builder()
-            .debugInformation(crashDetails.getFirst() + " | R: " + data.getRecursionCount())
+            .debugInformation(crashDetails.getFirst() + " | R: " + recursionCount)
             .punishType(PunishType.BAN)
             .build();
     }

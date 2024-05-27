@@ -26,6 +26,20 @@ public class BrandProcessor {
     private final PlayerData playerData;
 
     /**
+     * The hasBrand variable represents whether the player has a brand associated with them.
+     * A brand is a certain identifier or label that is assigned to a player, typically indicating the type of client they are using.
+     * <p>
+     * - If hasBrand is true, it means that the player has a brand.
+     * - If hasBrand is false, it means that the player does not have a brand.
+     * <p>
+     * This variable is private and initialized with a default value of false.
+     * It can be accessed and modified through getter and setter methods in the PlayerData class.
+     *
+     * @see PlayerData
+     */
+    private boolean hasBrand = false;
+
+    /**
      * The BrandProcessor class represents a processor that handles plugin messages related to the player's brand.
      * It processes packet events and extracts brand information from the received messages.
      */
@@ -62,7 +76,7 @@ public class BrandProcessor {
             if (data.length > 64 || data.length == 0) {
                 playerData.setBrand("sent " + data.length + " bytes as brand");
                 Sierra.getPlugin().getEventBus().publish(new UserBrandEvent(playerData, playerData.getBrand()));
-            } else if (!playerData.isHasBrand()) {
+            } else if (!hasBrand) {
 
                 byte[] minusLength = new byte[data.length - 1];
                 System.arraycopy(data, 1, minusLength, 0, minusLength.length);
@@ -71,7 +85,7 @@ public class BrandProcessor {
                 playerData.setBrand(new String(minusLength).replace(" (Velocity)", ""));
                 Sierra.getPlugin().getEventBus().publish(new UserBrandEvent(playerData, playerData.getBrand()));
             }
-            playerData.setHasBrand(true);
+            hasBrand = true;
         }
     }
 }

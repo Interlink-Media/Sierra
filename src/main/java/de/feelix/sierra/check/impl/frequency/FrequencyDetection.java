@@ -50,6 +50,105 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     private final HashMap<PacketTypeCommon, Double> multiplierMap = new HashMap<>();
 
     /**
+     * Tracks the tick at which the last book was edited.
+     * <p>
+     * The <code>lastBookEditTick</code> variable is used to store the tick number at which the last book was edited.
+     * The tick number
+     * is an integer value that represents the current game tick. This variable is primarily used in the context of
+     * frequency detection
+     * to check for book spamming by players. The value of <code>lastBookEditTick</code> is initialized to 0 by
+     * default, indicating
+     * that no book has been edited yet.
+     * </p>
+     * <p>
+     * This variable is declared as private, which means it can only be accessed within the class it is declared in.
+     * Other classes or
+     * code outside the class cannot directly modify or read the value of <code>lastBookEditTick</code>. It is
+     * recommended to use
+     * getter and setter methods to access or modify the value of this variable.
+     * </p>
+     * <p>
+     * Example usage:
+     * </p>
+     *
+     * <pre>
+     * {@code
+     * private int lastBookEditTick = 0;
+     * }
+     * </pre>
+     *
+     * @see de.feelix.sierra.check.impl.frequency.FrequencyDetection
+     */
+    private int lastBookEditTick = 0;
+
+    /**
+     * The packetAllowance variable represents the maximum number of packets allowed.
+     * It is used for detecting packet spamming based on various multipliers.
+     * The variable is of type double and has an initial value of 1000.
+     * <p>
+     * This variable is a private field and is defined in the class FrequencyDetection.
+     * <p>
+     * Containing class:
+     * - Class name: FrequencyDetection
+     * - Class fields: multiplierMap, lastBookEditTick, packetAllowance, lastDropItemTick, lastCraftRequestTick,
+     * dropCount, packetCount
+     * - Class methods: handle(PacketReceiveEvent event, PlayerData playerData), invalid()
+     * - Super classes: SierraDetection, IngoingProcessor
+     * <p>
+     * SierraCheckData declaration:
+     *
+     * @SierraCheckData(checkType = CheckType.SPAM)
+     * <p>
+     * CheckType declaration:
+     * Enumeration representing different types of checks.
+     */
+    private double packetAllowance = 1000;
+
+    /**
+     * Represents the tick value of the last dropped item.
+     *
+     * <p>
+     * The lastDropItemTick variable is used to keep track of the tick value at which an item was last dropped.
+     * It is typically used in frequency detection checks to determine the time elapsed since the last item drop.
+     * </p>
+     *
+     * @see FrequencyDetection
+     * @since 1.0
+     */
+    private int lastDropItemTick = 0;
+
+    /**
+     * Represents the tick value of the last craft request.
+     * <p>
+     * The value of this variable is used to track the tick at which the last craft request was made.
+     * It is updated whenever a craft request event occurs.
+     * <p>
+     * Usage example:
+     * <p>
+     * ```java
+     * int tick = lastCraftRequestTick;
+     * ```
+     *
+     * @since 1.0
+     */
+    private int lastCraftRequestTick = 0;
+
+    /**
+     * Represents the count of dropped items in the game.
+     * <p>
+     * The dropCount variable is used to keep track of the number of items that have been dropped in the game.
+     * It is incremented whenever an item is dropped and can be used for various purposes, such as detecting
+     * excessive item drops or tracking player behavior.
+     * <
+     */
+    private int dropCount = 0;
+
+    /**
+     * Represents the count of packets received.
+     */
+    private double packetCount = 0;
+
+    /**
      * Handles the packet receive event and performs various checks to detect packet spamming.
      *
      * @param event      The packet receive event to handle
@@ -87,7 +186,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             }
         } else if (event.getPacketType() == PacketType.Play.Client.CRAFT_RECIPE_REQUEST) {
             int currentTick = Ticker.getInstance().getCurrentTick();
-            if (playerData.getLastCraftRequestTick() + 10 > currentTick) {
+            if (lastCraftRequestTick + 10 > currentTick) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Spammed recipe request")
                     .punishType(PunishType.MITIGATE)
@@ -98,7 +197,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
                     player.updateInventory();
                 }
             } else {
-                playerData.setLastCraftRequestTick(currentTick);
+                lastCraftRequestTick = currentTick;
             }
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING) {
 
@@ -112,13 +211,13 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             if (playerData.getGameMode() != GameMode.SPECTATOR) {
                 // limit how quickly items can be dropped
                 // If the ticks aren't the same then the count starts from 0 and we update the lastDropTick.
-                if (playerData.getLastDropItemTick() != currentTick) {
-                    playerData.setDropCount(0);
-                    playerData.setLastDropItemTick(currentTick);
+                if (lastDropItemTick != currentTick) {
+                    dropCount = 0;
+                    lastDropItemTick = currentTick;
                 } else {
                     // Else we increment the drop count and check the amount.
-                    playerData.setDropCount(playerData.getDropCount() + 1);
-                    if (playerData.getDropCount() >= 20) {
+                    dropCount++;
+                    if (dropCount >= 20) {
                         violation(event, ViolationDocument.builder()
                             .debugInformation("Spammed digging")
                             .punishType(PunishType.KICK)
@@ -129,18 +228,17 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
         }
 
         double multiplier      = multiplierMap.getOrDefault(event.getPacketType(), 1.0D);
-        double packetAllowance = playerData.getPacketAllowance();
-        playerData.setPacketCount(playerData.getPacketCount() + (1 * multiplier));
+        double packetAllowance = this.packetAllowance;
+        packetCount = packetCount + (1 * multiplier);
 
-        if (playerData.getPacketCount() > packetAllowance) {
-            double packetCount = playerData.getPacketCount();
+        if (packetCount > packetAllowance) {
             violation(event, ViolationDocument.builder()
                 .debugInformation("Send: " + packetCount + ", allowed: " + packetAllowance)
                 .punishType(PunishType.KICK)
                 .build()
             );
         } else {
-            playerData.setPacketAllowance(playerData.getPacketAllowance() - 1);
+            this.packetAllowance = packetAllowance - 1;
         }
     }
 
@@ -151,10 +249,10 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
      */
     private boolean invalid() {
         int currentTick = Ticker.getInstance().getCurrentTick();
-        if (getPlayerData().getLastBookEditTick() + 20 > currentTick) {
+        if (lastBookEditTick + 20 > currentTick) {
             return true;
         } else {
-            getPlayerData().setLastBookEditTick(currentTick);
+            lastBookEditTick = currentTick;
             return false;
         }
     }

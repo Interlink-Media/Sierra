@@ -32,30 +32,16 @@ public class PlayerData implements SierraUser {
     private       User        user;
     private final Set<String> channels = new HashSet<>();
 
-    private int lastBookEditTick;
-    private int lastDropItemTick;
-    private int lastCraftRequestTick;
-    private int dropCount;
-    private int recursionCount;
-    private int bytesSent;
-    private int openWindowType;
-    private int openWindowContainer;
-
-    private double packetCount;
-    private double packetAllowance = 1000;
-
-    private long joinTime = System.currentTimeMillis();
-
     private boolean receivedPunishment = false;
     private boolean exempt             = false;
-    private boolean hasBrand           = false;
     private boolean nameChecked        = false;
-    private boolean hasOpenAnvil       = false;
 
     private String brand = "vanilla";
 
     private ClientVersion clientVersion;
     private GameMode      gameMode;
+
+    private final long joinTime = System.currentTimeMillis();
 
     private final AlertSettings alertSettings      = new AbstractAlertSetting();
     private final AlertSettings mitigationSettings = new AbstractAlertSetting();
@@ -234,8 +220,8 @@ public class PlayerData implements SierraUser {
      * @param exception the exception that occurred
      */
     public void exceptionDisconnect(Exception exception) {
-        Sierra.getPlugin().getLogger().log(Level.INFO, "We disconnect " + this.username() + " for security purpose");
-        Sierra.getPlugin().getLogger().log(Level.INFO, "Exception: " + exception.getMessage());
+        Sierra.getPlugin().getLogger().warning("We disconnect " + this.username() + " for security purpose");
+        Sierra.getPlugin().getLogger().warning("Exception: " + exception.getMessage());
         this.kick();
     }
 

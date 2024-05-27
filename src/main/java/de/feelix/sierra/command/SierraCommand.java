@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -276,19 +277,31 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
      * Retrieves the generated keys for the given command sender and arguments.
      *
      * @param commandSender the command sender
-     * @param args the command arguments
+     * @param args          the command arguments
      * @return a list of generated keys
      */
     private List<String> getGeneratedKeys(CommandSender commandSender, String[] args) {
         List<String> keys = new ArrayList<>();
-        commands.forEach((s, iSierraCommand) -> {
-            if (iSierraCommand.permission() == null) {
-                keys.addAll(iSierraCommand.fromId(args.length, args));
-            } else if (commandSender.hasPermission(iSierraCommand.permission())) {
-                keys.addAll(iSierraCommand.fromId(args.length, args));
-            }
-        });
+        commands.forEach((s, iSierraCommand) -> keys.addAll(
+            this.getKeysForCommand(iSierraCommand, commandSender, args.length, args)));
         return keys;
+    }
+
+    /**
+     * Retrieves keys for a single command if permissions are granted.
+     *
+     * @param iSierraCommand the command
+     * @param commandSender  the command sender
+     * @param length         length of arguments
+     * @param args           the command arguments
+     * @return a list of generated keys
+     */
+    private List<String> getKeysForCommand(ISierraCommand iSierraCommand, CommandSender commandSender, int length,
+                                           String[] args) {
+        // Command is eligible for processing if no permissions required or if permissions are granted.
+        boolean isEligible =
+            iSierraCommand.permission() == null || commandSender.hasPermission(iSierraCommand.permission());
+        return isEligible ? iSierraCommand.fromId(length, args) : Collections.emptyList();
     }
 
     /**

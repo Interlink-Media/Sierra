@@ -48,17 +48,17 @@ public class AlertsCommand implements ISierraCommand {
     }
 
     /**
-     * Sends a message to the player indicating the status of the alert messages.
+     * Sends a message to the user indicating the status of the alert messages.
      *
-     * @param player     the player to send the message to
+     * @param user       the user to send the message to
      * @param isDisabled a boolean indicating whether the alert messages are disabled or not
      */
-    private void sendMessage(User player, boolean isDisabled) {
-        player.sendMessage(new ConfigValue(
+    private void sendMessage(User user, boolean isDisabled) {
+        user.sendMessage(new ConfigValue(
             "commands.alerts.toggle",
             "{prefix} &fYou have {status} &fthe alerts messages", true
         ).replacePrefix().replace("{status}", isDisabled ? "&cdisabled" : "&aenabled").colorize()
-                               .message());
+                             .message());
     }
 
     /**
