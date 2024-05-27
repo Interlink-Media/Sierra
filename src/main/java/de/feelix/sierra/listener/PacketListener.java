@@ -73,6 +73,9 @@ public class PacketListener extends PacketListenerAbstract {
             && playerData.getUser().getName() != null
             && !playerData.isNameChecked()) {
             if (!isValidUsername(event.getUser().getName())) {
+                Sierra.getPlugin()
+                    .getLogger()
+                    .info("Invalid username: " + event.getUser().getName() + ", kicked player");
                 event.setCancelled(true);
                 playerData.kick();
             }

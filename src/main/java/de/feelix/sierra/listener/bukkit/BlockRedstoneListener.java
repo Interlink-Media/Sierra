@@ -27,7 +27,7 @@ public class BlockRedstoneListener implements Listener {
         .build();
 
     /**
-     *
+     * This class represents a listener for handling BlockRedstoneEvents. It detects blocks and adjusts their redstone value if necessary.
      */
     private final int limit = Sierra.getPlugin().getConfig().getInt("redstone-tick-limit", 60);
 
