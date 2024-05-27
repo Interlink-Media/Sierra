@@ -106,11 +106,22 @@ public class PlayerData implements SierraUser {
         return user.getEntityId();
     }
 
+    /**
+     * The ping method sends a ping request and returns
+     * the round trip time in milliseconds.
+     *
+     * @return The round trip time in milliseconds as an integer.
+     */
     @Override
     public int ping() {
         return (int) this.getPingProcessor().getPing();
     }
 
+    /**
+     * Retrieves the number of ticks that the PlayerData object has existed for.
+     *
+     * @return The number of ticks as an integer.
+     */
     @Override
     public int ticksExisted() {
         return this.getTicksExisted();
@@ -173,6 +184,11 @@ public class PlayerData implements SierraUser {
         return this.exempt;
     }
 
+    /**
+     * Retrieves the game mode of the player.
+     *
+     * @return The game mode of the player as an instance of GameMode.
+     */
     @Override
     public GameMode gameMode() {
         return this.getGameMode();
