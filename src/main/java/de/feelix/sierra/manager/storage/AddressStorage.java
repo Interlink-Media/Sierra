@@ -36,6 +36,7 @@ public class AddressStorage {
      * @param ipAddress the IP address to be added
      */
     public void addIPAddress(String ipAddress) {
+        if (ipAddress.equalsIgnoreCase("127.0.0.1")) return;
         ipAddresses.put(ipAddress, LocalDateTime.now());
     }
 
