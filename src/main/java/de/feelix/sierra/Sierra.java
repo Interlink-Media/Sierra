@@ -1,17 +1,13 @@
 package de.feelix.sierra;
 
-import com.github.retrooper.packetevents.PacketEvents;
 import de.feelix.sierra.manager.event.AbstractEventBus;
-import de.feelix.sierra.command.SierraCommand;
-import de.feelix.sierra.listener.PacketListener;
-import de.feelix.sierra.listener.bukkit.BlockRedstoneListener;
 import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.discord.SierraDiscordGateway;
+import de.feelix.sierra.manager.init.InitManager;
 import de.feelix.sierra.manager.server.SierraServerManager;
 import de.feelix.sierra.manager.storage.AddressStorage;
 import de.feelix.sierra.manager.storage.SierraDataManager;
-import de.feelix.sierra.utilities.Ticker;
 import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierra.utilities.update.UpdateChecker;
 import de.feelix.sierraapi.SierraApi;
@@ -19,16 +15,9 @@ import de.feelix.sierraapi.SierraApiAccessor;
 import de.feelix.sierraapi.events.EventBus;
 import de.feelix.sierraapi.server.SierraServer;
 import de.feelix.sierraapi.user.UserRepository;
-import io.github.retrooper.packetevents.bstats.Metrics;
-import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
-import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.Objects;
-import java.util.logging.Logger;
 
 /**
  * The Sierra class represents the main class for the Sierra plugin.
@@ -107,11 +96,24 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     private final SierraServer sierraServer = new SierraServerManager();
 
     /**
-     * The PLUGIN_ID variable represents the unique identifier for the plugin. It is an integer value.
+     * The initManager variable is an instance of the InitManager class.
+     * It is responsible for managing the initialization of various components in the Sierra plugin.
+     * The InitManager class has three sets of initializers: initializersOnLoad, initializersOnStart, and initializersOnStop.
+     * Each set contains instances of classes that implement the Initable interface.
      * <p>
-     * Note: This documentation does not include example code or author/version tags.
+     * The initializersOnLoad set contains initializers that are executed when the plugin is being loaded.
+     * The initializersOnStart set contains initializers that are executed when the plugin is being enabled.
+     * The initializersOnStop set contains initializers that are executed when the plugin is being disabled.
+     * <p>
+     * Example Usage:
+     * InitManager initManager = new InitManager();
+     * initManager.load();
+     * initManager.start();
+     * initManager.stop();
+     *
+     * @see InitManager
      */
-    private static final int PLUGIN_ID = 21527;
+    private final InitManager initManager = new InitManager();
 
     /**
      * The AddressStorage class is responsible for storing and managing IP addresses
@@ -128,33 +130,9 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     public void onLoad() {
         plugin = this;
         sierraConfigEngine = new SierraConfigEngine();
-        updateChecker = new UpdateChecker();
-        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
-        configureApiSettings();
-        PacketEvents.getAPI().load();
-    }
+        initManager.load();
 
-    /**
-     * The configureApiSettings method configures the settings of the PacketEvents API used by the Sierra plugin.
-     * This method modifies various settings such as full stack trace, kick on packet exception, re-encoding,
-     * check for updates, and bStats.
-     * <p>
-     * This method retrieves the PacketEvents API from the SierraApi using the getAPI() method.
-     * It then uses the fluent builder pattern to configure the settings of the API.
-     * <p>
-     * Example usage:
-     * <pre>{@code
-     * configureApiSettings();
-     * }</pre>
-     */
-    private void configureApiSettings() {
-        PacketEvents.getAPI().getSettings()
-            .fullStackTrace(true)
-            .kickOnPacketException(sierraConfigEngine.config().getBoolean("kick-on-packet-exception", true))
-            .reEncodeByDefault(false)
-            .checkForUpdates(false)
-            .debug(false)
-            .bStats(true);
+        updateChecker = new UpdateChecker();
     }
 
     /**
@@ -165,154 +143,16 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     @Override
     public void onEnable() {
         long startTime = System.currentTimeMillis();
-
-        initializePacketEvents();
+        initManager.start();
         setPrefix();
-        new Ticker();
 
         this.sierraDataManager = new SierraDataManager();
-        Objects.requireNonNull(this.getCommand("sierra")).setExecutor(new SierraCommand());
-
-        setupPunishmentConfig();
-        blockRedStoneLoops();
-
         this.sierraDiscordGateway.setup();
 
-        FoliaScheduler.getAsyncScheduler().runNow(this, o -> checkAndUpdatePlugin());
-
         long delay = System.currentTimeMillis() - startTime;
-        logInitializationTime(delay);
-
+        this.getLogger().info("Sierra is ready. (Took: " + delay + "ms)");
         SierraApiAccessor.setSierraApiInstance(this);
         this.getLogger().info("API is ready");
-    }
-
-    /**
-     * Initializes the packet events for the Sierra plugin.
-     * This method sets up the necessary components for packet event handling, such as metrics, event listener
-     * registration,
-     * and initialization of the PacketEvents API.
-     */
-    private void initializePacketEvents() {
-        Metrics metrics = new Metrics(this, PLUGIN_ID);
-
-        metrics.addCustomChart(new Metrics.SingleLineChart(
-            "bans",
-            () -> {
-                int bans = SierraDataManager.BANS;
-                SierraDataManager.BANS = 0;
-                return bans;
-            }
-        ));
-        metrics.addCustomChart(new Metrics.SingleLineChart(
-            "kicks",
-            () -> {
-                int kicks = SierraDataManager.KICKS;
-                SierraDataManager.KICKS = 0;
-                return kicks;
-            }
-        ));
-        metrics.addCustomChart(new Metrics.AdvancedPie(
-            "active_check_types",
-            () -> SierraDataManager.violationCount
-        ));
-
-        PacketEvents.getAPI().getEventManager().registerListener(new PacketListener());
-        PacketEvents.getAPI().init();
-    }
-
-    /**
-     * The setupPunishmentConfig method is a private helper method used to set up the punishment configuration for
-     * the Sierra plugin.
-     * It retrieves the punishment configuration value from the sierra.yml configuration file, and sets the
-     * punishmentConfig field
-     * in the Sierra class using the PunishmentConfig enum.
-     * <p>
-     * The punishment configuration is obtained from the "internal.punishment.config" configuration option in the
-     * sierra.yml file.
-     * If this option does not exist in the configuration file, the "hard" punishment configuration is used as the
-     * default value.
-     * <p>
-     * Example usage:
-     * <pre>{@code
-     * setupPunishmentConfig();
-     * }</pre>
-     *
-     * @see Sierra#sierraConfigEngine
-     * @see PunishmentConfig
-     */
-    private void setupPunishmentConfig() {
-        this.punishmentConfig = PunishmentConfig.valueOf(
-            new ConfigValue("internal-punishment-config", "HARD", false).message());
-    }
-
-    /**
-     * This method blocks redstone loops if the "BLOCK_REDSTONE_LOOP" configuration option is set to true.
-     * It registers the BlockRedstoneListener event listener with the Bukkit plugin manager.
-     *
-     * @see Sierra#sierraConfigEngine
-     * @see SierraConfigEngine#config()
-     * @see BlockRedstoneListener
-     */
-    private void blockRedStoneLoops() {
-        if (this.sierraConfigEngine.config().getBoolean("block-redstone-loops", true)) {
-            Bukkit.getPluginManager().registerEvents(new BlockRedstoneListener(), this);
-        }
-    }
-
-    /**
-     * Check for updates to the plugin and start the update checker scheduler.
-     */
-    private void checkAndUpdatePlugin() {
-        updateChecker.refreshNewVersion();
-        checkForUpdate();
-        updateChecker.startScheduler();
-    }
-
-    /**
-     * Logs the initialization time of the Sierra plugin.
-     *
-     * @param delay the time taken for initialization in milliseconds
-     */
-    private void logInitializationTime(long delay) {
-        this.getLogger().info("Sierra is ready. (Took: " + delay + "ms)");
-    }
-
-    /**
-     * Checks for updates to the Sierra plugin asynchronously.
-     */
-    private void checkForUpdate() {
-        FoliaScheduler.getAsyncScheduler().runNow(Sierra.getPlugin(), o -> {
-            String localVersion         = Sierra.getPlugin().getDescription().getVersion();
-            String latestReleaseVersion = updateChecker.getLatestReleaseVersion();
-            if (!localVersion.equalsIgnoreCase(latestReleaseVersion) && !isVersionInvalid()) {
-                logOutdatedVersionMessage(localVersion, latestReleaseVersion);
-            }
-        });
-    }
-
-    /**
-     * Logs a warning message indicating that the local version of Sierra is outdated and suggests updating to the
-     * latest version.
-     *
-     * @param localVersion         the current version of Sierra being used
-     * @param latestReleaseVersion the latest release version of Sierra available
-     */
-    private void logOutdatedVersionMessage(String localVersion, String latestReleaseVersion) {
-        Logger logger = Sierra.getPlugin().getLogger();
-        logger.warning("You are using an outdated version of Sierra!");
-        logger.warning("Please update Sierra to the latest version!");
-        String format = "Your version: %s, latest is: %s";
-        logger.warning(String.format(format, localVersion, latestReleaseVersion));
-    }
-
-    /**
-     * Checks if the version of the plugin is protocol.
-     *
-     * @return true if the version is protocol, false otherwise
-     */
-    private boolean isVersionInvalid() {
-        return this.updateChecker.getLatestReleaseVersion().equalsIgnoreCase(UpdateChecker.UNKNOWN_VERSION);
     }
 
     /**
@@ -332,9 +172,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
      */
     @Override
     public void onDisable() {
-        if (PacketEvents.getAPI() != null) {
-            PacketEvents.getAPI().terminate();
-        }
+        this.initManager.stop();
     }
 
     /**

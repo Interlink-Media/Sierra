@@ -13,11 +13,10 @@ import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
-import de.feelix.sierra.utilities.Ticker;
+import de.feelix.sierra.manager.init.impl.start.Ticker;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -163,11 +162,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
                     .debugInformation("Spammed recipe request")
                     .punishType(PunishType.MITIGATE)
                     .build());
-                Player player = Bukkit.getPlayer(event.getUser().getUUID());
-                if (player != null) {
-                    //noinspection UnstableApiUsage
-                    player.updateInventory();
-                }
+
+                //noinspection UnstableApiUsage
+                ((Player) playerData.getPlayer()).updateInventory();
             } else {
                 lastCraftRequestTick = currentTick;
             }

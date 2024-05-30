@@ -1,6 +1,7 @@
-package de.feelix.sierra.utilities;
+package de.feelix.sierra.manager.init.impl.start;
 
 import de.feelix.sierra.Sierra;
+import de.feelix.sierra.manager.init.Initable;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierraapi.check.impl.SierraCheck;
@@ -14,7 +15,7 @@ import lombok.Getter;
  * It also has a {@code task} that runs every second and performs certain actions.
  */
 @Getter
-public class Ticker {
+public class Ticker implements Initable {
 
     /**
      * The {@code Ticker} class represents a timer that runs asynchronously and performs tasks at regular intervals.
@@ -41,10 +42,8 @@ public class Ticker {
      */
     private int currentTick;
 
-    /**
-     * Ticker class represents a timer that runs asynchronously and performs tasks at regular intervals.
-     */
-    public Ticker() {
+    @Override
+    public void start() {
         instance = this;
         FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(), o -> currentTick++, 1, 1);
 

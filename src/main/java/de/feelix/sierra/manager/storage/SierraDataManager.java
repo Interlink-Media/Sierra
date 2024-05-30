@@ -2,8 +2,8 @@ package de.feelix.sierra.manager.storage;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerCommon;
-import com.github.retrooper.packetevents.event.UserConnectEvent;
 import com.github.retrooper.packetevents.event.UserDisconnectEvent;
+import com.github.retrooper.packetevents.event.UserLoginEvent;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
@@ -111,10 +111,11 @@ public class SierraDataManager implements UserRepository {
      */
     private void initializePacketListeners() {
         PacketEvents.getAPI().getEventManager().registerListener(new PacketListenerCommon() {
+
             @Override
-            public void onUserConnect(UserConnectEvent event) {
+            public void onUserLogin(UserLoginEvent event) {
                 User user = event.getUser();
-                addPlayerData(user);
+                addPlayerData(user, event.getPlayer());
                 checkIfBlocked(user, event);
                 checkForUpdate(user);
             }
@@ -132,14 +133,17 @@ public class SierraDataManager implements UserRepository {
      * @param user  The user whose connection needs to be checked.
      * @param event The UserConnectEvent associated with the connection.
      */
-    private void checkIfBlocked(User user, UserConnectEvent event) {
+    private void checkIfBlocked(User user, UserLoginEvent event) {
         if (Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("block-connections-after-ban", true)) {
             String hostAddress = user.getAddress().getAddress().getHostAddress();
             if (Sierra.getPlugin().getAddressStorage().invalid(hostAddress)) {
                 Sierra.getPlugin()
                     .getLogger()
                     .info("Connection of " + hostAddress + " got blocked, cause it was punished recently");
-                event.setCancelled(true);
+                PlayerData data = Sierra.getPlugin().getSierraDataManager().getPlayerData(user).get();
+
+                if (data == null) return;
+                data.kick();
             }
         }
     }
@@ -301,10 +305,11 @@ public class SierraDataManager implements UserRepository {
     /**
      * The addPlayerData function adds a new PlayerData object to the playerData HashMap.
      *
-     * @param user user Get the player's data
+     * @param user   user Get the player's data
+     * @param player
      */
-    public void addPlayerData(User user) {
-        PlayerData value = new PlayerData(user);
+    public void addPlayerData(User user, Object player) {
+        PlayerData value = new PlayerData(user, player);
         value.setGameMode(GameMode.defaultGameMode());
         this.playerData.put(user, value);
     }

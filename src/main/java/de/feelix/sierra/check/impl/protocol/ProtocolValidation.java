@@ -580,8 +580,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
             String payload = new String(wrapper.getData(), StandardCharsets.UTF_8);
 
-            if (channelName.equalsIgnoreCase("MC|PickItem")
-                || channelName.equalsIgnoreCase("MC|TrSel")) {
+            if (channelName.equalsIgnoreCase("MC|PickItem") || channelName.equalsIgnoreCase("MC|TrSel")) {
 
                 if (payload.equalsIgnoreCase("N")) {
                     violation(event, ViolationDocument.builder()
@@ -633,6 +632,13 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 () -> new WrapperPlayClientPlayerBlockPlacement(event),
                 playerData::exceptionDisconnect
             );
+
+            if(playerData.getGameMode() == GameMode.ADVENTURE) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Placed block in adventure")
+                    .punishType(PunishType.BAN)
+                    .build());
+            }
 
             if (wrapper.getSequence() < 0
                 && isSupportedVersion(ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {

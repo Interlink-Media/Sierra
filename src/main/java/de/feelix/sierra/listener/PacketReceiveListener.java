@@ -1,11 +1,11 @@
 package de.feelix.sierra.listener;
 
 import com.github.retrooper.packetevents.event.*;
+import com.github.retrooper.packetevents.protocol.ConnectionState;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
-import de.feelix.sierra.manager.packet.OutgoingProcessor;
-import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierraapi.check.impl.SierraCheck;
 import org.bukkit.entity.Player;
 
@@ -13,14 +13,24 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 /**
- * The PacketListener class represents a packet listener that receives and sends packets events.
+ * The PacketReceiveListener class is a subclass of PacketListenerAbstract and implements the PacketListener interface.
+ * It listens for received packets and performs various checks and operations on them.
  */
-public class PacketListener extends PacketListenerAbstract {
+public class PacketReceiveListener extends PacketListenerAbstract {
 
     /**
-     * A class representing a packet listener.
+     * The PacketReceiveListener class is a subclass of PacketListenerAbstract and implements
+     * the PacketListener interface. It represents a listener for packet receive events.
+     * <p>
+     * This listener is responsible for handling the packet receive events triggered
+     * by the PacketEvents API. It provides a callback method called onPacketReceive()
+     * which is called whenever a packet is received.
+     * <p>
+     * Example usage:
+     * PacketEvents.getAPI().getEventManager().registerListeners(new PacketReceiveListener(), new PacketSendListener());
+     * PacketEvents.getAPI().init();
      */
-    public PacketListener() {
+    public PacketReceiveListener() {
         super(PacketListenerPriority.MONITOR);
     }
 
@@ -31,6 +41,10 @@ public class PacketListener extends PacketListenerAbstract {
      */
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
+
+        if(event.getConnectionState() != ConnectionState.PLAY) {
+            return;
+        }
 
         PlayerData playerData = getPlayerData(event);
 
@@ -58,56 +72,11 @@ public class PacketListener extends PacketListenerAbstract {
     }
 
     /**
-     * Checks the handling of a packet for the given player data and event.
-     * If the player data is not null, has a valid user, and the name has not been checked yet,
-     * it validates the username of the event's user. If the username is protocol, it cancels the event and kicks the
-     * player.
-     * Finally, it sets the nameChecked flag in the player data to true.
+     * Checks if the player has bypass permission.
      *
-     * @param playerData the PlayerData object representing the data associated with the player
-     * @param event      the PacketReceiveEvent representing the packet receive event
+     * @param event the ProtocolPacketEvent representing the event
+     * @return true if the player has bypass permission, false otherwise
      */
-    private void checkHandling(PlayerData playerData, PacketReceiveEvent event) {
-        if (playerData != null
-            && playerData.getUser() != null
-            && playerData.getUser().getName() != null
-            && !playerData.isNameChecked()) {
-            if (!isValidUsername(event.getUser().getName())) {
-                Sierra.getPlugin()
-                    .getLogger()
-                    .info("Invalid username: " + event.getUser().getName() + ", kicked player");
-                event.setCancelled(true);
-                playerData.kick();
-            }
-            playerData.setNameChecked(true);
-        }
-    }
-
-    /**
-     * Called when a packet is sent.
-     *
-     * @param event the PacketSendEvent representing the event
-     */
-    @Override
-    public void onPacketSend(PacketSendEvent event) {
-        PlayerData playerData = getPlayerData(event);
-
-        if (playerData == null || handleExemptOrBlockedPlayer(playerData, event)) return;
-
-        if (bypassPermission(event)) {
-            event.setCancelled(false);
-            return;
-        }
-
-        playerData.getTimingProcessor().getPacketSendTask().prepare();
-
-        playerData.getGameModeProcessor().process(event);
-        playerData.getPingProcessor().handle(event);
-
-        processAvailableChecksSend(playerData, event);
-        playerData.getTimingProcessor().getPacketSendTask().end();
-    }
-
     private boolean bypassPermission(ProtocolPacketEvent<Object> event) {
         if (Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("enable-bypass-permission", false)) {
             Player player = (Player) event.getPlayer();
@@ -176,20 +145,6 @@ public class PacketListener extends PacketListenerAbstract {
     }
 
     /**
-     * Process the available checks for packet send events.
-     *
-     * @param playerData The PlayerData object associated with the player
-     * @param event      The PacketSendEvent object representing the packet send event
-     */
-    private void processAvailableChecksSend(PlayerData playerData, PacketSendEvent event) {
-        for (SierraCheck availableCheck : playerData.getCheckManager().availableChecks()) {
-            if (availableCheck instanceof OutgoingProcessor) {
-                ((OutgoingProcessor) availableCheck).handle(event, playerData);
-            }
-        }
-    }
-
-    /**
      * Process the available checks for packet receive events.
      *
      * @param playerData The PlayerData object associated with the player
@@ -200,6 +155,32 @@ public class PacketListener extends PacketListenerAbstract {
             if (availableCheck instanceof IngoingProcessor) {
                 ((IngoingProcessor) availableCheck).handle(event, playerData);
             }
+        }
+    }
+
+    /**
+     * Checks the handling of a packet for the given player data and event.
+     * If the player data is not null, has a valid user, and the name has not been checked yet,
+     * it validates the username of the event's user. If the username is protocol, it cancels the event and kicks the
+     * player.
+     * Finally, it sets the nameChecked flag in the player data to true.
+     *
+     * @param playerData the PlayerData object representing the data associated with the player
+     * @param event      the PacketReceiveEvent representing the packet receive event
+     */
+    private void checkHandling(PlayerData playerData, PacketReceiveEvent event) {
+        if (playerData != null
+            && playerData.getUser() != null
+            && playerData.getUser().getName() != null
+            && !playerData.isNameChecked()) {
+            if (!isValidUsername(event.getUser().getName())) {
+                Sierra.getPlugin()
+                    .getLogger()
+                    .info("Invalid username: " + event.getUser().getName() + ", kicked player");
+                event.setCancelled(true);
+                playerData.kick();
+            }
+            playerData.setNameChecked(true);
         }
     }
 }

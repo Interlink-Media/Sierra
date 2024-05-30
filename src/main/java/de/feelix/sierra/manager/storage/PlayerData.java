@@ -21,7 +21,6 @@ import org.bukkit.Bukkit;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.logging.Level;
 
 /**
  * PlayerData is a class representing the data associated with a player.
@@ -29,6 +28,7 @@ import java.util.logging.Level;
 @Data
 public class PlayerData implements SierraUser {
 
+    private final Object        player;
     private       User          user;
     private       GameMode      gameMode;
     private       ClientVersion clientVersion;
@@ -56,10 +56,12 @@ public class PlayerData implements SierraUser {
     /**
      * The PlayerData function is a constructor that takes in a User object and sets the user variable to it.
      *
-     * @param user user Set the user field in this class
+     * @param user   user Set the user field in this class
+     * @param player
      */
-    public PlayerData(User user) {
+    public PlayerData(User user, Object player) {
         this.user = user;
+        this.player = player;
         this.clientVersion = user.getClientVersion();
     }
 
