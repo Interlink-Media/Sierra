@@ -532,7 +532,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 .toVector3d()
                 .distanceSquared(playerData.getLastLocation().getPosition());
 
-            if(distanceFromLastLocation > 55) { // Max value is around 32, but we can skip that
+            if(distanceFromLastLocation > 64) { // Max value is around 32, but we can skip that
                 violation(event, createViolation(String.format("Sign is too far away: %.2f",
                                                                distanceFromLastLocation), PunishType.KICK));
             }
