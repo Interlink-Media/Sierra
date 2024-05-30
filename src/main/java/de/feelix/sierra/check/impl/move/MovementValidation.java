@@ -206,13 +206,15 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     @Override
     public void handle(PacketReceiveEvent event, PlayerData data) {
 
-        if (isPreventInvalidMoveDisabled()) return;
+        if(!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-protocol-move", true)) {
+            return;
+        }
 
-        if (isFlying(event)) {
+        if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) {
             getPlayerData().getTimingProcessor().getMovementTask().prepare();
             handleFlyingPacket(event, data);
             handleLatencyAbuse(event, data);
-        } else if (isVehicleMovePacket(event)) {
+        } else if (event.getPacketType() == PacketType.Play.Client.VEHICLE_MOVE) {
             handleVehicleMovePacket(event, data);
         }
     }
@@ -242,35 +244,6 @@ public class MovementValidation extends SierraDetection implements IngoingProces
             }
         }
         lastFlyingTime = System.currentTimeMillis();
-    }
-
-    /**
-     * Determines if the prevent-protocol-move feature is disabled.
-     *
-     * @return true if the prevent-protocol-move feature is disabled, false otherwise.
-     */
-    private boolean isPreventInvalidMoveDisabled() {
-        return !Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-protocol-move", true);
-    }
-
-    /**
-     * Determines if the given PacketReceiveEvent represents a flying packet.
-     *
-     * @param event the PacketReceiveEvent triggered by receiving a packet from the player
-     * @return true if the packet type is flying, false otherwise
-     */
-    private boolean isFlying(PacketReceiveEvent event) {
-        return WrapperPlayClientPlayerFlying.isFlying(event.getPacketType());
-    }
-
-    /**
-     * Determines if the given {@link PacketReceiveEvent} represents a vehicle move packet.
-     *
-     * @param event the {@link PacketReceiveEvent} triggered by receiving a packet from the player
-     * @return true if the packet type is {@code PacketType.Play.Client.VEHICLE_MOVE}, false otherwise
-     */
-    private boolean isVehicleMovePacket(PacketReceiveEvent event) {
-        return event.getPacketType() == PacketType.Play.Client.VEHICLE_MOVE;
     }
 
     /**

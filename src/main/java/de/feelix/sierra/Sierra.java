@@ -131,7 +131,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         plugin = this;
         sierraConfigEngine = new SierraConfigEngine();
         initManager.load();
-
         updateChecker = new UpdateChecker();
     }
 
