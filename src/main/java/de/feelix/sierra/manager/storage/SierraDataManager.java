@@ -55,6 +55,12 @@ public class SierraDataManager implements UserRepository {
     private final ArrayList<History> histories = new ArrayList<>();
 
     /**
+     * This variable represents a mapping between Bukkit GameModes and custom GameModes.
+     * It is used to convert between the two representations when necessary.
+     */
+    private static final Map<org.bukkit.GameMode, GameMode> GAMEMODE_MAP = createGameModeMap();
+
+    /**
      * violationCount is a static variable of type HashMap<String, Integer>.
      * It represents a map that stores the count of violations for different types of checks.
      * The keys in the map are the types of checks, represented as strings.
@@ -116,7 +122,7 @@ public class SierraDataManager implements UserRepository {
             public void onUserLogin(UserLoginEvent event) {
                 User user = event.getUser();
                 addPlayerData(user, event.getPlayer());
-                checkIfBlocked(user, event);
+                checkIfBlocked(user);
                 checkForUpdate(user);
             }
 
@@ -130,10 +136,9 @@ public class SierraDataManager implements UserRepository {
     /**
      * Checks if the connection of a user should be blocked based on the ban configuration.
      *
-     * @param user  The user whose connection needs to be checked.
-     * @param event The UserConnectEvent associated with the connection.
+     * @param user The user whose connection needs to be checked.
      */
-    private void checkIfBlocked(User user, UserLoginEvent event) {
+    private void checkIfBlocked(User user) {
         if (Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("block-connections-after-ban", true)) {
             String hostAddress = user.getAddress().getAddress().getHostAddress();
             if (Sierra.getPlugin().getAddressStorage().invalid(hostAddress)) {
@@ -310,8 +315,22 @@ public class SierraDataManager implements UserRepository {
      */
     public void addPlayerData(User user, Object player) {
         PlayerData value = new PlayerData(user, player);
-        value.setGameMode(GameMode.defaultGameMode());
+        setPlayerGameMode(value, player);
         this.playerData.put(user, value);
+    }
+
+    /**
+     * Sets the game mode for a player.
+     *
+     * @param value The PlayerData object associated with the player.
+     * @param player The player object to set the game mode for.
+     */
+    private void setPlayerGameMode(PlayerData value, Object player) {
+        org.bukkit.GameMode gameMode          = ((Player) player).getGameMode();
+        GameMode            correspondingMode = GAMEMODE_MAP.get(gameMode);
+        if (correspondingMode != null) {
+            value.setGameMode(correspondingMode);
+        }
     }
 
     /**
@@ -321,6 +340,20 @@ public class SierraDataManager implements UserRepository {
      */
     public void removePlayerData(User user) {
         this.playerData.remove(user);
+    }
+
+    /**
+     * Creates a map that maps Bukkit GameMode objects to custom GameMode objects.
+     *
+     * @return A map containing the mapping of Bukkit GameMode objects to custom GameMode objects.
+     */
+    private static Map<org.bukkit.GameMode, GameMode> createGameModeMap() {
+        Map<org.bukkit.GameMode, GameMode> gameModeMap = new HashMap<>();
+        gameModeMap.put(org.bukkit.GameMode.SURVIVAL, GameMode.SURVIVAL);
+        gameModeMap.put(org.bukkit.GameMode.CREATIVE, GameMode.CREATIVE);
+        gameModeMap.put(org.bukkit.GameMode.ADVENTURE, GameMode.ADVENTURE);
+        gameModeMap.put(org.bukkit.GameMode.SPECTATOR, GameMode.SPECTATOR);
+        return gameModeMap;
     }
 
     @Override

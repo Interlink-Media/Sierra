@@ -15,7 +15,7 @@ public class HistoryDocument implements History {
     /**
      * The username associated with this HistoryDocument.
      */
-    private final String      username;
+    private final String username;
 
     /**
      * The private final variable "description" represents the description associated with a History instance.
@@ -27,15 +27,16 @@ public class HistoryDocument implements History {
      * The "HistoryDocument" class provides methods to retrieve information such as the username, punishType, timestamp,
      * and historyType associated with the history instance.
      * <p>
-     * This variable is also used in methods such as "description()" and "shortenDescription()" to retrieve or modify the
+     * This variable is also used in methods such as "description()" and "shortenDescription()" to retrieve or modify
+     * the
      * description of the history instance.
      */
-    private final String      description;
+    private final String description;
 
     /**
      * Player ping
      */
-    private final long        ping;
+    private final long ping;
 
     /**
      * The punishType variable represents the type of punishment associated with a history document.
@@ -44,15 +45,17 @@ public class HistoryDocument implements History {
      * @see PunishType
      * @see HistoryDocument
      */
-    private final PunishType  punishType;
+    private final PunishType punishType;
 
     /**
-     * The `HistoryType` enum represents the type of history that can be associated with a user's actions or punishments.
+     * The `HistoryType` enum represents the type of history that can be associated with a user's actions or
+     * punishments.
      */
     private final HistoryType historyType;
 
     /**
-     * The timestamp variable represents a long value indicating the time in milliseconds since the epoch (January 1, 1970, 00:00:00 GMT).
+     * The timestamp variable represents a long value indicating the time in milliseconds since the epoch (January 1,
+     * 1970, 00:00:00 GMT).
      * It is a private and final instance variable of the class HistoryDocument.
      * The timestamp variable is initialized with the current system time using the System.currentTimeMillis() method.
      * <p>
@@ -61,7 +64,7 @@ public class HistoryDocument implements History {
      * HistoryDocument document = new HistoryDocument();
      * long timestamp = document.timestamp();
      */
-    private final long        timestamp = System.currentTimeMillis();
+    private final long timestamp = System.currentTimeMillis();
 
     /**
      * Retrieves the username associated with this HistoryDocument.

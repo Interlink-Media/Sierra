@@ -3,6 +3,7 @@ package de.feelix.sierra.manager.storage;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
+import com.github.retrooper.packetevents.protocol.world.Location;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.CheckManager;
 import de.feelix.sierra.manager.storage.alert.AbstractAlertSetting;
@@ -31,6 +32,7 @@ public class PlayerData implements SierraUser {
     private final Object        player;
     private       User          user;
     private       GameMode      gameMode;
+    private       Location      lastLocation;
     private       ClientVersion clientVersion;
     private       String        brand    = "vanilla";
     private final Set<String>   channels = new HashSet<>();

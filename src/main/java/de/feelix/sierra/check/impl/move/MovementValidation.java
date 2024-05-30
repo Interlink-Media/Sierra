@@ -132,6 +132,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         if (!wrapper.hasPositionChanged()) return;
 
         Location location = wrapper.getLocation();
+        this.getPlayerData().setLastLocation(location);
         Vector3d position = location.getPosition();
         double   chunkId  = computeChunkId(position);
 

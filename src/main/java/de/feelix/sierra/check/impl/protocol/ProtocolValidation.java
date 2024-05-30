@@ -522,11 +522,20 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
         } else if (event.getPacketType() == PacketType.Play.Client.UPDATE_SIGN) {
 
-
             WrapperPlayClientUpdateSign wrapper = CastUtil.getSupplierValue(
                 () -> new WrapperPlayClientUpdateSign(event), playerData::exceptionDisconnect);
 
             if (wrapper == null) return;
+
+            // Calculate distance from last flying position to sign placement
+            double distanceFromLastLocation = wrapper.getBlockPosition()
+                .toVector3d()
+                .distanceSquared(playerData.getLastLocation().getPosition());
+
+            if(distanceFromLastLocation > 55) { // Max value is around 32, but we can skip that
+                violation(event, createViolation(String.format("Sign is too far away: %.2f",
+                                                               distanceFromLastLocation), PunishType.KICK));
+            }
 
             for (String textLine : wrapper.getTextLines()) {
 
@@ -633,7 +642,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 playerData::exceptionDisconnect
             );
 
-            if(playerData.getGameMode() == GameMode.ADVENTURE) {
+            if (playerData.getGameMode() == GameMode.ADVENTURE) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Placed block in adventure")
                     .punishType(PunishType.BAN)

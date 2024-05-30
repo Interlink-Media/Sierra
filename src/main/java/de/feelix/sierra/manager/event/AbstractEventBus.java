@@ -51,6 +51,7 @@ public class AbstractEventBus implements EventBus {
      */
     public <T extends SierraAbstractEvent> void publish(T event) {
         List<EventSubscriber<?>> eventSubscribers = subscribers.get(event.getClass());
+
         if (eventSubscribers == null) return;
 
         dispatchEventToSubscribers(event, eventSubscribers);
@@ -69,6 +70,7 @@ public class AbstractEventBus implements EventBus {
         eventSubscribers.sort(Comparator.comparingInt(EventSubscriber::getPriority));
 
         for (EventSubscriber<?> eventSubscriber : eventSubscribers) {
+
             ((EventSubscriber<T>) eventSubscriber).getConsumer().accept(event);
         }
     }
