@@ -25,188 +25,41 @@ import de.feelix.sierraapi.violation.PunishType;
 @SierraCheckData(checkType = CheckType.MOVEMENT_VALIDATION)
 public class MovementValidation extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
 
-    /**
-     * Represents the hard-coded border value used for protocol move detection.
-     *
-     * <p>
-     * The HARD_CODED_BORDER variable is a private constant in the InvalidMoveDetection class.
-     * It is of type double and has a value of 2.9999999E7D.
-     * </p>
-     *
-     * <p>
-     * The hard-coded border value is used to check if a player's movement exceeds the valid boundary.
-     * If the player's position is greater than the hard-coded border value, it is considered an protocol move.
-     * </p>
-     *
-     * <p>
-     * This variable is used in various methods within the InvalidMoveDetection class to handle and detect protocol
-     * moves.
-     * </p>
-     */
-    private static final double HARD_CODED_BORDER = 2.9999999E7D;
-
-    /**
-     * Represents the last chunk ID.
-     *
-     * <p>
-     * The lastChunkId variable stores the ID of the last chunk that was processed.
-     * It is used in the InvalidMoveDetection class to track the chunks that the player has moved through.
-     * </p>
-     *
-     * @since 1.0
-     */
-    private double lastChunkId = -1;
-
-    /**
-     * Represents the timestamp of the last tick.
-     *
-     * <p>
-     * The lastTick variable stores the timestamp of the last tick, which is a unit of time measurement used in the
-     * game.
-     * The value is initialized to -1, indicating that no tick has occurred yet.
-     * </p>
-     *
-     * @see MovementValidation
-     * @since 1.0
-     */
-    private long lastTick = -1;
-
-    /**
-     * Represents a private integer variable named buffer.
-     * <p>
-     * The buffer variable stores an integer value that is used within the class {@link MovementValidation}.
-     * The purpose of this variable is not specified in the given code snippet.
-     * </p>
-     * <p>
-     * This variable is declared with private access specifier, meaning it can only be accessed within the same class.
-     * </p>
-     * <p>
-     * The initial value of the buffer variable is set to 0.
-     * </p>
-     * <p>
-     * It is important to note that the buffer variable is not returned or used in any example code provided.
-     * </p>
-     *
-     * @see MovementValidation
-     * @since 1.0
-     */
-    private int buffer = 0;
-
-    /**
-     * Represents the last known location of an entity.
-     * <p>
-     * This variable stores the location object that represents the last known coordinates
-     * of the entity. It is updated whenever the entity's location changes.
-     * </p>
-     * <p>
-     * The location object contains information such as the world, coordinates (x, y, z),
-     * and orientation (yaw, pitch) of the entity.
-     * </p>
-     *
-     * @see Location
-     */
+    private double   lastChunkId      = -1;
+    private long     lastTick         = -1;
+    private int      buffer           = 0;
     private Location lastLocation;
+    private long     lastTeleportTime = 0;
+    private int      deltaBuffer      = 0;
+    private long     lastFlyingTime   = 0L;
+    private long     balance          = 0L;
+
+    private static final double HARD_CODED_BORDER = 2.9999999E7D;
+    private static final double SPECIAL_VALUE     = 9.223372E18d;
+    private static final long   maxBal            = 0;
+    private static final long   balReset          = -50;
+    private static final long   balSubOnTp        = 50;
 
     /**
-     * Constant representing a special value.
-     * <p>
-     * This constant is a final double value and acts as a special marker or predefined value.
-     * <p>
-     * The value of SPECIAL_VALUE is 9.223372E18d.
-     */
-    final double SPECIAL_VALUE = 9.223372E18d;
-
-    /**
-     * Represents the timestamp of the last teleport made by the player.
-     * The timestamp is stored as a Unix timestamp in milliseconds.
-     * A value of 0 indicates that no teleport has been made yet.
-     */
-    private long lastTeleportTime = 0;
-
-    /**
-     * Represents the buffer for tracking the change in position.
-     * The deltaBuffer is used to store the difference between the current position and the previous position.
+     * Represents the MovementValidation class.
+     * This class is responsible for validating movement data and performing various checks and actions.
      *
-     * <p>
-     * This variable is used in the InvalidMoveDetection class to detect and handle protocol movement packets from a
-     * player.
-     * It is updated each time a movement packet is received and checked for any suspicious or protocol values.
-     * </p>
-     *
-     * @since 1.0
-     */
-    private int deltaBuffer = 0;
-
-    /**
-     * Represents the last time the player was flying.
-     */
-    private long lastFlyingTime = 0L;
-
-    /**
-     * Represents the balance of a player.
-     * <p>
-     * The balance is used to track the movement frequency of the player. It is updated when the player is flying and
-     * is decremented when the player is teleported. If the balance exceeds a certain threshold, a violation is created.
-     */
-    private long balance = 0L;
-
-    /**
-     * Represents the maximum balance of a player.
-     * <p>
-     * The maximum balance is used to determine the threshold at which a violation is created for movement frequency.
-     * If the player's balance exceeds the maximum balance, a violation is generated.
-     */
-    private static final long maxBal = 0;
-
-    /**
-     * The balReset variable represents the balance reset value.
-     *
-     * <p>
-     * This variable is a constant and is used to define the balance value at which a reset should occur.
-     * </p>
-     *
-     * <p>
-     * The value of balReset is -50.
-     * </p>
-     *
-     * <p>
-     * It is used in the TimerDetection class as one of the fields.
-     * </p>
-     *
-     * @since 1.0
-     */
-    private static final long balReset = -50;
-
-    /**
-     * The balSubOnTp variable represents the balance decrease value when a player is teleported.
-     * <p>
-     * The balance is used to track the movement frequency of the player. It is updated when the player is flying and
-     * is decremented when the player is teleported. If the balance
-     * exceeds a certain threshold, a violation is created.
-     */
-    private static final long balSubOnTp = 50;
-
-    /**
-     * InvalidMoveDetection is a subclass of SierraDetection which is used to detect and handle protocol movement
-     * packets from a player.
-     * It examines the player's movement data and checks for any suspicious or protocol values.
-     *
-     * @param playerData The PlayerData object containing the player's data
+     * @param playerData The PlayerData object associated with the player.
      */
     public MovementValidation(PlayerData playerData) {
         super(playerData);
     }
 
     /**
-     * This method handles the PacketReceiveEvent by checking for protocol movement and taking appropriate actions.
+     * Handles the received packet event by performing various checks and actions.
      *
-     * @param event the PacketReceiveEvent triggered by receiving a packet from the player
-     * @param data  the PlayerData object containing the player's data
+     * @param event The PacketReceiveEvent associated with the received packet.
+     * @param data  The PlayerData object associated with the player.
      */
     @Override
     public void handle(PacketReceiveEvent event, PlayerData data) {
 
-        if(!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-protocol-move", true)) {
+        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-protocol-move", true)) {
             return;
         }
 
@@ -214,16 +67,29 @@ public class MovementValidation extends SierraDetection implements IngoingProces
             getPlayerData().getTimingProcessor().getMovementTask().prepare();
             handleFlyingPacket(event, data);
             handleLatencyAbuse(event, data);
+
         } else if (event.getPacketType() == PacketType.Play.Client.VEHICLE_MOVE) {
-            handleVehicleMovePacket(event, data);
+
+            WrapperPlayClientVehicleMove wrapper = CastUtil.getSupplierValue(
+                () -> new WrapperPlayClientVehicleMove(event), data::exceptionDisconnect);
+
+            Vector3d location = wrapper.getPosition();
+
+            if (invalidValue(location.getX(), location.getY(), location.getZ())) {
+                violation(event, buildExtValueKickViolation("Extreme values: double"));
+            }
+
+            if (invalidValue(wrapper.getYaw(), wrapper.getPitch())) {
+                violation(event, buildExtValueKickViolation("Extreme values: float"));
+            }
         }
     }
 
     /**
-     * This method handles abuse of latency in movement by checking for protocol values and taking appropriate actions.
+     * Handles the latency abuse by checking the flying time of the player and applying penalties if necessary.
      *
-     * @param event the PacketReceiveEvent triggered by receiving a packet from the player
-     * @param data  the PlayerData object containing the player's data
+     * @param event The PacketReceiveEvent associated with the flying packet.
+     * @param data  The PlayerData object associated with the player.
      */
     private void handleLatencyAbuse(PacketReceiveEvent event, PlayerData data) {
 
@@ -231,7 +97,9 @@ public class MovementValidation extends SierraDetection implements IngoingProces
             return;
         }
 
-        if (this.lastFlyingTime != 0L && System.currentTimeMillis() - data.getJoinTime() > 1000) {
+        boolean noExempt = System.currentTimeMillis() - data.getJoinTime() > 1000;
+
+        if (this.lastFlyingTime != 0L && noExempt) {
             final long now = System.currentTimeMillis();
             balance += 50L;
             balance -= now - lastFlyingTime;
@@ -247,9 +115,10 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * This method handles the flying packet received from the player.
+     * Handles the flying packet received from the client.
      *
-     * @param event the PacketReceiveEvent triggered by receiving a packet from the player
+     * @param event      The PacketReceiveEvent associated with the flying packet.
+     * @param playerData The PlayerData object associated with the player.
      */
     private void handleFlyingPacket(PacketReceiveEvent event, PlayerData playerData) {
 
@@ -280,10 +149,11 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks the delta (difference) between the current position and the previous position.
+     * Checks the delta values between the current position and the last recorded position,
+     * and raises violation events if necessary.
      *
-     * @param position the current position of the entity
-     * @param event    the PacketReceiveEvent triggered by receiving a packet from the player
+     * @param position The current position.
+     * @param event    The PacketReceiveEvent associated with the position update.
      */
     private void checkDelta(Vector3d position, PacketReceiveEvent event) {
 
@@ -320,10 +190,12 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks if the given deltas are protocol.
+     * Checks if any of the delta values provided are invalid according to the specified criteria.
      *
-     * @param deltas the delta values to check
-     * @return true if any of the deltas are protocol, false otherwise
+     * @param deltas The array of double values representing the delta values to check.
+     * @return {@code true} if any of the delta values are greater than or equal to 10.0 and divisible by 1.0, and if
+     * any delta value is greater than 1000.0; {@code false} otherwise
+     * .
      */
     public boolean invalidDeltaValue(double... deltas) {
         for (double delta : deltas) {
@@ -337,14 +209,20 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Sorts out protocol rotation data from a flying packet.
+     * Sorts out any invalid rotation values and raises a violation event if necessary.
      *
-     * @param wrapper the WrapperPlayClientPlayerFlying object containing the flying packet data
-     * @param event   the PacketReceiveEvent triggered by receiving the packet from the player
+     * @param wrapper The WrapperPlayClientPlayerFlying object containing player rotation information.
+     * @param event   The PacketReceiveEvent associated with the player flying packet.
      */
     private void sortOutInvalidRotation(WrapperPlayClientPlayerFlying wrapper, PacketReceiveEvent event) {
         if (wrapper.hasRotationChanged()) {
-            checkInvalidPitch(wrapper.getLocation(), event);
+            float pitch = wrapper.getLocation().getPitch();
+            if (Math.abs(pitch) > 90.01) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation(String.format("Pitch at %.2f", Math.abs(pitch)))
+                    .punishType(PunishType.KICK)
+                    .build());
+            }
         }
 
         float pitch = wrapper.getLocation().getPitch();
@@ -360,21 +238,20 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Determines if the given value is out of range.
+     * Determines if the given value is outside the specified range.
      *
      * @param value The value to check.
-     * @return {@code true} if the value is out of range, {@code false} otherwise.
+     * @return {@code true} if the value is outside the range, {@code false} otherwise.
      */
-    // Helper method to check if a value is out of range
     private boolean isOutOfRange(float value) {
         return value < (float) -80000.0 || value > (float) 80000.0;
     }
 
     /**
-     * Sorts out traveled chunks based on the chunkId and the current system time.
+     * Sorts out traveled chunks based on the chunk ID and the current tick.
      *
-     * @param chunkId the ID of the chunk traveled to
-     * @param event   the PacketReceiveEvent triggered by receiving a packet
+     * @param chunkId The ID of the chunk to sort out.
+     * @param event   The PacketReceiveEvent associated with the chunk sorting.
      */
     private void sortOutTraveledChunks(double chunkId, PacketReceiveEvent event) {
         long tick = System.currentTimeMillis();
@@ -388,10 +265,10 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Process the buffer and handle violation if necessary.
+     * Processes the buffer and raises a violation event if necessary.
      *
-     * @param travelTime the travel time in milliseconds
-     * @param event      the PacketReceiveEvent triggered by receiving a packet from the player
+     * @param travelTime The travel time in milliseconds.
+     * @param event      The PacketReceiveEvent that triggered the buffer processing.
      */
     private void processBufferAndViolation(long travelTime, PacketReceiveEvent event) {
         if (travelTime < 20) {
@@ -408,10 +285,10 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Sorts out extreme values from the given location.
+     * Sorts out extreme values in the given location and raises a violation event if necessary.
      *
-     * @param location the location to check for extreme values
-     * @param event    the PacketReceiveEvent triggered by receiving a packet from the player
+     * @param location The location to check for extreme values.
+     * @param event    The PacketReceiveEvent that triggered the check.
      */
     private void sortOutExtremeValues(Location location, PacketReceiveEvent event) {
         if (invalidValue(location.getX(), location.getY(), location.getZ())) {
@@ -424,10 +301,10 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Builds a violation document with an extended value ban punishment type.
+     * Builds a ViolationDocument with the given debug information and punishment type.
      *
-     * @param debugInfo the debug information related to the violation document
-     * @return the built violation document
+     * @param debugInfo The debug information for the violation document.
+     * @return The built ViolationDocument.
      */
     private ViolationDocument buildExtValueKickViolation(String debugInfo) {
         return ViolationDocument.builder()
@@ -437,43 +314,20 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * This method handles a vehicle move packet received from the player.
-     * It checks for protocol movement values and takes appropriate actions.
-     *
-     * @param event      The PacketReceiveEvent triggered by receiving the vehicle move packet from the player
-     * @param playerData The PlayerData object containing the player's data
-     */
-    private void handleVehicleMovePacket(PacketReceiveEvent event, PlayerData playerData) {
-
-        WrapperPlayClientVehicleMove wrapper = CastUtil.getSupplierValue(
-            () -> new WrapperPlayClientVehicleMove(event), playerData::exceptionDisconnect);
-
-        Vector3d location = wrapper.getPosition();
-
-        if (invalidValue(location.getX(), location.getY(), location.getZ())) {
-            violation(event, buildExtValueKickViolation("Extreme values: double"));
-        }
-
-        if (invalidValue(wrapper.getYaw(), wrapper.getPitch())) {
-            violation(event, buildExtValueKickViolation("Extreme values: float"));
-        }
-    }
-
-    /**
      * Computes the chunk ID based on the given position.
      *
-     * @param position the position of the entity
-     * @return the computed chunk ID
+     * @param position The position to compute the chunk ID for.
+     * @return The computed chunk ID.
      */
     private double computeChunkId(Vector3d position) {
         return Math.floor(position.getX() / 32) + Math.floor(position.getZ() / 32);
     }
 
     /**
-     * Checks if any of the given float values is Infinite.
+     * Determines if any of the given values is invalid.
      *
-     * @param value The float values to check for Infinity.
-     * @return {@code true} if any of the values is Infinite, {@code false} otherwise.
+     * @param value The array of float values to check.
+     * @return {@code true} if any of the values is NaN (Not-a-Number) or infinite, {@code false} otherwise.
      */
     public boolean invalidValue(float... value) {
         for (float v : value) {
@@ -485,10 +339,10 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Determines if any of the given double values is NaN or infinite.
+     * Determines if any of the given values is invalid.
      *
-     * @param value The double values to check for NaN or infinite.
-     * @return {@code true} if any of the values is NaN or infinite, {@code false} otherwise.
+     * @param value The array of double values to check.
+     * @return {@code true} if any of the values is NaN (Not-a-Number) or infinite, {@code false} otherwise.
      */
     public boolean invalidValue(double... value) {
         for (double v : value) {
@@ -500,10 +354,10 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Check if the position is outside the border and handle violation accordingly.
+     * Check if the given position is outside the border and handle violation event if so.
      *
-     * @param position The position to check
-     * @param event    The event triggered by receiving a packet from the player
+     * @param position The position to check.
+     * @param event    The PacketReceiveEvent that triggered the check.
      */
     private void checkForBorder(Vector3d position, PacketReceiveEvent event) {
         if (Math.abs(position.getX()) > HARD_CODED_BORDER
@@ -518,21 +372,11 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks for protocol pitch in the given location and handles violation if necessary.
+     * Handle method for processing a PacketSendEvent.
      *
-     * @param location The location to check for protocol pitch
-     * @param event    The PacketReceiveEvent triggered by receiving a packet from the player
+     * @param event      The PacketSendEvent to handle.
+     * @param playerData The PlayerData associated with the event.
      */
-    private void checkInvalidPitch(Location location, PacketReceiveEvent event) {
-        float pitch = location.getPitch();
-        if (Math.abs(pitch) > 90.01) {
-            violation(event, ViolationDocument.builder()
-                .debugInformation(String.format("Pitch at %.2f", Math.abs(pitch)))
-                .punishType(PunishType.KICK)
-                .build());
-        }
-    }
-
     @Override
     public void handle(PacketSendEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK) {
