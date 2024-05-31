@@ -248,12 +248,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         return value < (float) -80000.0 || value > (float) 80000.0;
     }
 
-    /**
-     * Sorts out traveled chunks based on the chunk ID and the current tick.
-     *
-     * @param chunkId The ID of the chunk to sort out.
-     * @param event   The PacketReceiveEvent associated with the chunk sorting.
-     */
+
     private void sortOutTraveledChunks(double chunkId, PacketReceiveEvent event) {
         long tick = System.currentTimeMillis();
 
