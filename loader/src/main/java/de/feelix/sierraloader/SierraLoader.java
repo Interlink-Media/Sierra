@@ -46,13 +46,20 @@ public class SierraLoader extends JavaPlugin {
         getLogger().info("Starting Sierra Loader...");
         getLogger().info("Download latest version of sierra...");
         try {
+            long downloadStart = System.nanoTime();
             try (InputStream in = formURL().openStream()) {
-                resource.write(in);
+                long   size     = this.download(in, resource.createOrGetFile().toPath());
+                long   duration = (System.nanoTime() - downloadStart) / 1000000L;
+                double mbps = (double) size / (1024.0 * 1024.0) / (double) duration * 1000.0;
+                getLogger().info(
+                    String.format(
+                        "Download complete (%.2f MB @ ~%.2f mb/s in %d ms), booting...", (int) size / (1024.0 * 1024.0),
+                        mbps, duration
+                    ));
             }
         } catch (IOException e) {
             getLogger().warning("Error occurred while downloading JAR: " + e.getMessage());
         }
-        getLogger().info("Latest version of sierra downloaded! Booting...");
         loadJar();
     }
 
@@ -104,8 +111,8 @@ public class SierraLoader extends JavaPlugin {
      *
      * @param jarFile the JAR file to load
      * @return true if the JAR file was loaded successfully, false otherwise
-     * @throws InvalidPluginException      if the plugin is protocol
-     * @throws InvalidDescriptionException if the plugin description is protocol
+     * @throws InvalidPluginException      if the plugin is invalid
+     * @throws InvalidDescriptionException if the plugin description is invalid
      */
     private boolean loadJarToPlugin(File jarFile) throws InvalidPluginException, InvalidDescriptionException {
         plugin = getServer().getPluginManager().loadPlugin(jarFile);
@@ -213,5 +220,26 @@ public class SierraLoader extends JavaPlugin {
             return browserDownloadUrl;
         }
         return "";
+    }
+
+    /**
+     * Downloads the content from the InputStream and writes it to the specified Path.
+     *
+     * @param inputStream the InputStream to read from
+     * @param destination the Path to write to
+     * @return the size of the downloaded content in bytes
+     * @throws IOException if an I/O error occurs during the download
+     */
+    private long download(InputStream inputStream, Path destination) throws IOException {
+        try (OutputStream outputStream = Files.newOutputStream(destination)) {
+            byte[] buffer         = new byte[1024];
+            int    bytesRead;
+            long   totalBytesRead = 0;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+                totalBytesRead += bytesRead;
+            }
+            return totalBytesRead;
+        }
     }
 }
