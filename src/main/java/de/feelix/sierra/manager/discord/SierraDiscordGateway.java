@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
 @Data
 public class SierraDiscordGateway {
 
+    // Todo: Maybe remove in 1.3.4
+
     /**
      * The WebhookClient class represents a client object used to interact with a Discord webhook.
      * It is responsible for sending alerts and messages through the webhook.
