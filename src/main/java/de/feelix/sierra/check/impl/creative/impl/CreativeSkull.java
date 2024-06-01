@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
@@ -51,7 +52,9 @@ public class CreativeSkull implements ItemCheck {
                 //noinspection unused
                 UUID uuid = UUID.fromString(skullOwner.getStringTagValueOrNull("Id"));
             } catch (Exception e) {
-                return new Pair<>("Unable to parse uuid", PunishType.MITIGATE);
+                if(!SierraDataManager.skipSkullUUIDCheck) {
+                    return new Pair<>("Unable to parse uuid", PunishType.MITIGATE);
+                }
             }
         }
 

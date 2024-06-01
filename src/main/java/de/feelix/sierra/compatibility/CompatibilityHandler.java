@@ -1,6 +1,7 @@
 package de.feelix.sierra.compatibility;
 
 import de.feelix.sierra.Sierra;
+import de.feelix.sierra.compatibility.impl.DeluxeMenusDescriptor;
 import de.feelix.sierra.compatibility.impl.FastAsyncWorldEditDescriptor;
 import de.feelix.sierra.compatibility.impl.ProtocolLibDescriptor;
 
@@ -24,6 +25,7 @@ public class CompatibilityHandler {
     public CompatibilityHandler() {
         descriptors.add(new ProtocolLibDescriptor());
         descriptors.add(new FastAsyncWorldEditDescriptor());
+        descriptors.add(new DeluxeMenusDescriptor());
     }
 
     /**
