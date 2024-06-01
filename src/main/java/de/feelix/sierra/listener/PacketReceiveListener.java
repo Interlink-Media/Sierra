@@ -59,7 +59,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         }
 
         playerData.getTimingProcessor().getPacketReceiveTask().prepare();
-
+        
         checkHandling(playerData, event);
 
         if (handleExemptOrBlockedPlayer(playerData, event)) return;

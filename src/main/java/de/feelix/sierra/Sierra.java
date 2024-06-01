@@ -1,5 +1,6 @@
 package de.feelix.sierra;
 
+import de.feelix.sierra.compatibility.CompatibilityHandler;
 import de.feelix.sierra.manager.event.AbstractEventBus;
 import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
@@ -86,6 +87,13 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     private SierraDiscordGateway sierraDiscordGateway = new SierraDiscordGateway();
 
     /**
+     * compatibilityHandler is an instance of the CompatibilityHandler class. It is responsible for checking compatibility issues with various plugins.
+     *
+     * @see CompatibilityHandler
+     */
+    private CompatibilityHandler compatibilityHandler = new CompatibilityHandler();
+
+    /**
      * Represents an event bus that allows events to be published and subscribed to.
      */
     private final EventBus eventBus = new AbstractEventBus();
@@ -152,6 +160,7 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         this.getLogger().info("Sierra is ready. (Took: " + delay + "ms)");
         SierraApiAccessor.setSierraApiInstance(this);
         this.getLogger().info("API is ready");
+        this.compatibilityHandler.processDescriptors();
     }
 
     /**
