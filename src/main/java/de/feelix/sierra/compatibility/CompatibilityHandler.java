@@ -5,47 +5,61 @@ import de.feelix.sierra.compatibility.impl.FastAsyncWorldEditDescriptor;
 import de.feelix.sierra.compatibility.impl.ProtocolLibDescriptor;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
- * CompatibilityHandler class is responsible for checking compatibility issues with various plugins.
- * It processes a list of descriptors and performs checks to identify and fix compatibility problems.
+ * The CompatibilityHandler class handles compatibility issues with various plugins.
+ * It checks the compatibility of plugin descriptors and logs any issues found.
+ * It also attempts to fix the compatibility problems if possible.
  */
 public class CompatibilityHandler {
 
-    /**
-     * The descriptors variable represents a list of Descriptor objects.
-     *
-     * @see Descriptor
-     */
-    private final ArrayList<Descriptor> descriptors = new ArrayList<>();
+    private final List<Descriptor> descriptors = new ArrayList<>();
 
     /**
-     * The CompatibilityHandler class is responsible for checking compatibility issues with various plugins.
-     * It processes a list of descriptors and performs checks to identify and fix compatibility problems.
+     * The CompatibilityHandler class handles compatibility issues with various plugins.
+     * It checks the compatibility of plugin descriptors and logs any issues found.
+     * It also attempts to fix the compatibility problems if possible.
      */
     public CompatibilityHandler() {
-        this.descriptors.add(new ProtocolLibDescriptor());
-        this.descriptors.add(new FastAsyncWorldEditDescriptor());
+        descriptors.add(new ProtocolLibDescriptor());
+        descriptors.add(new FastAsyncWorldEditDescriptor());
     }
 
     /**
-     * The processDescriptors method is responsible for checking compatibility issues in a list of descriptors
-     * and performing necessary actions to fix the problems.
+     * This method processes the descriptors of various plugins to check for compatibility issues.
+     * It iterates over the list of descriptors and calls the checkDescriptorAndLogResults method to check and log the results.
      */
     public void processDescriptors() {
         Sierra.getPlugin().getLogger().info("Looking for compatibility issues...");
-        for (Descriptor descriptor : descriptors) {
-            if (descriptor.compatibilityProblematic()) {
-                Sierra.getPlugin().getLogger().info("Found a problem with: " + descriptor.pluginName());
-                for (String string : descriptor.knownProblems()) {
-                    Sierra.getPlugin().getLogger().info(" - " + string);
-                }
-                if (descriptor.fixProblems()) {
-                    Sierra.getPlugin().getLogger().info("We were able to fix the error");
-                } else {
-                    Sierra.getPlugin().getLogger().severe("The error could not be fixed");
-                }
+        descriptors.forEach(this::checkDescriptorAndLogResults);
+    }
+
+    /**
+     * Checks the compatibility of a plugin descriptor and logs the results.
+     *
+     * @param descriptor the plugin descriptor to check
+     */
+    private void checkDescriptorAndLogResults(Descriptor descriptor) {
+        if (descriptor.compatibilityProblematic()) {
+            logIssues(descriptor);
+            if (descriptor.fixProblems()) {
+                Sierra.getPlugin().getLogger().info("We were able to fix the error");
+            } else {
+                Sierra.getPlugin().getLogger().severe("The error could not be fixed");
             }
         }
+    }
+
+    /**
+     * Logs issues related to a plugin descriptor.
+     *
+     * @param descriptor the descriptor representing the plugin with issues
+     */
+    private void logIssues(Descriptor descriptor) {
+        Sierra.getPlugin().getLogger().info("Found a problem with: " + descriptor.pluginName());
+        descriptor.knownProblems().forEach(problem ->
+                                               Sierra.getPlugin().getLogger().info(" - " + problem)
+        );
     }
 }
