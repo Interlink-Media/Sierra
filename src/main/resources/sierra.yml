@@ -157,9 +157,3 @@ disallowed-commands:
   - "/name ???" # FDPClient Crasher
   - "/replay æˆ‘å°†å°½å…¶æ‰€èƒ½åœ" # FDPClient Crasher
   - "java.util.Random@" # FDPClient Crasher
-
-# Should we send discord webhooks?
-discord-webhook: false
-
-# Discord webhook url
-discord-webhook-url: ""

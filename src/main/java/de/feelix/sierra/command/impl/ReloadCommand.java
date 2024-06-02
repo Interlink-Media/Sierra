@@ -36,8 +36,6 @@ public class ReloadCommand implements ISierraCommand {
         // Reset prefix
         Sierra.getPlugin().setPrefix();
 
-        Sierra.getPlugin().getSierraDiscordGateway().setup();
-
         user.sendMessage(new ConfigValue("commands.reload.success",
                                          "{prefix} &fConfiguration reloaded &asuccessfully",
                                          true

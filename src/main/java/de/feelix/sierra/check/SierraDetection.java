@@ -4,7 +4,6 @@ import com.github.retrooper.packetevents.event.ProtocolPacketEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.violation.ViolationDocument;
-import de.feelix.sierra.manager.discord.SierraDiscordGateway;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.utilities.FormatUtils;
@@ -144,7 +143,6 @@ public class SierraDetection implements SierraCheck {
 
             Sierra               plugin               = Sierra.getPlugin();
             SierraDataManager    sierraDataManager    = plugin.getSierraDataManager();
-            SierraDiscordGateway sierraDiscordGateway = plugin.getSierraDiscordGateway();
 
             sierraDataManager
                 .createPunishmentHistory(
@@ -153,8 +151,6 @@ public class SierraDetection implements SierraCheck {
                 );
 
             blockAddressIfEnabled(violationDocument);
-
-            sierraDiscordGateway.sendAlert(playerData, this.checkType(), violationDocument, this.violations());
             playerData.punish(violationDocument.punishType());
         }
     }

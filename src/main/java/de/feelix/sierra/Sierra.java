@@ -4,7 +4,6 @@ import de.feelix.sierra.compatibility.CompatibilityHandler;
 import de.feelix.sierra.manager.event.AbstractEventBus;
 import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
-import de.feelix.sierra.manager.discord.SierraDiscordGateway;
 import de.feelix.sierra.manager.init.InitManager;
 import de.feelix.sierra.manager.server.SierraServerManager;
 import de.feelix.sierra.manager.storage.AddressStorage;
@@ -80,13 +79,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     private UpdateChecker updateChecker;
 
     /**
-     * Represents a Discord gateway for sending alerts and messages through a webhook.
-     * The DiscordGateway class uses a webhook URL to interact with Discord.
-     * It can be used to set up the gateway, send alerts, and perform other actions related to Discord integration.
-     */
-    private SierraDiscordGateway sierraDiscordGateway = new SierraDiscordGateway();
-
-    /**
      * compatibilityHandler is an instance of the CompatibilityHandler class. It is responsible for checking compatibility issues with various plugins.
      *
      * @see CompatibilityHandler
@@ -153,8 +145,6 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         this.sierraDataManager = new SierraDataManager();
         initManager.start();
         setPrefix();
-
-        this.sierraDiscordGateway.setup();
 
         long delay = System.currentTimeMillis() - startTime;
         this.getLogger().info("Sierra is ready. (Took: " + delay + "ms)");
