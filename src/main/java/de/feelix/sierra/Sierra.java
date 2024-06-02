@@ -10,6 +10,7 @@ import de.feelix.sierra.manager.storage.AddressStorage;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierra.utilities.update.UpdateChecker;
+import de.feelix.sierraapi.LoaderAPI;
 import de.feelix.sierraapi.SierraApi;
 import de.feelix.sierraapi.SierraApiAccessor;
 import de.feelix.sierraapi.events.EventBus;
@@ -146,10 +147,12 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         initManager.start();
         setPrefix();
 
-        long delay = System.currentTimeMillis() - startTime;
-        this.getLogger().info("Sierra is ready. (Took: " + delay + "ms)");
         SierraApiAccessor.setSierraApiInstance(this);
         this.getLogger().info("API is ready");
+        LoaderAPI.triggerCallbacks();
+
+        long delay = System.currentTimeMillis() - startTime;
+        this.getLogger().info("Sierra is ready. (Took: " + delay + "ms)");
         this.compatibilityHandler.processDescriptors();
     }
 
