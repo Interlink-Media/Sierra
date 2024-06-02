@@ -150,10 +150,10 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     @Override
     public void onEnable() {
         long startTime = System.currentTimeMillis();
+        this.sierraDataManager = new SierraDataManager();
         initManager.start();
         setPrefix();
 
-        this.sierraDataManager = new SierraDataManager();
         this.sierraDiscordGateway.setup();
 
         long delay = System.currentTimeMillis() - startTime;
