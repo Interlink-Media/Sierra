@@ -1,5 +1,5 @@
 name: SierraLoader
-version: '1.0.1'
+version: '1.0.2'
 author: Feelix
 main: de.feelix.sierraloader.SierraLoader
 description: Loader for the sierra anticrash system
