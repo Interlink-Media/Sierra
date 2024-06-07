@@ -1,5 +1,6 @@
 package de.feelix.sierraapi;
 
+import de.feelix.sierraapi.annotation.NotNull;
 import de.feelix.sierraapi.events.EventBus;
 import de.feelix.sierraapi.server.SierraServer;
 import de.feelix.sierraapi.user.UserRepository;
@@ -13,6 +14,7 @@ public interface SierraApi {
     /**
      * UserRepository is an interface that provides methods for querying user information.
      */
+    @NotNull
     UserRepository userRepository();
 
     /**
@@ -20,6 +22,7 @@ public interface SierraApi {
      *
      * @return an instance of EventBus.
      */
+    @NotNull
     EventBus eventBus();
 
     /**
@@ -27,5 +30,6 @@ public interface SierraApi {
      *
      * @return the Server instance representing the server
      */
+    @NotNull
     SierraServer server();
 }

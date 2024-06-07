@@ -1,5 +1,7 @@
 package de.feelix.sierraapi;
 
+import de.feelix.sierraapi.annotation.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +23,7 @@ public class LoaderAPI {
      * @see LoaderAPI#registerEnableCallback(EnableCallback)
      * @see LoaderAPI#triggerCallbacks()
      */
+    @NotNull
     private static final List<EnableCallback> callbacks = new ArrayList<>();
 
     /**

@@ -9,7 +9,6 @@ import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierraapi.check.impl.SierraCheck;
 import org.bukkit.entity.Player;
 
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 /**
@@ -45,7 +44,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         if(event.getConnectionState() != ConnectionState.PLAY) {
             return;
         }
-
+        
         PlayerData playerData = getPlayerData(event);
 
         if (playerData == null) {
@@ -121,7 +120,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
     private void disconnectUninitializedPlayer(PacketReceiveEvent event) {
         String format     = "Disconnecting %s for cause packet reader is not injected yet";
         String disconnect = String.format(format, event.getUser().getName());
-        Sierra.getPlugin().getLogger().log(Level.WARNING, disconnect);
+        Sierra.getPlugin().getLogger().warning(disconnect);
         event.getUser().closeConnection();
     }
 

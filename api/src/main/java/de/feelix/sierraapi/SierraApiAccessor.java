@@ -1,5 +1,6 @@
 package de.feelix.sierraapi;
 
+import de.feelix.sierraapi.annotation.Nullable;
 import de.feelix.sierraapi.exceptions.impl.SierraNotLoadedException;
 
 import java.lang.ref.WeakReference;
@@ -19,6 +20,7 @@ public class SierraApiAccessor {
      * To set the SierraApi instance, use the setSierraApiInstance() method provided by the SierraApiAccessor class.
      * To access the SierraApi instance, use the access() method provided by the SierraApiAccessor class.
      */
+    @Nullable
     private static WeakReference<SierraApi> sierraAPI = null;
 
     /**

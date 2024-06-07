@@ -1,5 +1,7 @@
 package de.feelix.sierraapi.violation;
 
+import de.feelix.sierraapi.annotation.NotNull;
+
 /**
  * The PunishType enum represents the different types of punishments that can be applied.
  */
@@ -21,6 +23,7 @@ public enum PunishType {
      * Each punishment type has its own unique friendly message that can be accessed by calling the friendlyMessage()
      * method.
      */
+    @NotNull
     private final String friendlyMessage;
 
     /**
@@ -35,6 +38,7 @@ public enum PunishType {
      * Each punishment type has its own unique history message that can be accessed by calling the historyMessage()
      * method.
      */
+    @NotNull
     private final String historyMessage;
 
     /**

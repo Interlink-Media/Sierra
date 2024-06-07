@@ -1,5 +1,6 @@
 package de.feelix.sierra.check.impl.protocol;
 
+import com.cryptomorin.xseries.XMaterial;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
@@ -34,12 +35,14 @@ import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -367,6 +370,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
             checkGenericNBTLimit(event, itemStack);
             checkAttributes(event, itemStack);
+            checkInventoryContainsItem(event, itemStack);
             checkInvalidNbt(event, itemStack);
             checkForInvalidBanner(event, itemStack);
             checkForInvalidArmorStand(event, itemStack);
@@ -532,9 +536,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 .toVector3d()
                 .distanceSquared(playerData.getLastLocation().getPosition());
 
-            if(distanceFromLastLocation > 64) { // Max value is around 32, but we can skip that
-                violation(event, createViolation(String.format("Sign is too far away: %.2f",
-                                                               distanceFromLastLocation), PunishType.KICK));
+            if (distanceFromLastLocation > 64) { // Max value is around 32, but we can skip that
+                violation(event, createViolation(String.format(
+                    "Sign is too far away: %.2f",
+                    distanceFromLastLocation
+                ), PunishType.KICK));
             }
 
             for (String textLine : wrapper.getTextLines()) {
@@ -669,6 +675,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
                 checkGenericNBTLimit(event, itemStack);
                 checkAttributes(event, itemStack);
+                checkInventoryContainsItem(event, itemStack);
                 checkInvalidNbt(event, itemStack);
                 checkForInvalidBanner(event, itemStack);
                 checkForInvalidArmorStand(event, itemStack);
@@ -803,6 +810,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             checkGenericNBTLimit(event, carriedItemStack);
             checkAttributes(event, carriedItemStack);
             checkInvalidNbt(event, carriedItemStack);
+            checkInventoryContainsItem(event, carriedItemStack);
             checkForInvalidContainer(event, carriedItemStack);
             checkForInvalidShulker(event, carriedItemStack);
             checkForInvalidBanner(event, carriedItemStack);
@@ -845,6 +853,52 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
             // Reset this state to prevent false positives
             hasOpenAnvil = false;
+        }
+    }
+
+    private void checkInventoryContainsItem(PacketReceiveEvent event, ItemStack carriedItemStack) {
+
+        Player player = (Player) getPlayerData().getPlayer();
+
+        AtomicBoolean contains = new AtomicBoolean(false);
+
+        if (carriedItemStack.getType() == ItemTypes.AIR) return;
+
+        for (org.bukkit.inventory.ItemStack content : player.getInventory().getContents()) {
+            org.bukkit.inventory.ItemStack bukkitItemStack = SpigotConversionUtil.toBukkitItemStack(carriedItemStack);
+
+            if (bukkitItemStack == null || content == null || bukkitItemStack.getType() == Material.AIR
+                || content.getType() == Material.AIR) continue;
+
+            if (XMaterial.matchXMaterial(bukkitItemStack).isSimilar(content)) {
+                contains.set(true);
+            }
+        }
+
+        for (org.bukkit.inventory.ItemStack content : player.getOpenInventory().getTopInventory()) {
+            org.bukkit.inventory.ItemStack bukkitItemStack = SpigotConversionUtil.toBukkitItemStack(carriedItemStack);
+
+            if (bukkitItemStack == null || content == null || bukkitItemStack.getType() == Material.AIR
+                || content.getType() == Material.AIR) continue;
+
+            if (XMaterial.matchXMaterial(bukkitItemStack).isSimilar(content)) {
+                contains.set(true);
+            }
+        }
+
+        for (org.bukkit.inventory.ItemStack content : player.getOpenInventory().getBottomInventory()) {
+            org.bukkit.inventory.ItemStack bukkitItemStack = SpigotConversionUtil.toBukkitItemStack(carriedItemStack);
+
+            if (bukkitItemStack == null || content == null || bukkitItemStack.getType() == Material.AIR
+                || content.getType() == Material.AIR) continue;
+
+            if (XMaterial.matchXMaterial(bukkitItemStack).isSimilar(content)) {
+                contains.set(true);
+            }
+        }
+
+        if (!contains.get() && getPlayerData().getGameMode() != GameMode.CREATIVE) {
+            violation(event, createViolation("Interacted with an invalid item", PunishType.MITIGATE));
         }
     }
 
@@ -944,6 +998,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         //noinspection DataFlowIssue
         double amount = tag.getNumberTagOrNull("Amount").getAsDouble();
 
+        //System.out.println(Arrays.toString(attributeMapper.getKeys()));
+
         if (isAmountInvalid(vanillaMapping, attributeMapper, amount)) {
             violation(
                 event,
@@ -1002,6 +1058,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void checkInvalidNbt(PacketReceiveEvent event, ItemStack itemStack) {
 
         if (itemStack == null || itemStack.getNBT() == null) return;
+
+        // System.out.println(FormatUtils.mapToString(itemStack.getNBT().getTags()));
 
         NBTCompound nbt = itemStack.getNBT();
 

@@ -17,7 +17,7 @@ public class DeluxeMenusDescriptor implements Descriptor {
     @Override
     public List<String> knownProblems() {
         return Arrays.asList("Due to an issue with the inventory skulls, we need",
-                             " to skip a specific check. This poses security risks!");
+                             "to skip a specific check. This poses security risks!");
     }
 
     @Override

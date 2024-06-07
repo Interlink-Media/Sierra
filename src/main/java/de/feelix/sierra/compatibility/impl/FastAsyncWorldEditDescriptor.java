@@ -32,10 +32,6 @@ public class FastAsyncWorldEditDescriptor implements Descriptor {
 
         File file = new File("plugins/FastAsyncWorldEdit", "commands.yml");
 
-        if (!file.exists()) {
-            return false;
-        }
-
         YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(file);
 
         List<String> aliases = yamlConfiguration.getStringList("BrushOptionsCommands.targetoffset.aliases");
@@ -56,6 +52,7 @@ public class FastAsyncWorldEditDescriptor implements Descriptor {
 
     @Override
     public boolean compatibilityProblematic() {
-        return Bukkit.getPluginManager().getPlugin(pluginName()) != null;
+        return Bukkit.getPluginManager().getPlugin(pluginName()) != null && new File(
+            "plugins/FastAsyncWorldEdit", "commands.yml").exists();
     }
 }

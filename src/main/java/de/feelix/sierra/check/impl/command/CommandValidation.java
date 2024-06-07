@@ -199,7 +199,7 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
         }
 
         for (String string : command.split(" ")) {
-            if (string.length() > 30) {
+            if (string.length() > 80) {
                 violation(event, ViolationDocument.builder()
                     .debugInformation("Arg too long: " + string.length() + " > 30")
                     .punishType(PunishType.MITIGATE)
