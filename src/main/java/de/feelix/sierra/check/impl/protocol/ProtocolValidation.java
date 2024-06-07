@@ -370,6 +370,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
             checkGenericNBTLimit(event, itemStack);
             checkAttributes(event, itemStack);
+            checkLanguageExploit(event, itemStack);
             checkInventoryContainsItem(event, itemStack);
             checkInvalidNbt(event, itemStack);
             checkForInvalidBanner(event, itemStack);
@@ -674,6 +675,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 }
 
                 checkGenericNBTLimit(event, itemStack);
+                checkLanguageExploit(event, itemStack);
                 checkAttributes(event, itemStack);
                 checkInventoryContainsItem(event, itemStack);
                 checkInvalidNbt(event, itemStack);
@@ -808,6 +810,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             ItemStack carriedItemStack = wrapper.getCarriedItemStack();
 
             checkGenericNBTLimit(event, carriedItemStack);
+            checkLanguageExploit(event, carriedItemStack);
             checkAttributes(event, carriedItemStack);
             checkInvalidNbt(event, carriedItemStack);
             checkInventoryContainsItem(event, carriedItemStack);
@@ -856,6 +859,38 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
     }
 
+    /**
+     * Checks if the item stack contains any language exploit.
+     *
+     * @param event     the PacketReceiveEvent triggered when receiving a packet
+     * @param itemStack the ItemStack to be checked for language exploit
+     */
+    private void checkLanguageExploit(PacketReceiveEvent event, ItemStack itemStack) {
+
+        if (itemStack == null || itemStack.getNBT() == null) return;
+
+        String mapped = FormatUtils.mapToString(itemStack.getNBT().getTags());
+
+        if (mapped.contains("translate")) {
+            itemStack.setNBT(new NBTCompound());
+            violation(event, createViolation("Contains translate request", PunishType.MITIGATE));
+        }
+        if (mapped.contains("options.snooper.desc")) {
+            itemStack.setNBT(new NBTCompound());
+            violation(event, createViolation("Contains crash description", PunishType.KICK));
+        }
+        if (FormatUtils.countOccurrences(mapped, "translate") > 20) {
+            itemStack.setNBT(new NBTCompound());
+            violation(event, createViolation("Too many translate requests", PunishType.KICK));
+        }
+    }
+
+    /**
+     * Checks if the player's inventory, including open inventories, contains a specific item.
+     *
+     * @param event The event containing the packet data.
+     * @param carriedItemStack The item to check for in the player's inventory.
+     */
     private void checkInventoryContainsItem(PacketReceiveEvent event, ItemStack carriedItemStack) {
 
         Player player = (Player) getPlayerData().getPlayer();
@@ -865,40 +900,38 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         if (carriedItemStack.getType() == ItemTypes.AIR) return;
 
         for (org.bukkit.inventory.ItemStack content : player.getInventory().getContents()) {
-            org.bukkit.inventory.ItemStack bukkitItemStack = SpigotConversionUtil.toBukkitItemStack(carriedItemStack);
-
-            if (bukkitItemStack == null || content == null || bukkitItemStack.getType() == Material.AIR
-                || content.getType() == Material.AIR) continue;
-
-            if (XMaterial.matchXMaterial(bukkitItemStack).isSimilar(content)) {
-                contains.set(true);
-            }
+            checkItems(carriedItemStack, contains, content);
         }
 
         for (org.bukkit.inventory.ItemStack content : player.getOpenInventory().getTopInventory()) {
-            org.bukkit.inventory.ItemStack bukkitItemStack = SpigotConversionUtil.toBukkitItemStack(carriedItemStack);
-
-            if (bukkitItemStack == null || content == null || bukkitItemStack.getType() == Material.AIR
-                || content.getType() == Material.AIR) continue;
-
-            if (XMaterial.matchXMaterial(bukkitItemStack).isSimilar(content)) {
-                contains.set(true);
-            }
+            checkItems(carriedItemStack, contains, content);
         }
 
         for (org.bukkit.inventory.ItemStack content : player.getOpenInventory().getBottomInventory()) {
-            org.bukkit.inventory.ItemStack bukkitItemStack = SpigotConversionUtil.toBukkitItemStack(carriedItemStack);
-
-            if (bukkitItemStack == null || content == null || bukkitItemStack.getType() == Material.AIR
-                || content.getType() == Material.AIR) continue;
-
-            if (XMaterial.matchXMaterial(bukkitItemStack).isSimilar(content)) {
-                contains.set(true);
-            }
+            checkItems(carriedItemStack, contains, content);
         }
 
         if (!contains.get() && getPlayerData().getGameMode() != GameMode.CREATIVE) {
             violation(event, createViolation("Interacted with an invalid item", PunishType.MITIGATE));
+        }
+    }
+
+    /**
+     * Checks if the given carriedItemStack is similar to the content item stack. If they are similar, sets contains to true.
+     *
+     * @param carriedItemStack The item stack carried by the player.
+     * @param contains An AtomicBoolean indicating whether the carriedItemStack is similar to the content item stack.
+     * @param content The item stack to compare with.
+     */
+    private void checkItems(ItemStack carriedItemStack, AtomicBoolean contains,
+                            org.bukkit.inventory.ItemStack content) {
+        org.bukkit.inventory.ItemStack bukkitItemStack = SpigotConversionUtil.toBukkitItemStack(carriedItemStack);
+
+        if (bukkitItemStack == null || content == null || bukkitItemStack.getType() == Material.AIR
+            || content.getType() == Material.AIR) return;
+
+        if (XMaterial.matchXMaterial(bukkitItemStack).isSimilar(content)) {
+            contains.set(true);
         }
     }
 

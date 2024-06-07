@@ -29,7 +29,7 @@ dependencies {
     }
     implementation(project(':api'))
     implementation "net.kyori:adventure-api:4.17.0"
-    implementation 'com.google.guava:guava:33.2.1-jre'
+    //implementation 'com.google.guava:guava:33.2.1-jre'
     implementation 'com.github.cryptomorin:XSeries:10.0.0'
 
     compileOnly 'org.spigotmc:spigot-api:1.20.6-R0.1-SNAPSHOT'
@@ -51,7 +51,7 @@ java.targetCompatibility = JavaVersion.VERSION_1_8
 shadowJar {
     minimize()
     relocate 'club.minnced', 'net.square.sierra.discord-webhooks'
-    relocate 'com.google', 'net.square.sierra.gson'
+    relocate 'com.google.gson', 'net.square.sierra.gson'
     relocate 'net.kyori', 'net.square.sierra.kyori'
     relocate 'kotlin', 'net.square.sierra.kotlin'
     relocate 'okhttp3', 'net.square.sierra.okhttp3'

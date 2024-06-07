@@ -81,6 +81,29 @@ public class FormatUtils {
     }
 
     /**
+     * Counts the number of occurrences of a substring in a given input string.
+     *
+     * @param input     The input string to search for occurrences.
+     * @param subString The substring to count occurrences of.
+     * @return The number of occurrences of the substring in the input string.
+     */
+    public static int countOccurrences(String input, String subString) {
+        if (input == null || subString == null || subString.isEmpty()) {
+            return 0;
+        }
+
+        int count = 0;
+        int index = 0;
+
+        while ((index = input.indexOf(subString, index)) != -1) {
+            count++;
+            index += subString.length();
+        }
+
+        return count;
+    }
+
+    /**
      * Converts a given time in milliseconds to ticks.
      *
      * @param millis The time in milliseconds to be converted.
