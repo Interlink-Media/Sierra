@@ -362,12 +362,10 @@ public class SierraDetection implements SierraCheck {
      * Sets the number of violations found by this check.
      *
      * @param violations The number of violations to set.
-     * @return The number of violations after setting.
      */
     @Override
-    public double setViolations(double violations) {
+    public void setViolations(double violations) {
         this.violations = (int) violations;
-        return this.violations;
     }
 
     /**

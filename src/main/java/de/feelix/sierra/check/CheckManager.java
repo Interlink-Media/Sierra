@@ -1,7 +1,5 @@
 package de.feelix.sierra.check;
 
-import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.ImmutableClassToInstanceMap;
 import de.feelix.sierra.check.impl.book.BookValidation;
 import de.feelix.sierra.check.impl.command.CommandValidation;
 import de.feelix.sierra.check.impl.creative.CreativeCrasher;
@@ -23,12 +21,10 @@ import java.util.List;
 public class CheckManager implements CheckRepository {
 
     /**
-     * The `packetChecks` variable is a `ClassToInstanceMap` that stores instances of `SierraDetection` classes.
+     * The `packetChecks` variable is a `List` that stores instances of `SierraCheck` classes.
      * It is a private final variable in the `CheckManager` class.
      * <p>
-     * This map is used to manage packet checks for a player. The keys in the map represent the types of packet
-     * checks, while the values are the corresponding instances of `Sierra
-     * Detection` classes.
+     * This list is used to manage packet checks for a player.
      * <p>
      * Example usage:
      * <p>
@@ -45,7 +41,7 @@ public class CheckManager implements CheckRepository {
      * check.performCheck();
      * }
      */
-    private final ClassToInstanceMap<SierraDetection> packetChecks;
+    private final List<SierraCheck> packetChecks;
 
     /**
      * The playerData variable represents the data associated with a player.
@@ -59,14 +55,13 @@ public class CheckManager implements CheckRepository {
     public CheckManager(PlayerData playerData) {
         this.playerData = playerData;
 
-        packetChecks = new ImmutableClassToInstanceMap.Builder<SierraDetection>()
-            .put(FrequencyDetection.class, new FrequencyDetection(playerData))
-            .put(ProtocolValidation.class, new ProtocolValidation(playerData))
-            .put(MovementValidation.class, new MovementValidation(playerData))
-            .put(CreativeCrasher.class, new CreativeCrasher(playerData))
-            .put(CommandValidation.class, new CommandValidation(playerData))
-            .put(BookValidation.class, new BookValidation(playerData))
-            .build();
+        packetChecks = new ArrayList<>();
+        packetChecks.add(new FrequencyDetection(playerData));
+        packetChecks.add(new BookValidation(playerData));
+        packetChecks.add(new ProtocolValidation(playerData));
+        packetChecks.add(new MovementValidation(playerData));
+        packetChecks.add(new CreativeCrasher(playerData));
+        packetChecks.add(new CommandValidation(playerData));
     }
 
     /**
@@ -76,6 +71,6 @@ public class CheckManager implements CheckRepository {
      */
     @Override
     public List<SierraCheck> availableChecks() {
-        return new ArrayList<>(packetChecks.values());
+        return new ArrayList<>(packetChecks);
     }
 }

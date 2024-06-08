@@ -1,113 +1,106 @@
 package de.feelix.sierra.manager.init;
 
-import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.ImmutableClassToInstanceMap;
+import java.util.ArrayList;
+import java.util.List;
 import de.feelix.sierra.manager.init.impl.load.InitPacketEvents;
 import de.feelix.sierra.manager.init.impl.start.*;
 import de.feelix.sierra.manager.init.impl.stop.DisablePacketEvents;
 
 /**
  * The InitManager class represents a manager for initializing various components of the Sierra plugin.
- * It contains three ClassToInstanceMap fields: `initializersOnLoad`, `initializersOnStart`, and `initializersOnStop`,
+ * It contains three List fields: `initializersOnLoad`, `initializersOnStart`, and `initializersOnStop`,
  * which store objects implementing the Initable interface.
  * The class provides methods for loading, starting, and stopping the initialization process.
  *
- * @see ClassToInstanceMap
  * @see Initable
  */
 public class InitManager {
 
     /**
-     * The initializersOnLoad variable is a ClassToInstanceMap that stores objects implementing the Initable interface.
+     * The initializersOnLoad variable is a List that stores objects implementing the Initable interface.
      * It is used in the InitManager class to store initializers that need to be executed on load.
      *
      * @see InitManager
      */
-    ClassToInstanceMap<Initable> initializersOnLoad;
+    List<Initable> initializersOnLoad;
 
     /**
-     * The initializersOnStart variable is a ClassToInstanceMap that stores objects implementing the Initable interface.
+     * The initializersOnStart variable is a List that stores objects implementing the Initable interface.
      * It is used in the InitManager class to store initializers that need to be executed on the start of the application.
      * This variable is populated with instances of classes that implement the Initable interface, such as InitPacketListeners, InitBStats, InitCommand, Ticker, InitEnvironment, and
      *  InitUpdateChecker.
-     * The start() method of each Initable object in this map will be called when the start() method of the InitManager class is invoked.
+     * The start() method of each Initable object in this list will be called when the start() method of the InitManager class is invoked.
      *
-     * @see ClassToInstanceMap
      * @see Initable
      * @see InitManager
      */
-    ClassToInstanceMap<Initable> initializersOnStart;
+    List<Initable> initializersOnStart;
 
     /**
-     * The initializersOnStop variable is a ClassToInstanceMap that stores objects implementing the Initable interface.
+     * The initializersOnStop variable is a List that stores objects implementing the Initable interface.
      * It is used in the InitManager class to store objects that need to be initialized when the application stops.
      *
-     * @see ClassToInstanceMap
      * @see Initable
      * @see InitManager
      */
-    ClassToInstanceMap<Initable> initializersOnStop;
+    List<Initable> initializersOnStop;
 
     /**
      * The InitManager class represents a manager for initializing various components of the Sierra plugin.
-     * It contains three ClassToInstanceMap fields: `initializersOnLoad`, `initializersOnStart`, and `initializersOnStop`,
+     * It contains three List fields: `initializersOnLoad`, `initializersOnStart`, and `initializersOnStop`,
      * which store objects implementing the Initable interface.
      * The class provides methods for loading, starting, and stopping the initialization process.
      *
-     * @see ClassToInstanceMap
      * @see Initable
      */
     public InitManager() {
-        initializersOnLoad = new ImmutableClassToInstanceMap.Builder<Initable>()
-            .put(InitPacketEvents.class, new InitPacketEvents())
-            .build();
+        initializersOnLoad = new ArrayList<>();
+        initializersOnLoad.add(new InitPacketEvents());
 
-        initializersOnStart = new ImmutableClassToInstanceMap.Builder<Initable>()
-            .put(InitPacketListeners.class, new InitPacketListeners())
-            .put(InitBStats.class, new InitBStats())
-            .put(InitCommand.class, new InitCommand())
-            .put(Ticker.class, new Ticker())
-            .put(InitEnvironment.class, new InitEnvironment())
-            .put(InitUpdateChecker.class, new InitUpdateChecker())
-            .build();
+        initializersOnStart = new ArrayList<>();
+        initializersOnStart.add(new InitPacketListeners());
+        initializersOnStart.add(new InitBStats());
+        initializersOnStart.add(new InitCommand());
+        initializersOnStart.add(new Ticker());
+        initializersOnStart.add(new InitEnvironment());
+        initializersOnStart.add(new InitUpdateChecker());
 
-        initializersOnStop = new ImmutableClassToInstanceMap.Builder<Initable>()
-            .put(DisablePacketEvents.class, new DisablePacketEvents())
-            .build();
+        initializersOnStop = new ArrayList<>();
+        initializersOnStop.add(new DisablePacketEvents());
     }
 
     /**
      * The load method is responsible for initiating the initialization process of various components of the Sierra plugin.
-     * It calls the start() method of each object implementing the Initable interface stored in the initializersOnLoad map.
+     * It calls the start() method of each object implementing the Initable interface stored in the initializersOnLoad list.
      * This method does not return any value.
      *
      * @see Initable
      */
     public void load() {
-        for (Initable initable : initializersOnLoad.values()) {
+        for (Initable initable : initializersOnLoad) {
             initable.start();
         }
     }
 
     /**
      * The start() method is used to initiate the initialization process of various components of the Sierra plugin.
-     * It calls the start() method of each object implementing the Initable interface stored in the initializersOnStart map.
+     * It calls the start() method of each object implementing the Initable interface stored in the initializersOnStart list.
      */
     public void start() {
-        for (Initable initable : initializersOnStart.values()) {
+        for (Initable initable : initializersOnStart) {
             initable.start();
         }
     }
 
     /**
      * The stop() method is responsible for stopping the initialization process of various components of the Sierra plugin.
-     * It calls the start() method of each object implementing the Initable interface and stored in the initializersOnStop map.
+     * It calls the start() method of each object implementing the Initable interface and stored in the initializersOnStop list.
      * This method does not return any value.
      *
      * @see Initable
      */
     public void stop() {
-        for (Initable initable : initializersOnStop.values()) {
+        for (Initable initable : initializersOnStop) {
             initable.start();
         }
     }

@@ -28,13 +28,13 @@ permissions:
     description: Permission for the monitor sub-command
     default: op
   sierra.command.alerts:
-    description: Permission for the monitor sub-command
+    description: Permission for the alerts sub-command
     default: op
   sierra.command.history:
-    description: Permission for the monitor sub-command
+    description: Permission for the history sub-command
     default: op
   sierra.command.reload:
-    description: Permission for the monitor sub-command
+    description: Permission for the reload sub-command
     default: op
   sierra.*:
     default: false

@@ -1,7 +1,9 @@
 package de.feelix.sierra.listener;
 
 import com.github.retrooper.packetevents.event.*;
+import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
@@ -9,6 +11,7 @@ import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierraapi.check.impl.SierraCheck;
 import org.bukkit.entity.Player;
 
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
@@ -41,10 +44,10 @@ public class PacketReceiveListener extends PacketListenerAbstract {
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
 
-        if(event.getConnectionState() != ConnectionState.PLAY) {
+        if (event.getConnectionState() != ConnectionState.PLAY) {
             return;
         }
-        
+
         PlayerData playerData = getPlayerData(event);
 
         if (playerData == null) {
@@ -52,13 +55,15 @@ public class PacketReceiveListener extends PacketListenerAbstract {
             return;
         }
 
+        weirdPacket(event, playerData);
+
         if (bypassPermission(event)) {
             event.setCancelled(false);
             return;
         }
 
         playerData.getTimingProcessor().getPacketReceiveTask().prepare();
-        
+
         checkHandling(playerData, event);
 
         if (handleExemptOrBlockedPlayer(playerData, event)) return;
@@ -68,6 +73,50 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
         processAvailableChecksReceive(playerData, event);
         playerData.getTimingProcessor().getPacketReceiveTask().end();
+    }
+
+    /**
+     * Checks the packet for various conditions and takes appropriate actions based on the results.
+     *
+     * @param event      The ProtocolPacketEvent representing the packet event.
+     * @param playerData The PlayerData object associated with the player.
+     */
+    private void weirdPacket(ProtocolPacketEvent<Object> event, PlayerData playerData) {
+        int    readableBytes = ByteBufHelper.readableBytes(event.getByteBuf());
+        Logger logger        = Sierra.getPlugin().getLogger();
+
+        int maxPacketSize = Sierra.getPlugin().getSierraConfigEngine().config().getInt(
+            "generic-packet-size-limit", 5000);
+
+        if (maxPacketSize != -1 && readableBytes > maxPacketSize) {
+            logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet is to big");
+            event.setCancelled(true);
+            playerData.kick();
+        }
+
+        if (event.getPacketId() < 0 || event.getPacketId() > 1000) {
+            logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet id is invalid");
+            event.setCancelled(true);
+            playerData.kick();
+        }
+
+        long time = System.nanoTime();
+
+        try {
+            //noinspection unused
+            PacketWrapper<?> universalPacketWrapper = PacketWrapper.createUniversalPacketWrapper(event.getByteBuf());
+        } catch (Exception exception) {
+            logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet cant be processed");
+            event.setCancelled(true);
+            playerData.exceptionDisconnect(exception);
+        }
+        long duration = System.nanoTime() - time;
+
+        if (duration > 1000000000L) {
+            logger.severe("Disconnecting " + playerData.getUser().getName() + ", because processing time was to big");
+            event.setCancelled(true);
+            playerData.kick();
+        }
     }
 
     /**

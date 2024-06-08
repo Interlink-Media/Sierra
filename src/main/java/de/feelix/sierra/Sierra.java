@@ -144,8 +144,8 @@ public final class Sierra extends JavaPlugin implements SierraApi {
     public void onEnable() {
         long startTime = System.currentTimeMillis();
         this.sierraDataManager = new SierraDataManager();
-        initManager.start();
         setPrefix();
+        initManager.start();
 
         SierraApiAccessor.setSierraApiInstance(this);
         this.getLogger().info("API is ready");

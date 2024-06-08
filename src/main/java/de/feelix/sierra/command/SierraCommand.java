@@ -194,6 +194,7 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
      */
     private void processSierraCommand(CommandSender sender, User user, PlayerData playerData, Command command,
                                       String label, String[] args, ISierraCommand iSierraCommand) {
+
         if (iSierraCommand.permission() != null && !sender.hasPermission(iSierraCommand.permission())) {
             CommandHelper.sendVersionOutput(user);
             return;

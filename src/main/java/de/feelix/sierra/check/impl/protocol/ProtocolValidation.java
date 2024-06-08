@@ -368,6 +368,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
             ItemStack itemStack = wrapper.getItemStack();
 
+            checkGenericBookPages(event, itemStack);
             checkGenericNBTLimit(event, itemStack);
             checkAttributes(event, itemStack);
             checkLanguageExploit(event, itemStack);
@@ -674,6 +675,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                     this.lastBookUse = System.currentTimeMillis();
                 }
 
+                checkGenericBookPages(event, itemStack);
                 checkGenericNBTLimit(event, itemStack);
                 checkLanguageExploit(event, itemStack);
                 checkAttributes(event, itemStack);
@@ -809,6 +811,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
             ItemStack carriedItemStack = wrapper.getCarriedItemStack();
 
+            checkGenericBookPages(event, carriedItemStack);
             checkGenericNBTLimit(event, carriedItemStack);
             checkLanguageExploit(event, carriedItemStack);
             checkAttributes(event, carriedItemStack);
@@ -859,6 +862,42 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
     }
 
+    private void checkGenericBookPages(PacketReceiveEvent event, ItemStack carriedItemStack) {
+
+        if (carriedItemStack == null || carriedItemStack.getNBT() == null) return;
+
+        NBTList<NBTString> pages = carriedItemStack.getNBT().getStringListTagOrNull("pages");
+
+        if (pages == null) return;
+
+        if (pages.getTags().size() > 50) {
+            violation(event, ViolationDocument.builder()
+                .debugInformation("Too many pages, pv")
+                .punishType(PunishType.KICK)
+                .build());
+        }
+
+        int totalLength = 0;
+
+        for (NBTString tag : pages.getTags()) {
+            int length = tag.getValue().length();
+            if (length > 256) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Content is too long in book")
+                    .punishType(PunishType.KICK)
+                    .build());
+            }
+            totalLength += length;
+        }
+
+        if (totalLength > 12800) {
+            violation(event, ViolationDocument.builder()
+                .debugInformation("Reached general book limit")
+                .punishType(PunishType.KICK)
+                .build());
+        }
+    }
+
     /**
      * Checks if the item stack contains any language exploit.
      *
@@ -888,7 +927,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     /**
      * Checks if the player's inventory, including open inventories, contains a specific item.
      *
-     * @param event The event containing the packet data.
+     * @param event            The event containing the packet data.
      * @param carriedItemStack The item to check for in the player's inventory.
      */
     private void checkInventoryContainsItem(PacketReceiveEvent event, ItemStack carriedItemStack) {
@@ -917,11 +956,13 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     /**
-     * Checks if the given carriedItemStack is similar to the content item stack. If they are similar, sets contains to true.
+     * Checks if the given carriedItemStack is similar to the content item stack. If they are similar, sets contains
+     * to true.
      *
      * @param carriedItemStack The item stack carried by the player.
-     * @param contains An AtomicBoolean indicating whether the carriedItemStack is similar to the content item stack.
-     * @param content The item stack to compare with.
+     * @param contains         An AtomicBoolean indicating whether the carriedItemStack is similar to the content
+     *                         item stack.
+     * @param content          The item stack to compare with.
      */
     private void checkItems(ItemStack carriedItemStack, AtomicBoolean contains,
                             org.bukkit.inventory.ItemStack content) {
