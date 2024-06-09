@@ -478,7 +478,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
      */
     private static @Nullable Pair<String, PunishType>  isInvalidColor(String strippedContent) {
         if (strippedContent.length() > 256.0) {
-            return new Pair<>("Invalid color code signature", PunishType.BAN);
+            return new Pair<>("Invalid color code signature", PunishType.KICK);
         }
         return null;
     }
