@@ -373,6 +373,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             checkAttributes(event, itemStack);
             checkLanguageExploit(event, itemStack);
             checkInventoryContainsItem(event, itemStack);
+            checkInteraction(event, itemStack);
             checkInvalidNbt(event, itemStack);
             checkForInvalidBanner(event, itemStack);
             checkForInvalidArmorStand(event, itemStack);
@@ -680,6 +681,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 checkLanguageExploit(event, itemStack);
                 checkAttributes(event, itemStack);
                 checkInventoryContainsItem(event, itemStack);
+                checkInteraction(event, itemStack);
                 checkInvalidNbt(event, itemStack);
                 checkForInvalidBanner(event, itemStack);
                 checkForInvalidArmorStand(event, itemStack);
@@ -952,6 +954,28 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
         if (!contains.get() && getPlayerData().getGameMode() != GameMode.CREATIVE) {
             violation(event, createViolation("Interacted with an invalid item", PunishType.MITIGATE));
+        }
+    }
+
+    /**
+     * Checks if the given item stack is similar to the item currently held by the player in the event.
+     *
+     * @param event     The PacketReceiveEvent representing the event where the item similarity should be checked.
+     * @param itemStack The ItemStack to compare to the item held by the player.
+     */
+    public void checkInteraction(PacketReceiveEvent event, ItemStack itemStack) {
+
+        if (itemStack == null) return;
+
+        if (itemStack.getType() == ItemTypes.AIR) return;
+
+        XMaterial xMaterial = XMaterial.matchXMaterial(SpigotConversionUtil.toBukkitItemStack(itemStack));
+        //noinspection deprecation
+        if (!xMaterial.isSimilar(((Player) event.getPlayer()).getItemInHand())) {
+            violation(event, ViolationDocument.builder()
+                .punishType(PunishType.MITIGATE)
+                .debugInformation("Interacted with " + xMaterial.name() + " is out of sync")
+                .build());
         }
     }
 
