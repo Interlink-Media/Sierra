@@ -19,13 +19,14 @@ publishing {
 
 repositories {
     maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
-    maven { url = 'https://repo.codemc.io/repository/maven-snapshots/' } // PacketEvents
+    maven { url = 'https://repo.codemc.io/repository/maven-releases/' } // PacketEvents
+    maven { url = 'https://repo.viaversion.com' } // PacketEvents
     mavenCentral()
 }
 
 dependencies {
 
-    implementation('com.github.retrooper.packetevents:spigot:2.3.1-SNAPSHOT') {
+    implementation('com.github.retrooper.packetevents:spigot:2.3.0') {
         changing = true
     }
 
@@ -34,6 +35,7 @@ dependencies {
     implementation 'com.google.guava:guava:33.2.1-jre'
 
     compileOnly 'org.spigotmc:spigot-api:1.20.6-R0.1-SNAPSHOT'
+    compileOnly 'com.viaversion:viaversion-api:4.9.4-SNAPSHOT'
 
     compileOnly 'org.projectlombok:lombok:1.18.32'
     annotationProcessor 'org.projectlombok:lombok:1.18.32'

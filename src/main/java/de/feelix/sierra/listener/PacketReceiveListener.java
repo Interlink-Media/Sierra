@@ -55,7 +55,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
             return;
         }
 
-        weirdPacket(event, playerData);
+        if (weirdPacket(event, playerData)) return;
 
         if (bypassPermission(event)) {
             event.setCancelled(false);
@@ -75,13 +75,17 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         playerData.getTimingProcessor().getPacketReceiveTask().end();
     }
 
+
     /**
-     * Checks the packet for various conditions and takes appropriate actions based on the results.
+     * Checks if a received packet is considered weird based on certain conditions. If the packet is considered weird,
+     * it cancels the event, performs necessary actions such as kicking the player, and returns true. Otherwise, it
+     * returns false.
      *
-     * @param event      The ProtocolPacketEvent representing the packet event.
-     * @param playerData The PlayerData object associated with the player.
+     * @param event      the ProtocolPacketEvent representing the packet receive event
+     * @param playerData the PlayerData object associated with the player
+     * @return true if the packet is considered weird, false otherwise
      */
-    private void weirdPacket(ProtocolPacketEvent<Object> event, PlayerData playerData) {
+    private boolean weirdPacket(ProtocolPacketEvent<Object> event, PlayerData playerData) {
         int    readableBytes = ByteBufHelper.readableBytes(event.getByteBuf());
         Logger logger        = Sierra.getPlugin().getLogger();
 
@@ -89,15 +93,18 @@ public class PacketReceiveListener extends PacketListenerAbstract {
             "generic-packet-size-limit", 5000);
 
         if (maxPacketSize != -1 && readableBytes > maxPacketSize) {
-            logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet is to big");
+            logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet is to big.");
+            logger.severe("If this is a false kick, increase the generic-packet-size-limit to " + readableBytes + 100);
             event.setCancelled(true);
             playerData.kick();
+            return true;
         }
 
         if (event.getPacketId() < 0 || event.getPacketId() > 1000) {
             logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet id is invalid");
             event.setCancelled(true);
             playerData.kick();
+            return true;
         }
 
         long time = System.nanoTime();
@@ -109,6 +116,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
             logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet cant be processed");
             event.setCancelled(true);
             playerData.exceptionDisconnect(exception);
+            return true;
         }
         long duration = System.nanoTime() - time;
 
@@ -116,7 +124,9 @@ public class PacketReceiveListener extends PacketListenerAbstract {
             logger.severe("Disconnecting " + playerData.getUser().getName() + ", because processing time was to big");
             event.setCancelled(true);
             playerData.kick();
+            return true;
         }
+        return false;
     }
 
     /**
