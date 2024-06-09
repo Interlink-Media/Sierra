@@ -607,16 +607,16 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 }
             }
 
-            if (channelName.contains("MC|BEdit") || channelName.contains("MC|BSign")) {
-                Player player = (Player) event.getPlayer();
+            if (channelName.contains("MC|BEdit") || channelName.contains("MC|BSign") ||
+                channelName.contains("MC|BOpen")) {
+
                 //noinspection deprecation
-                ItemStack itemStack = SpigotConversionUtil.fromBukkitItemStack(player.getItemInHand());
+                XMaterial xMaterial = XMaterial.matchXMaterial(((Player) event.getPlayer()).getItemInHand());
 
-                if (itemStack == null) return;
+                if (xMaterial != XMaterial.WRITABLE_BOOK
+                    && xMaterial != XMaterial.WRITTEN_BOOK
+                    && xMaterial != XMaterial.BOOK) {
 
-                if (itemStack.getType() != ItemTypes.BOOK
-                    && itemStack.getType() != ItemTypes.WRITABLE_BOOK
-                    && itemStack.getType() != ItemTypes.WRITTEN_BOOK) {
                     violation(event, ViolationDocument.builder()
                         .debugInformation("No book in hand")
                         .punishType(PunishType.KICK)
