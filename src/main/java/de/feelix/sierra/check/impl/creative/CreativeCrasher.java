@@ -25,98 +25,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * This class represents an item detection runner that handles the detection
- * and processing of items for Sierra plugin.
- * It extends the SierraDetection class and implements the IngoingProcessor interface.
- */
 @SierraCheckData(checkType = CheckType.CREATIVE)
 public class CreativeCrasher extends SierraDetection implements IngoingProcessor {
 
-    /**
-     * List of ItemCheck instances used to perform item checks.
-     *
-     * <p>
-     * The checks list stores instances of classes that implement the ItemCheck interface. These classes are
-     * responsible for handling specific item checks.
-     * </p>
-     *
-     * <p>
-     * The checks list is initialized as an empty ArrayList and can be modified by adding or removing ItemCheck
-     * instances.
-     * </p>
-     *
-     * @see ItemCheck
-     */
-    private final List<ItemCheck> checks = new ArrayList<>();
+    private final        List<ItemCheck> checks               = new ArrayList<>();
+    private static final int             MAX_RECURSIONS       = 30;
+    private static final String          ITEMS_KEY            = "Items";
+    private static final String          TAG_KEY              = "tag";
+    private              int             recursionCount       = 0;
+    private static final String          BLOCK_ENTITY_TAG_KEY = "BlockEntityTag";
+    private static final int             MAX_ITEMS            = 54;
 
-    /**
-     * The maximum number of recursion levels allowed.
-     */
-    private static final int MAX_RECURSIONS = 30;
-
-    /**
-     * The variable ITEMS_KEY is a private static final String that represents the key for accessing the "Items" field.
-     * <p>
-     * The "Items" field is used for storing a collection of items in a data structure, and this key is used to retrieve
-     * the value associated with this field.
-     * <p>
-     * Example usage:
-     * String itemsKey = ITEMS_KEY;
-     *
-     * @since 1.0
-     */
-    private static final String ITEMS_KEY = "Items";
-
-    /**
-     * Represents the key used to identify a tag.
-     * This key is used in various operations where tags are processed.
-     */
-    private static final String TAG_KEY = "tag";
-
-    /**
-     * Represents the recursion count for a specific operation.
-     *
-     * <p>
-     * The recursion count is used to keep track of the number of times a recursive operation has been performed.
-     * </p>
-     *
-     * <p>
-     * This variable is private and is only accessible within the containing class, CreativeCrasher.
-     * </p>
-     */
-    private int recursionCount = 0;
-
-    /**
-     * Represents the key used for the block entity tag in the Sierra system.
-     * The block entity tag stores additional data for a specific block entity in Minecraft.
-     */
-    private static final String BLOCK_ENTITY_TAG_KEY = "BlockEntityTag";
-
-    /**
-     * The MAX_ITEMS variable represents the maximum number of items allowed.
-     * <p>
-     * It is used in the ItemDetectionRunner class to set a limit on the number of items that can be processed.
-     * <p>
-     * The MAX_ITEMS variable is a private static final integer with a value of 54.
-     * <p>
-     * This variable is important for preventing potential crashes or exploits caused by an excessive number of items.
-     * By setting a reasonable maximum value for the number of items, it helps ensure the stability and security of
-     * the application.
-     * <p>
-     * This variable is not intended to be modified during runtime and is marked as final to prevent any accidental
-     * changes.
-     */
-    private static final int MAX_ITEMS = 54;
-
-    /**
-     * The ItemDetectionRunner class is responsible for running item detection checks on player data.
-     *
-     * @param playerData The PlayerData object containing the player's data
-     */
     public CreativeCrasher(PlayerData playerData) {
         super(playerData);
+        initializeChecks();
+    }
 
+    private void initializeChecks() {
         this.addCreativeChecks(
             new CreativeMap(),
             new CreativeClientBookCrash(),
@@ -131,25 +56,15 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
             this.addCreativeChecks(new EnchantLimit());
         }
 
-        // Important check. Always import
         this.addCreativeChecks(new CreativeSkull());
     }
 
-
-    /**
-     * Handles the packet receive event and performs item detection checks on the player data.
-     *
-     * @param event      The packet receive event
-     * @param playerData The player data object
-     */
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
-
-        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-creative-crasher", true)) {
+        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-creative-crasher", true)
+            || playerData == null) {
             return;
         }
-
-        if (playerData == null) return;
 
         ItemStack itemStack = null;
 
@@ -157,165 +72,82 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
             if (playerData.getGameMode() != GameMode.CREATIVE) {
                 return;
             }
-
             WrapperPlayClientCreativeInventoryAction wrapper = CastUtil.getSupplierValue(
                 () -> new WrapperPlayClientCreativeInventoryAction(event), playerData::exceptionDisconnect);
-
             itemStack = wrapper.getItemStack();
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
-
             WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
-                () -> new WrapperPlayClientClickWindow(event),
-                playerData::exceptionDisconnect
-            );
-
-            if (wrapper.getCarriedItemStack() == null) {
-                return;
-            }
-
+                () -> new WrapperPlayClientClickWindow(event), playerData::exceptionDisconnect);
             itemStack = wrapper.getCarriedItemStack();
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
-
             WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplierValue(
-                () -> new WrapperPlayClientPlayerBlockPlacement(event),
-                playerData::exceptionDisconnect
-            );
-
-            if (!wrapper.getItemStack().isPresent()) {
-                return;
-            }
-
-            itemStack = wrapper.getItemStack().get();
+                () -> new WrapperPlayClientPlayerBlockPlacement(event), playerData::exceptionDisconnect);
+            itemStack = wrapper.getItemStack().orElse(null);
         }
 
         if (itemStack == null) return;
 
         NBTCompound compound = itemStack.getNBT();
-        //when the compound has block entity tag, do recursion to find nested/hidden items
-        if (compound != null && compound.getTags().containsKey("BlockEntityTag")) {
-            NBTCompound blockEntityTag = compound.getCompoundTagOrNull("BlockEntityTag");
-            //reset recursion count to prevent false kicks
+        if (compound != null && compound.getTags().containsKey(BLOCK_ENTITY_TAG_KEY)) {
             recursionCount = 0;
+            NBTCompound blockEntityTag = compound.getCompoundTagOrNull(BLOCK_ENTITY_TAG_KEY);
             recursion(event, playerData, itemStack, blockEntityTag);
         } else if (compound != null) {
-            //if this gets called, it's not a container, so we don't need to do recursion
-            for (ItemCheck check : checks) {
-                //Maybe add a check result class, so that we can have more detailed verbose output...
-                Pair<String, PunishType> crashDetails = check.handleCheck(event, itemStack, compound, playerData);
-                if (crashDetails != null) {
-                    violation(event, ViolationDocument.builder()
-                        .debugInformation(crashDetails.getFirst())
-                        .punishType(crashDetails.getSecond())
-                        .build());
-                }
-            }
+            performItemChecks(event, itemStack, compound, playerData);
         }
     }
 
-    /**
-     * Performs a recursive operation on the given event, player data, clicked item, and block entity tag.
-     *
-     * @param event          The packet receive event
-     * @param data           The player data object
-     * @param clickedItem    The clicked item
-     * @param blockEntityTag The NBT compound representing the block entity tag
-     */
     private void recursion(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
                            NBTCompound blockEntityTag) {
-
-        if (exceededRecursionMax(data)) {
-            sendViolation(event, recursionCount, PunishType.BAN);
+        if (exceededRecursionMax() || !blockEntityTag.getTags().containsKey(ITEMS_KEY)) {
             return;
         }
 
-        if (!blockEntityTag.getTags().containsKey(ITEMS_KEY)) return;
-
         NBTList<NBTCompound> items = blockEntityTag.getCompoundListTagOrNull(ITEMS_KEY);
-
-        if (items == null) return;
-
-        if (exceededMaxItems(items)) {
-            sendViolation(event, items.size(), PunishType.BAN);
+        if (items == null || exceededMaxItems(items)) {
+            sendViolation(event, items != null ? items.size() : 0);
             return;
         }
 
         processItems(event, data, clickedItem, items);
     }
 
-    /**
-     * Checks if the recursion count has exceeded the maximum limit.
-     *
-     * @param data The PlayerData object containing the player's data
-     * @return true if the recursion count has exceeded the maximum limit, false otherwise
-     */
-    private boolean exceededRecursionMax(PlayerData data) {
+    private boolean exceededRecursionMax() {
         recursionCount++;
         return recursionCount > MAX_RECURSIONS;
     }
 
-    /**
-     * Checks if the number of items exceeds the maximum allowed limit.
-     *
-     * @param items The list of NBT compounds representing the items
-     * @return true if the number of items exceeds the maximum limit, false otherwise
-     */
     private boolean exceededMaxItems(NBTList<NBTCompound> items) {
         return items.size() > MAX_ITEMS;
     }
 
-    /**
-     * Sends a violation based on the provided event, information, and punishment type.
-     *
-     * @param event      The PacketReceiveEvent triggering the violation
-     * @param info       The information related to the violation
-     * @param punishType The punishment type to be applied
-     */
-    private void sendViolation(PacketReceiveEvent event, int info,
-                               @SuppressWarnings("SameParameterValue") PunishType punishType) {
+    private void sendViolation(PacketReceiveEvent event, int info) {
         violation(event, ViolationDocument.builder()
-            .debugInformation("Violation Info: " + info)
-            .punishType(punishType)
+            .debugInformation("Info: " + info)
+            .punishType(PunishType.BAN)
             .build());
     }
 
-    /**
-     * Processes the items in the given list by checking for specific tags and performing actions accordingly.
-     *
-     * @param event       The packet receive event.
-     * @param data        The player data object.
-     * @param clickedItem The clicked item.
-     * @param items       The list of NBT compounds representing the items.
-     */
     private void processItems(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
                               NBTList<NBTCompound> items) {
         for (int i = 0; i < items.size(); i++) {
             NBTCompound item = items.getTag(i);
             if (item.getTags().containsKey(TAG_KEY)) {
-                if (processTaggedItem(event, data, clickedItem, item)) {
+                NBTCompound tag = item.getCompoundTagOrNull(TAG_KEY);
+                if (tag == null || processTaggedItem(event, data, clickedItem, tag)) {
                     return;
                 }
-            } else if (callDefaultChecks(event, data, clickedItem, item)) {
+            } else if (performItemChecks(event, clickedItem, item, data)) {
                 return;
             }
         }
     }
 
-    /**
-     * Processes a tagged item by performing various checks and actions based on the item's tags.
-     *
-     * @param event       The packet receive event triggering the processing of the tagged item.
-     * @param data        The player data object.
-     * @param clickedItem The clicked item.
-     * @param item        The NBT compound representing the tagged item.
-     * @return true if any default checks were triggered and handled, otherwise false.
-     */
     private boolean processTaggedItem(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
-                                      NBTCompound item) {
-        NBTCompound tag = item.getCompoundTagOrNull(TAG_KEY);
-
-        if (tag == null) return false;
-
-        if (callDefaultChecks(event, data, clickedItem, tag)) return true;
+                                      NBTCompound tag) {
+        if (performItemChecks(event, clickedItem, tag, data)) {
+            return true;
+        }
 
         if (tag.getTags().containsKey(BLOCK_ENTITY_TAG_KEY)) {
             NBTCompound recursionBlockEntityTag = tag.getCompoundTagOrNull(BLOCK_ENTITY_TAG_KEY);
@@ -324,57 +156,28 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
         return false;
     }
 
-    /**
-     * Calls the default checks for item detection.
-     *
-     * @param event       The packet receive event
-     * @param data        The player data object
-     * @param clickedItem The clicked item
-     * @param tag         The NBT compound representing the item's tag
-     * @return true if any default checks were triggered and handled, otherwise false
-     */
-    private boolean callDefaultChecks(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
-                                      NBTCompound tag) {
+    private boolean performItemChecks(PacketReceiveEvent event, ItemStack item, NBTCompound tag, PlayerData data) {
         for (ItemCheck check : checks) {
-            Pair<String, PunishType> crashDetails = check.handleCheck(event, clickedItem, tag, data);
+            Pair<String, PunishType> crashDetails = check.handleCheck(event, item, tag, data);
             if (crashDetails != null) {
-                sendViolationDocument(event, data, crashDetails);
+                sendViolationDocument(event, crashDetails);
                 return true;
             }
         }
         return false;
     }
 
-    /**
-     * Sends a violation document based on the provided event, player data, and crash details.
-     *
-     * @param event        The PacketReceiveEvent triggering the violation
-     * @param data         The player data object containing the player's data
-     * @param crashDetails The crash details associated with the violation
-     */
-    private void sendViolationDocument(PacketReceiveEvent event, PlayerData data,
-                                       Pair<String, PunishType> crashDetails) {
+    private void sendViolationDocument(PacketReceiveEvent event, Pair<String, PunishType> crashDetails) {
         violation(event, buildViolationDocument(crashDetails));
     }
 
-    /**
-     * Builds a ViolationDocument object with the provided player data and crash details.
-     *
-     * @param crashDetails The CrashDetails object containing crash details associated with the violation.
-     * @return A ViolationDocument object with the provided player data and crash details.
-     */
     private ViolationDocument buildViolationDocument(Pair<String, PunishType> crashDetails) {
         return ViolationDocument.builder()
             .debugInformation(crashDetails.getFirst() + " | R: " + recursionCount)
-            .punishType(PunishType.BAN)
+            .punishType(crashDetails.getSecond())
             .build();
     }
 
-    /**
-     * Adds the specified item checks to the list of creative checks.
-     *
-     * @param checks The item checks to be added
-     */
     private void addCreativeChecks(ItemCheck... checks) {
         this.checks.addAll(Arrays.asList(checks));
     }

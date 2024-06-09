@@ -93,7 +93,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
             "generic-packet-size-limit", 5000);
 
         if (maxPacketSize != -1 && readableBytes > maxPacketSize) {
-            logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet is to big.");
+            logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet is too big.");
             logger.severe("If this is a false kick, increase the generic-packet-size-limit to " + readableBytes + 100);
             event.setCancelled(true);
             playerData.kick();
