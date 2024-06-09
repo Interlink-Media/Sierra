@@ -3,7 +3,6 @@ package de.feelix.sierra.listener;
 import com.github.retrooper.packetevents.event.*;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
-import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
@@ -92,9 +91,13 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         int maxPacketSize = Sierra.getPlugin().getSierraConfigEngine().config().getInt(
             "generic-packet-size-limit", 5000);
 
-        if (maxPacketSize != -1 && readableBytes > maxPacketSize) {
+        int capacity = ByteBufHelper.capacity(event.getByteBuf());
+
+        if (maxPacketSize != -1 && (readableBytes > maxPacketSize || capacity > maxPacketSize)) {
             logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet is too big.");
-            logger.severe("If this is a false kick, increase the generic-packet-size-limit to " + readableBytes + 100);
+            logger.severe("If this is a false kick, increase the generic-packet-size-limit");
+            logger.severe("Bytes: " + readableBytes + ", capacity: " + capacity + " (Max: " + maxPacketSize + ")");
+            event.cleanUp();
             event.setCancelled(true);
             playerData.kick();
             return true;
@@ -102,26 +105,6 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
         if (event.getPacketId() < 0 || event.getPacketId() > 1000) {
             logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet id is invalid");
-            event.setCancelled(true);
-            playerData.kick();
-            return true;
-        }
-
-        long time = System.nanoTime();
-
-        try {
-            //noinspection unused
-            PacketWrapper<?> universalPacketWrapper = PacketWrapper.createUniversalPacketWrapper(event.getByteBuf());
-        } catch (Exception exception) {
-            logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet cant be processed");
-            event.setCancelled(true);
-            playerData.exceptionDisconnect(exception);
-            return true;
-        }
-        long duration = System.nanoTime() - time;
-
-        if (duration > 1000000000L) {
-            logger.severe("Disconnecting " + playerData.getUser().getName() + ", because processing time was to big");
             event.setCancelled(true);
             playerData.kick();
             return true;

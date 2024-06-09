@@ -14,27 +14,27 @@ commands:
 
   alerts:
     # Message when toggling alert notifications
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     # {status}: Status of alerts (enabled/disabled)
     toggle: "{prefix} &fYou have {status} &fthe alerts messages"
 
   mitigation:
     # Message when toggling mitigation messages
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     # {status}: Status of mitigation messages (enabled/disabled)
     toggle: "{prefix} &fYou have {status} &fthe mitigation messages"
 
   history:
     # Message when no history entries are available
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     empty: "{prefix} &cNo history available"
 
     # Message for protocol usage of the history command
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     invalid: "{prefix} &cInvalid usage, try /sierra history <page>"
 
     # Header for history pages
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     # {current}: Current page number
     # {total}: Total number of pages
     # {entries}: Number of entries on the current page
@@ -50,54 +50,54 @@ commands:
 
   reload:
     # Success message for reloading the configuration
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     success: "{prefix} &fConfiguration reloaded &asuccessfully"
 
   monitor:
     # Header for the performance monitor
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     header: "{prefix} &fPerformance monitor &7(Your data)"
 
     # Message when no data is found
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     nothing-found: "{prefix} &cNo data found!"
 
     # Header for packet data
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     packets-header: "{prefix} &b&lPackets:"
 
     # Header for environment data
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     environment-header: "{prefix} &b&lEnvironment:"
 
     # Entry in the performance monitor
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     # {title}: Title of the entry
     # {delay}: Delay in milliseconds
     entry: "{prefix}  &8- &f{title} &7({delay}ms)"
 
   info:
     # Header for player information
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     # {playerName}: Player's name
     header: "{prefix} &7Information for &b{playerName}&7:"
 
     # Message for protocol usage of the info command
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     invalid: "{prefix} &cInvalid usage, try /sierra info <name>"
 
     # Message when no detections are found
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     no-detections: "{prefix} &cNo detections"
 
     # Information about checks and violations
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     # {checkType}: Type of check
     # {violations}: Number of violations
     check-info: "{prefix}  &8- &7{checkType}: &b{violations}"
 
     # Detailed information about a player
-    # {prefix}: Message prefix
+    # {prefix}: Prefix
     # {clientVersion}: Client version
     # {brand}: Client brand
     # {ping}: Player's ping in milliseconds
