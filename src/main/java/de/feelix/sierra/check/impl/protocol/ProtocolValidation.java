@@ -521,7 +521,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         checkLanguageExploit(event, itemStack);
         checkAttributes(event, itemStack);
         checkInventoryContainsItem(event, itemStack);
-        checkInteraction(event, itemStack);
         checkInvalidNbt(event, itemStack);
         checkForInvalidBanner(event, itemStack);
         checkForInvalidArmorStand(event, itemStack);
@@ -567,16 +566,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         checkItems(itemStack, contains, player.getInventory().getContents());
         checkItems(itemStack, contains, player.getOpenInventory().getTopInventory().getContents());
         checkItems(itemStack, contains, player.getOpenInventory().getBottomInventory().getContents());
-    }
-
-    private void checkInteraction(PacketReceiveEvent event, ItemStack itemStack) {
-        XMaterial xMaterial = XMaterial.matchXMaterial(SpigotConversionUtil.toBukkitItemStack(itemStack));
-        Player    player    = (Player) event.getPlayer();
-        //noinspection deprecation
-        if (!xMaterial.isSimilar(player.getItemInHand())) {
-            violation(
-                event, createViolation("Interacted with " + xMaterial.name() + " is out of sync", PunishType.MITIGATE));
-        }
     }
 
     private void checkItems(ItemStack carriedItemStack, AtomicBoolean contains,
