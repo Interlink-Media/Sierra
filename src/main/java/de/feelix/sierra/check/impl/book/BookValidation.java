@@ -272,6 +272,8 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
         WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
             () -> new WrapperPlayClientClickWindow(event), data::exceptionDisconnect);
 
+        if(wrapper == null) return;
+
         if (wrapper.getCarriedItemStack() != null) {
             ItemStack itemStack = wrapper.getCarriedItemStack();
             if ((itemStack.getType() == ItemTypes.WRITTEN_BOOK || itemStack.getType() == ItemTypes.WRITTEN_BOOK)

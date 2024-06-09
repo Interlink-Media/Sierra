@@ -125,7 +125,7 @@ public class SierraDataManager implements UserRepository {
 
             @Override
             public void onUserConnect(UserConnectEvent event) {
-                User   user = event.getUser();
+                User user = event.getUser();
                 addPlayerData(user);
                 checkIfBlocked(user);
                 checkForUpdate(user);
@@ -290,6 +290,29 @@ public class SierraDataManager implements UserRepository {
     }
 
     /**
+     * Creates a mitigation history entry for a user.
+     * <p>
+     * This method creates a HistoryDocument object for a mitigation history entry and throws it using the throwHistory()
+     * method to add it to the collection of histories.
+     *
+     * @param username    The username of the user to create the mitigation history for.
+     * @param punishType  The type of punishment applied.
+     * @param ping        The user's ping at the time of the mitigation.
+     * @param description The description of the mitigation.
+     *
+     * @see HistoryDocument
+     * @see PunishType
+     * @see HistoryType
+     */
+    public void createMitigateHistory(String username, PunishType punishType, long ping, String description) {
+
+        HistoryDocument document = new HistoryDocument(
+            username, description, ping, punishType, HistoryType.MITIGATE);
+
+        throwHistory(document);
+    }
+
+    /**
      * Throws a history event and adds the history document to the collection of histories.
      *
      * @param document The history document to be thrown and added.
@@ -317,7 +340,6 @@ public class SierraDataManager implements UserRepository {
      * The addPlayerData function adds a new PlayerData object to the playerData HashMap.
      *
      * @param user   user Get the player's data
-     * @param player
      */
     public void addPlayerData(User user) {
         PlayerData value = new PlayerData(user);

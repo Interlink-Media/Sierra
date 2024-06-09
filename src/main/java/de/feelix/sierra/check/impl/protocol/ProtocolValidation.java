@@ -380,7 +380,28 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
             WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplierValue(
                 () -> new WrapperPlayClientPlayerBlockPlacement(event), playerData::exceptionDisconnect);
+
+            if (wrapper == null) return;
+
+            checkBlockPlacementDistance(wrapper, event);
             checkBlockPlacement(wrapper, event);
+        }
+    }
+
+    /**
+     * Checks the distance between the block placement and the player's last location.
+     *
+     * @param wrapper The wrapper containing block placement data.
+     * @param event   The packet receive event.
+     */
+    private void checkBlockPlacementDistance(WrapperPlayClientPlayerBlockPlacement wrapper, PacketReceiveEvent event) {
+
+        double distanced = wrapper.getBlockPosition()
+            .toVector3d()
+            .distanceSquared(getPlayerData().getLastLocation().getPosition());
+
+        if(distanced > 40) {
+            violation(event, createViolation("Block placement distance exceeded", PunishType.KICK));
         }
     }
 
@@ -490,6 +511,9 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
             WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
                 () -> new WrapperPlayClientClickWindow(event), playerData::exceptionDisconnect);
+
+            if(wrapper == null) return;
+
             checkClickWindow(wrapper, event);
         }
     }
@@ -503,6 +527,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 violation(event, createViolation("clickType=" + clickType + ", button=" + button, PunishType.KICK));
             }
         }
+
         checkButtonClickPosition(event, wrapper);
         ItemStack carriedItemStack = wrapper.getCarriedItemStack();
         checkItemStack(event, carriedItemStack);

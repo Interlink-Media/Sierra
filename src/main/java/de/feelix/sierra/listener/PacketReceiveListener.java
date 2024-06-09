@@ -8,6 +8,7 @@ import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierraapi.check.impl.SierraCheck;
+import de.feelix.sierraapi.violation.PunishType;
 import org.bukkit.entity.Player;
 
 import java.util.logging.Logger;
@@ -97,6 +98,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
             logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet is too big.");
             logger.severe("If this is a false kick, increase the generic-packet-size-limit");
             logger.severe("Bytes: " + readableBytes + ", capacity: " + capacity + " (Max: " + maxPacketSize + ")");
+            createHistory(playerData, readableBytes, capacity, maxPacketSize);
             event.cleanUp();
             event.setCancelled(true);
             playerData.kick();
@@ -110,6 +112,22 @@ public class PacketReceiveListener extends PacketListenerAbstract {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Creates a history entry for a player's packet reception.
+     *
+     * @param playerData      The PlayerData object associated with the player.
+     * @param readableBytes   The number of readable bytes in the received packet.
+     * @param capacity        The capacity of the received packet.
+     * @param maxPacketSize   The maximum packet size allowed.
+     */
+    private void createHistory(PlayerData playerData, int readableBytes, int capacity, int maxPacketSize) {
+        Sierra.getPlugin().getSierraDataManager().createMitigateHistory(playerData.username(), PunishType.KICK,
+                                                                        playerData.ping(),
+                                                                        "Send: " + readableBytes + "/Max: "
+                                                                        + maxPacketSize + " (" + capacity + ")"
+        );
     }
 
     /**

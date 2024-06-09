@@ -9,6 +9,7 @@ public enum HistoryType {
      * The PUNISH variable represents a specific type of history for a user's actions or punishments.
      * It is an instance of the HistoryType enum.
      */
-    PUNISH
+    PUNISH,
+    MITIGATE
 
 }

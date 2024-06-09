@@ -123,6 +123,7 @@ public class SierraDetection implements SierraCheck {
 
         // Cancel the packet event
         event.setCancelled(true);
+        event.cleanUp();
 
         if (playerData.isReceivedPunishment()) return;
 
