@@ -2,8 +2,8 @@ package de.feelix.sierra.manager.storage;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerCommon;
+import com.github.retrooper.packetevents.event.UserConnectEvent;
 import com.github.retrooper.packetevents.event.UserDisconnectEvent;
-import com.github.retrooper.packetevents.event.UserLoginEvent;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
@@ -124,9 +124,9 @@ public class SierraDataManager implements UserRepository {
         PacketEvents.getAPI().getEventManager().registerListener(new PacketListenerCommon() {
 
             @Override
-            public void onUserLogin(UserLoginEvent event) {
-                User user = event.getUser();
-                addPlayerData(user, event.getPlayer());
+            public void onUserConnect(UserConnectEvent event) {
+                User   user = event.getUser();
+                addPlayerData(user);
                 checkIfBlocked(user);
                 checkForUpdate(user);
             }
@@ -176,6 +176,7 @@ public class SierraDataManager implements UserRepository {
             if (!isVersionOutdated() || !isUserValid(user) || isVersionInvalid()) return;
 
             Player player = getPlayer(user);
+
             if (player == null || !playerCanUpdate(player)) return;
 
             sendMessage(user);
@@ -318,19 +319,19 @@ public class SierraDataManager implements UserRepository {
      * @param user   user Get the player's data
      * @param player
      */
-    public void addPlayerData(User user, Object player) {
-        PlayerData value = new PlayerData(user, player);
-        setPlayerGameMode(value, player);
+    public void addPlayerData(User user) {
+        PlayerData value = new PlayerData(user);
         this.playerData.put(user, value);
+
     }
 
     /**
      * Sets the game mode for a player.
      *
-     * @param value The PlayerData object associated with the player.
+     * @param value  The PlayerData object associated with the player.
      * @param player The player object to set the game mode for.
      */
-    private void setPlayerGameMode(PlayerData value, Object player) {
+    public void setPlayerGameMode(PlayerData value, Object player) {
         org.bukkit.GameMode gameMode          = ((Player) player).getGameMode();
         GameMode            correspondingMode = GAMEMODE_MAP.get(gameMode);
         if (correspondingMode != null) {

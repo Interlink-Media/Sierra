@@ -380,15 +380,12 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
             WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplierValue(
                 () -> new WrapperPlayClientPlayerBlockPlacement(event), playerData::exceptionDisconnect);
-            checkBlockPlacement(wrapper, event, playerData);
+            checkBlockPlacement(wrapper, event);
         }
     }
 
-    private void checkBlockPlacement(WrapperPlayClientPlayerBlockPlacement wrapper, PacketReceiveEvent event,
-                                     PlayerData playerData) {
-        if (playerData.getGameMode() == GameMode.ADVENTURE) {
-            violation(event, createViolation("Placed block in adventure", PunishType.BAN));
-        }
+    private void checkBlockPlacement(WrapperPlayClientPlayerBlockPlacement wrapper, PacketReceiveEvent event) {
+
         if (wrapper.getSequence() < 0 && isSupportedVersion(
             ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
             violation(event, createViolation("Invalid sequence in block place", PunishType.BAN));

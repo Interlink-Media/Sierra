@@ -29,7 +29,7 @@ import java.util.UUID;
 @Data
 public class PlayerData implements SierraUser {
 
-    private final Object        player;
+    private       Object        player;
     private       User          user;
     private       GameMode      gameMode;
     private       Location      lastLocation;
@@ -49,21 +49,19 @@ public class PlayerData implements SierraUser {
     private final AlertSettings alertSettings      = new AbstractAlertSetting();
     private final AlertSettings mitigationSettings = new AbstractAlertSetting();
 
-    private final CheckManager         checkManager         = new CheckManager(this);
-    private final BrandProcessor       brandProcessor       = new BrandProcessor(this);
-    private final GameModeProcessor    gameModeProcessor    = new GameModeProcessor(this);
-    private final PingProcessor        pingProcessor        = new PingProcessor(this);
-    private final TimingHandler        timingProcessor      = new TimingProcessor(this);
+    private final CheckManager      checkManager      = new CheckManager(this);
+    private final BrandProcessor    brandProcessor    = new BrandProcessor(this);
+    private final GameModeProcessor gameModeProcessor = new GameModeProcessor(this);
+    private final PingProcessor     pingProcessor     = new PingProcessor(this);
+    private final TimingHandler     timingProcessor   = new TimingProcessor(this);
 
     /**
      * The PlayerData function is a constructor that takes in a User object and sets the user variable to it.
      *
      * @param user   user Set the user field in this class
-     * @param player
      */
-    public PlayerData(User user, Object player) {
+    public PlayerData(User user) {
         this.user = user;
-        this.player = player;
         this.clientVersion = user.getClientVersion();
     }
 
