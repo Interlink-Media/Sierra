@@ -7,13 +7,13 @@ import com.github.retrooper.packetevents.wrapper.play.client.*;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.ViolationDocument;
+import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
-import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.regex.Matcher;
@@ -126,7 +126,7 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
             .config()
             .getStringList("disallowed-commands")) {
             if (commandLine.contains(disallowedCommand)) {
-                if (playerHasPermission(event)) {
+                if (playerHasNoPermission()) {
                     violation(
                         event, ViolationDocument.builder()
                             .debugInformation(commandLine)
@@ -177,7 +177,7 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
             .config()
             .getStringList("disallowed-commands")) {
             if (message.contains(disallowedCommand)) {
-                if (playerHasPermission(event)) {
+                if (playerHasNoPermission()) {
                     violation(
                         event, ViolationDocument.builder()
                             .debugInformation(message)
@@ -187,7 +187,7 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
             }
             String pluginCommand = replaceGroup(PLUGIN_EXCLUSION.pattern(), message);
             if (pluginCommand.contains(disallowedCommand)) {
-                if (playerHasPermission(event)) {
+                if (playerHasNoPermission()) {
                     violation(
                         event, ViolationDocument.builder()
                             .debugInformation(pluginCommand)
@@ -212,14 +212,20 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
         lastCommand = message;
     }
 
-    private boolean playerHasPermission(PacketReceiveEvent event) {
-        Player player = (Player) event.getPlayer();
-
-        if (player == null) {
-            return true;
-        }
-
-        return !player.isOp();
+    /**
+     * This method checks if the player has the necessary permission to perform an action.
+     * It retrieves the enable-bypass-permission configuration option from the sierra.yml file
+     * and checks if the player has the bypass permission.
+     *
+     * @return true if the player does not have the necessary permission, false otherwise
+     * @see Sierra#getPlugin()
+     * @see Sierra#getSierraConfigEngine()
+     * @see SierraConfigEngine#config()
+     * @see PlayerData#hasBypassPermission()
+     */
+    private boolean playerHasNoPermission() {
+        return !Sierra.getPlugin().getSierraConfigEngine().config()
+            .getBoolean("enable-bypass-permission", false) || !getPlayerData().hasBypassPermission();
     }
 
     private String replaceGroup(String regex, String source) {

@@ -14,7 +14,7 @@ commands:
 permissions:
   sierra.bypass:
     description: Bypass permission for the checks. Need to be enabled in the config
-    default: op
+    default: false
   sierra.update:
     description: Show update notification
     default: op

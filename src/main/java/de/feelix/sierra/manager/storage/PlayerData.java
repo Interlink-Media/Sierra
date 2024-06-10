@@ -41,6 +41,7 @@ public class PlayerData implements SierraUser {
     private boolean receivedPunishment = false;
     private boolean exempt             = false;
     private boolean nameChecked        = false;
+    private boolean bypassPermission   = false;
 
     private double packetCount     = 0;
     private double packetAllowance = 1000;
@@ -58,7 +59,7 @@ public class PlayerData implements SierraUser {
     /**
      * The PlayerData function is a constructor that takes in a User object and sets the user variable to it.
      *
-     * @param user   user Set the user field in this class
+     * @param user user Set the user field in this class
      */
     public PlayerData(User user) {
         this.user = user;
@@ -287,5 +288,14 @@ public class PlayerData implements SierraUser {
     @Override
     public TimingHandler timingHandler() {
         return this.getTimingProcessor();
+    }
+
+    /**
+     * Retrieves the bypass permission status of the PlayerData object.
+     *
+     * @return true if the player has bypass permission, false otherwise
+     */
+    public boolean hasBypassPermission() {
+        return this.bypassPermission;
     }
 }

@@ -57,10 +57,13 @@ public class Ticker implements Initable {
                 value.setPacketCount(0);
                 value.setBytesSent(0);
 
-                if(value.getUser().getName() != null) {
+                if (value.getUser().getName() != null) {
                     Player player = Bukkit.getPlayer(value.getUser().getName());
-                    Sierra.getPlugin().getSierraDataManager().setPlayerGameMode(value, player);
-                    value.setPlayer(player);
+                    if (player != null) {
+                        Sierra.getPlugin().getSierraDataManager().setPlayerGameMode(value, player);
+                        value.setBypassPermission(player.hasPermission("sierra.bypass"));
+                        value.setPlayer(player);
+                    }
                 }
 
                 for (SierraCheck sierraCheck : value.getCheckManager().availableChecks()) {
