@@ -93,7 +93,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
         int capacity = ByteBufHelper.capacity(event.getByteBuf());
 
-        if (maxPacketSize != -1 && (readableBytes > maxPacketSize || capacity > maxPacketSize)) {
+        if (maxPacketSize != -1 && (readableBytes > maxPacketSize || readableBytes > capacity)) {
             logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet is too big.");
             logger.severe("If this is a false kick, increase the generic-packet-size-limit");
             logger.severe("Bytes: " + readableBytes + ", capacity: " + capacity + " (Max: " + maxPacketSize + ")");
