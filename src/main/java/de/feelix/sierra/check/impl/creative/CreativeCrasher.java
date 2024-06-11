@@ -78,6 +78,9 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
             WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
                 () -> new WrapperPlayClientClickWindow(event), playerData::exceptionDisconnect);
+
+            if(wrapper == null) return;
+
             itemStack = wrapper.getCarriedItemStack();
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
             WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplierValue(

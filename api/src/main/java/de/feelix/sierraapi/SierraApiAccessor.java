@@ -1,5 +1,6 @@
 package de.feelix.sierraapi;
 
+import de.feelix.sierraapi.annotation.NotNull;
 import de.feelix.sierraapi.annotation.Nullable;
 import de.feelix.sierraapi.exceptions.impl.SierraNotLoadedException;
 
@@ -40,6 +41,7 @@ public class SierraApiAccessor {
      * @return a WeakReference to the SierraApi instance
      * @throws SierraNotLoadedException if SierraApi is not loaded
      */
+    @NotNull
     public static synchronized WeakReference<SierraApi> access() throws SierraNotLoadedException {
         if (sierraAPI != null) {
             return sierraAPI;
