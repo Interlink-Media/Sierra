@@ -10,7 +10,6 @@ import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierraapi.check.impl.SierraCheck;
-import org.bukkit.entity.Player;
 
 /**
  * A packet listener that listens for packet send events and performs necessary processing
@@ -18,7 +17,8 @@ import org.bukkit.entity.Player;
 public class PacketSendListener extends PacketListenerAbstract {
 
     /**
-     * PacketSendListener is a class that extends PacketListenerAbstract and represents a listener for packet send events.
+     * PacketSendListener is a class that extends PacketListenerAbstract and represents a listener for packet send
+     * events.
      * It is used to handle actions and logic when a packet is sent.
      */
     public PacketSendListener() {
@@ -33,7 +33,7 @@ public class PacketSendListener extends PacketListenerAbstract {
     @Override
     public void onPacketSend(PacketSendEvent event) {
 
-        if(event.getConnectionState() != ConnectionState.PLAY) {
+        if (event.getConnectionState() != ConnectionState.PLAY) {
             return;
         }
 
@@ -41,7 +41,7 @@ public class PacketSendListener extends PacketListenerAbstract {
 
         if (playerData == null || handleExemptOrBlockedPlayer(playerData, event)) return;
 
-        if (bypassPermission(event)) {
+        if (bypassPermission(playerData)) {
             event.setCancelled(false);
             return;
         }
@@ -70,17 +70,14 @@ public class PacketSendListener extends PacketListenerAbstract {
     }
 
     /**
-     * Checks if the player has bypass permission based on the configuration.
+     * Checks whether bypass permission is enabled and if the player has the bypass permission.
      *
-     * @param event the ProtocolPacketEvent representing the event
-     * @return true if the player has bypass permission, false otherwise
+     * @param playerData The PlayerData object associated with the player
+     * @return true if bypass permission is enabled and the player has the bypass permission, false otherwise
      */
-    private boolean bypassPermission(ProtocolPacketEvent<Object> event) {
+    private boolean bypassPermission(PlayerData playerData) {
         if (Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("enable-bypass-permission", false)) {
-            Player player = (Player) event.getPlayer();
-            if (player != null) {
-                return player.hasPermission("sierra.bypass");
-            }
+            return playerData.isBypassPermission();
         }
         return false;
     }

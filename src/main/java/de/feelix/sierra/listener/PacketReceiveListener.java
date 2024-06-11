@@ -9,7 +9,6 @@ import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierraapi.check.impl.SierraCheck;
 import de.feelix.sierraapi.violation.PunishType;
-import org.bukkit.entity.Player;
 
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -57,7 +56,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
         if (weirdPacket(event, playerData)) return;
 
-        if (bypassPermission(event)) {
+        if (bypassPermission(playerData)) {
             event.setCancelled(false);
             return;
         }
@@ -131,17 +130,14 @@ public class PacketReceiveListener extends PacketListenerAbstract {
     }
 
     /**
-     * Checks if the player has bypass permission.
+     * Determines whether to bypass permission based on the configuration setting and player data.
      *
-     * @param event the ProtocolPacketEvent representing the event
-     * @return true if the player has bypass permission, false otherwise
+     * @param playerData The PlayerData object associated with the player.
+     * @return true if permission bypass is enabled and the player has bypass permission, false otherwise.
      */
-    private boolean bypassPermission(ProtocolPacketEvent<Object> event) {
+    private boolean bypassPermission(PlayerData playerData) {
         if (Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("enable-bypass-permission", false)) {
-            Player player = (Player) event.getPlayer();
-            if (player != null) {
-                return player.hasPermission("sierra.bypass");
-            }
+            return playerData.isBypassPermission();
         }
         return false;
     }
