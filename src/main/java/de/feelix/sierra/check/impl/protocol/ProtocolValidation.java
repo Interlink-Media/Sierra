@@ -250,6 +250,9 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
         String text   = wrapper.getText();
         int    length = text.length();
+        if (CommandValidation.WORLDEDIT_PATTERN.matcher(text).matches()) {
+            violation(event, createViolation("WorldEdit Pat/Tab: " + text, PunishType.MITIGATE));
+        }
         if (areBracketsTooFrequent(text, 15) || CommandValidation.WORLDEDIT_PATTERN.matcher(text).matches()) {
             violation(event, createViolation("Text: " + wrapper.getText(), PunishType.KICK));
         }
