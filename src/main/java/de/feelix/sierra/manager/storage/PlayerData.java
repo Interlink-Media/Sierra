@@ -29,14 +29,15 @@ import java.util.UUID;
 @Data
 public class PlayerData implements SierraUser {
 
-    private       Object        player;
-    private       User          user;
-    private       GameMode      gameMode;
-    private       Location      lastLocation;
-    private       ClientVersion clientVersion;
-    private       String        brand    = "vanilla";
-    private final Set<String>   channels = new HashSet<>();
-    private final long          joinTime = System.currentTimeMillis();
+    private Object        player;
+    private User          user;
+    private GameMode      gameMode;
+    private Location      lastLocation;
+    private ClientVersion clientVersion;
+
+    private       String      brand    = "vanilla";
+    private final Set<String> channels = new HashSet<>();
+    private final long        joinTime = System.currentTimeMillis();
 
     private boolean receivedPunishment = false;
     private boolean exempt             = false;

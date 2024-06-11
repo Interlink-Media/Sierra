@@ -36,15 +36,12 @@ import de.feelix.sierra.utilities.types.ShulkerBoxType;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
-import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -527,7 +524,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         checkGenericNBTLimit(event, itemStack);
         checkLanguageExploit(event, itemStack);
         checkAttributes(event, itemStack);
-        checkInventoryContainsItem(event, itemStack);
         checkInvalidNbt(event, itemStack);
         checkForInvalidBanner(event, itemStack);
         checkForInvalidArmorStand(event, itemStack);
@@ -556,34 +552,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             || FormatUtils.countOccurrences(mapped, "translate") > 20) {
             itemStack.setNBT(new NBTCompound());
             violation(event, createViolation("Contains translate request", PunishType.MITIGATE));
-        }
-    }
-
-    private void checkInventoryContainsItem(PacketReceiveEvent event, ItemStack itemStack) {
-        Player        player   = (Player) getPlayerData().getPlayer();
-        AtomicBoolean contains = new AtomicBoolean(false);
-        if (itemStack.getType() == ItemTypes.AIR) return;
-        checkItemsInInventory(itemStack, player, contains);
-        if (!contains.get() && getPlayerData().getGameMode() != GameMode.CREATIVE) {
-            violation(event, createViolation("Interacted with an invalid item", PunishType.MITIGATE));
-        }
-    }
-
-    private void checkItemsInInventory(ItemStack itemStack, Player player, AtomicBoolean contains) {
-        checkItems(itemStack, contains, player.getInventory().getContents());
-        checkItems(itemStack, contains, player.getOpenInventory().getTopInventory().getContents());
-        checkItems(itemStack, contains, player.getOpenInventory().getBottomInventory().getContents());
-    }
-
-    private void checkItems(ItemStack carriedItemStack, AtomicBoolean contains,
-                            org.bukkit.inventory.ItemStack[] contents) {
-        org.bukkit.inventory.ItemStack bukkitItemStack = SpigotConversionUtil.toBukkitItemStack(carriedItemStack);
-        for (org.bukkit.inventory.ItemStack content : contents) {
-            if (bukkitItemStack == null || content == null || bukkitItemStack.getType() == Material.AIR
-                || content.getType() == Material.AIR) continue;
-            if (XMaterial.matchXMaterial(bukkitItemStack).isSimilar(content)) {
-                contains.set(true);
-            }
         }
     }
 

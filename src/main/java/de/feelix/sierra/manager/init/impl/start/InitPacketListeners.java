@@ -1,6 +1,7 @@
 package de.feelix.sierra.manager.init.impl.start;
 
 import com.github.retrooper.packetevents.PacketEvents;
+import de.feelix.sierra.listener.PacketHiderListener;
 import de.feelix.sierra.listener.PacketReceiveListener;
 import de.feelix.sierra.listener.PacketSendListener;
 import de.feelix.sierra.manager.init.Initable;
@@ -19,7 +20,7 @@ public class InitPacketListeners implements Initable {
     public void start() {
         PacketEvents.getAPI()
             .getEventManager()
-            .registerListeners(new PacketReceiveListener(), new PacketSendListener());
+            .registerListeners(new PacketReceiveListener(), new PacketSendListener(), new PacketHiderListener());
         PacketEvents.getAPI().init();
     }
 }
