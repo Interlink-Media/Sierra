@@ -91,7 +91,7 @@ public class HistoryCommand implements ISierraCommand {
     private Pagination<History> setupPagination() {
         List<History> list = new ArrayList<>(Sierra.getPlugin().getSierraDataManager().getHistories());
         list.sort(Comparator.comparing(History::timestamp).reversed());
-        return new Pagination<>(list, 10);
+        return new Pagination<>(list, 5);
     }
 
     /**

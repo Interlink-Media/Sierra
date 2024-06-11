@@ -146,14 +146,14 @@ disallowed-commands:
   - "/promote" # PermissionsEx
   - "/demote" # PermissionsEx
   - "/execute" # PermissionsEx
-  - "/mv ^(.*." # MultiverseCore
-  - "/mv ^" # MultiverseCore
+  - "mv ^(.*." # MultiverseCore
+  - "mv ^" # MultiverseCore
   - "mvh .*{9999}.*{9999}.*{9999}.*{9999}.$%" # MultiverseCore
-  - "/mvh .*{9999}.*{9999}.*{9999}.*{9999}.$%" # MultiverseCore
-  - "/mvh ('.'+.+.+.+.+.+.+" # MultiverseCore
-  - "/mv ^(.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*" # MultiverseCore
-  - "/mv help ^" # MultiverseCore
-  - "/mvhelp ^" # MultiverseCore
+  - "mvh ('.'+.+.+.+.+.+.+" # MultiverseCore
+  - "mv ^(.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*.*" # MultiverseCore
+  - "mvh ('.'""+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.+.++)%" # MultiverseCore
+  - "mv help ^" # MultiverseCore
+  - "mvhelp ^" # MultiverseCore
   - "/$" # MultiverseCore
   - "/pay *" # Essentials
   - "pay *" # Essentials

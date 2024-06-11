@@ -65,6 +65,14 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
     }
 
     private void handleChatMessage(PacketReceiveEvent event, String message) {
+
+        if (isInvalidMultiverseCommand(message)) {
+            violation(event, ViolationDocument.builder()
+                .debugInformation("MV Exploit: " + message)
+                .punishType(PunishType.MITIGATE)
+                .build());
+        }
+
         checkForDoubleCommands(event, message);
         checkDisallowedCommand(event, message);
         checkForLog4J(event, message);
@@ -226,6 +234,10 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
     private boolean playerHasNoPermission() {
         return !Sierra.getPlugin().getSierraConfigEngine().config()
             .getBoolean("enable-bypass-permission", false) || !getPlayerData().hasBypassPermission();
+    }
+
+    private boolean isInvalidMultiverseCommand(String testString) {
+        return testString.contains("mvh") && testString.contains(".+.+.+.+") && testString.endsWith(")%");
     }
 
     private String replaceGroup(String regex, String source) {

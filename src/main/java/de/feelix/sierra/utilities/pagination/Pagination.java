@@ -43,13 +43,6 @@ public class Pagination<T> {
     private final int itemsPerPage;
 
     /**
-     * The constant ITEMS_PER_PAGE represents the number of items to be displayed per page in a pagination system.
-     * It specifies the number of items that should be shown to the user at a time in a paginated list.
-     * The value is set to 10.
-     */
-    private static final int ITEMS_PER_PAGE = 10;
-
-    /**
      * The Pagination class represents a utility for paginating a list of items.
      * It allows retrieving a sublist of items for a given page number and calculating the total number of pages.
      * <p>
