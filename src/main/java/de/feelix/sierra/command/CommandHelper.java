@@ -32,10 +32,10 @@ public class CommandHelper {
     }
 
     /**
-     * Creates a version message for the Sierra plugin based on the given plugin instance and command sender.
+     * Creates a version message based on the Sierra plugin and user's permission.
      *
-     * @param sierraPlugin  the instance of the Sierra plugin
-     * @param commandSender the command sender
+     * @param sierraPlugin the Sierra plugin instance
+     * @param user the user object containing the player information
      * @return the version message
      */
     private static String createVersionMessage(Sierra sierraPlugin, User user) {
