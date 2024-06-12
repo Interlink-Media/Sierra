@@ -13,6 +13,7 @@ import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
 import java.util.Base64;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -50,7 +51,7 @@ public class CreativeSkull implements ItemCheck {
         if (skullOwner.getTags().containsKey("Id")) {
             try {
                 //noinspection unused
-                UUID uuid = UUID.fromString(skullOwner.getStringTagValueOrNull("Id"));
+                UUID uuid = UUID.fromString(Objects.requireNonNull(skullOwner.getStringTagValueOrNull("Id")));
             } catch (Exception e) {
                 if(!SierraDataManager.skipSkullUUIDCheck) {
                     return new Pair<>("Unable to parse uuid", PunishType.MITIGATE);

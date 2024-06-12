@@ -48,11 +48,11 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             return;
         }
 
-        boolean      blockBooks = Sierra.getPlugin()
+        boolean blockBooks = Sierra.getPlugin()
             .getSierraConfigEngine()
             .config()
             .getBoolean("disable-books-completely", false);
-        List<String> pageList   = new ArrayList<>();
+        List<String> pageList = new ArrayList<>();
 
         PacketTypeCommon packetType = event.getPacketType();
         if (packetType.equals(PacketType.Play.Client.EDIT_BOOK)) {
@@ -112,32 +112,39 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             ByteBufHelper.writeBytes(buffer, wrapper.getData());
             PacketWrapper<?> universalWrapper = PacketWrapper.createUniversalPacketWrapper(buffer);
 
-            ItemStack wrappedItemStack = universalWrapper.readItemStack();
+            try {
+                ItemStack wrappedItemStack = universalWrapper.readItemStack();
 
-            if ((wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK
-                 || wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK) && blockBooks) {
-                violation(
-                    event, ViolationDocument.builder()
-                        .debugInformation("Used book while disabled (plugin message)")
-                        .punishType(PunishType.BAN)
-                        .build());
+                if ((wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK
+                     || wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK) && blockBooks) {
+                    violation(
+                        event, ViolationDocument.builder()
+                            .debugInformation("Used book while disabled (plugin message)")
+                            .punishType(PunishType.BAN)
+                            .build());
+                }
+
+                if (wrappedItemStack.getType() != ItemTypes.WRITABLE_BOOK
+                    && wrappedItemStack.getType() != ItemTypes.WRITTEN_BOOK) {
+                    return;
+                }
+
+                if (invalidTitleOrAuthor(wrappedItemStack)) {
+                    removeTags(wrappedItemStack);
+                    violation(
+                        event, ViolationDocument.builder()
+                            .debugInformation("Invalid author in payload")
+                            .punishType(PunishType.BAN)
+                            .build());
+                }
+
+                pageList.addAll(getPages(wrappedItemStack));
+            } catch (IndexOutOfBoundsException exception) {
+                violation(event, ViolationDocument.builder()
+                    .debugInformation("Invalid payload: " + exception.getMessage())
+                    .punishType(PunishType.KICK)
+                    .build());
             }
-
-            if (wrappedItemStack.getType() != ItemTypes.WRITABLE_BOOK
-                && wrappedItemStack.getType() != ItemTypes.WRITTEN_BOOK) {
-                return;
-            }
-
-            if (invalidTitleOrAuthor(wrappedItemStack)) {
-                removeTags(wrappedItemStack);
-                violation(
-                    event, ViolationDocument.builder()
-                        .debugInformation("Invalid author in payload")
-                        .punishType(PunishType.BAN)
-                        .build());
-            }
-
-            pageList.addAll(getPages(wrappedItemStack));
         } finally {
             ByteBufHelper.release(buffer);
         }
@@ -272,7 +279,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
         WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
             () -> new WrapperPlayClientClickWindow(event), data::exceptionDisconnect);
 
-        if(wrapper == null) return;
+        if (wrapper == null) return;
 
         if (wrapper.getCarriedItemStack() != null) {
             ItemStack itemStack = wrapper.getCarriedItemStack();
