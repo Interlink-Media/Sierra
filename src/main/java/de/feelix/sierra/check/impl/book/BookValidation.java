@@ -239,6 +239,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             () -> new WrapperPlayClientCreativeInventoryAction(event), data::exceptionDisconnect);
 
         int slot = wrapper.getSlot();
+        
         if ((slot >= 100 || slot < -1) && slot != -999) {
             violation(
                 event, ViolationDocument.builder()

@@ -22,7 +22,7 @@ public class InitManager {
      *
      * @see InitManager
      */
-    List<Initable> initializersOnLoad;
+    private final List<Initable> initializersOnLoad = new ArrayList<>();
 
     /**
      * The initializersOnStart variable is a List that stores objects implementing the Initable interface.
@@ -34,7 +34,7 @@ public class InitManager {
      * @see Initable
      * @see InitManager
      */
-    List<Initable> initializersOnStart;
+    private final List<Initable> initializersOnStart = new ArrayList<>();
 
     /**
      * The initializersOnStop variable is a List that stores objects implementing the Initable interface.
@@ -43,7 +43,7 @@ public class InitManager {
      * @see Initable
      * @see InitManager
      */
-    List<Initable> initializersOnStop;
+    private final List<Initable> initializersOnStop = new ArrayList<>();
 
     /**
      * The InitManager class represents a manager for initializing various components of the Sierra plugin.
@@ -54,10 +54,10 @@ public class InitManager {
      * @see Initable
      */
     public InitManager() {
-        initializersOnLoad = new ArrayList<>();
+        // On load
         initializersOnLoad.add(new InitPacketEvents());
 
-        initializersOnStart = new ArrayList<>();
+        // On start
         initializersOnStart.add(new InitPacketListeners());
         initializersOnStart.add(new InitBStats());
         initializersOnStart.add(new InitCommand());
@@ -65,7 +65,7 @@ public class InitManager {
         initializersOnStart.add(new InitEnvironment());
         initializersOnStart.add(new InitUpdateChecker());
 
-        initializersOnStop = new ArrayList<>();
+        // On stop
         initializersOnStop.add(new DisablePacketEvents());
     }
 

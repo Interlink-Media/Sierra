@@ -7,6 +7,7 @@ import de.feelix.sierra.compatibility.impl.ProtocolLibDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * The CompatibilityHandler class handles compatibility issues with various plugins.
@@ -38,17 +39,19 @@ public class CompatibilityHandler {
     }
 
     /**
-     * Checks the compatibility of a plugin descriptor and logs the results.
+     * Checks the compatibility of a plugin descriptor and logs any issues found.
+     * If compatibility problems are found, it attempts to fix them and logs the result.
      *
-     * @param descriptor the plugin descriptor to check
+     * @param descriptor the descriptor representing the plugin to be checked
      */
     private void checkDescriptorAndLogResults(Descriptor descriptor) {
         if (descriptor.compatibilityProblematic()) {
             logIssues(descriptor);
+            Logger logger = Sierra.getPlugin().getLogger();
             if (descriptor.fixProblems()) {
-                Sierra.getPlugin().getLogger().info("We were able to fix the error");
+                logger.info("We were able to fix the error");
             } else {
-                Sierra.getPlugin().getLogger().severe("The error could not be fixed");
+                logger.severe("The error could not be fixed");
             }
         }
     }
