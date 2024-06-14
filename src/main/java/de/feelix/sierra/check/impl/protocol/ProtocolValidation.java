@@ -128,6 +128,9 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         if (event.getPacketType() == PacketType.Play.Client.CLIENT_SETTINGS) {
             WrapperPlayClientSettings wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientSettings(event), playerData::exceptionDisconnect);
+
+            if(wrapper == null) return;
+
             adjustViewDistance(wrapper, event);
             checkLocale(wrapper, event);
         }

@@ -116,10 +116,10 @@ public class PacketReceiveListener extends PacketListenerAbstract {
     /**
      * Creates a history entry for a player's packet reception.
      *
-     * @param playerData      The PlayerData object associated with the player.
-     * @param readableBytes   The number of readable bytes in the received packet.
-     * @param capacity        The capacity of the received packet.
-     * @param maxPacketSize   The maximum packet size allowed.
+     * @param playerData    The PlayerData object associated with the player.
+     * @param readableBytes The number of readable bytes in the received packet.
+     * @param capacity      The capacity of the received packet.
+     * @param maxPacketSize The maximum packet size allowed.
      */
     private void createHistory(PlayerData playerData, int readableBytes, int capacity, int maxPacketSize) {
         Sierra.getPlugin().getSierraDataManager().createMitigateHistory(playerData.username(), PunishType.KICK,
