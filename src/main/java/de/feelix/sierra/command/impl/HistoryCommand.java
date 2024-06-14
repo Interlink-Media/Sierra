@@ -45,7 +45,7 @@ public class HistoryCommand implements ISierraCommand {
         Pagination<History> pagination = setupPagination();
 
         int page = correctPage(FormatUtils.toInt(sierraArguments.getArguments().get(1)), pagination.totalPages());
-        sendMessage(user, page, pagination);
+        sendHeaderMessage(user, page, pagination);
 
         List<History> historyDocumentList = pagination.itemsForPage(page);
 
@@ -115,15 +115,16 @@ public class HistoryCommand implements ISierraCommand {
      * @param page       The current page number.
      * @param pagination The Pagination object containing the history items.
      */
-    private void sendMessage(User user, int page, Pagination<History> pagination) {
+    private void sendHeaderMessage(User user, int page, Pagination<History> pagination) {
+        int totalPages = pagination.totalPages();
+
         user.sendMessage(new ConfigValue(
             "commands.history.header",
             "{prefix} &fShowing entries: &7(page &b{current} &7of &b{total} &7- "
             + "&3{entries} &7entries)",
             true
-        ).replacePrefix()
-                             .replace("{current}", String.valueOf(page))
-                             .replace("{total}", String.valueOf(pagination.totalPages()))
+        ).replacePrefix().replace("{current}", String.valueOf(page))
+                             .replace("{total}", String.valueOf(totalPages))
                              .replace("{entries}", String.valueOf(pagination.getItems().size()))
                              .colorize()
                              .message());

@@ -108,25 +108,30 @@ public class SierraCommand implements CommandExecutor, TabExecutor {
 
     private void sendMainCommandSyntax(CommandSender commandSender) {
         commandSender.sendMessage(MESSAGE_PREFIX);
+
+        final HashMap<String, ISierraCommand> sierraCommandList = new HashMap<>();
+
         commands.forEach((s, iSierraCommand) -> {
             if (commandSender.hasPermission("sierra.command")) {
-                String description = iSierraCommand.description();
-
                 if (iSierraCommand.permission() == null) {
-                    commandSender.sendMessage(String.format(MESSAGE_FORMAT.replace("{offset-color}", Sierra.getPlugin()
-                        .getSierraConfigEngine()
-                        .messages()
-                        .getString("layout.offset-color", "§b")), Sierra.PREFIX, s, description));
+                    sierraCommandList.put(s, iSierraCommand);
                 } else if (commandSender.hasPermission(iSierraCommand.permission())) {
-                    commandSender.sendMessage(String.format(MESSAGE_FORMAT.replace("{offset-color}", Sierra.getPlugin()
-                        .getSierraConfigEngine()
-                        .messages()
-                        .getString("layout.offset-color", "§b")), Sierra.PREFIX, s, description));
+                    sierraCommandList.put(s, iSierraCommand);
                 }
             }
         });
+
+        sierraCommandList.forEach((s, iSierraCommand) -> {
+            String description = iSierraCommand.description();
+
+            commandSender.sendMessage(String.format(MESSAGE_FORMAT.replace("{offset-color}", Sierra.getPlugin()
+                .getSierraConfigEngine()
+                .messages()
+                .getString("layout.offset-color", "§b")), Sierra.PREFIX, s, description));
+        });
         String format = "%s §7Use <tab> so see %s completions";
-        commandSender.sendMessage(String.format(format, Sierra.PREFIX, FormatUtils.numberToText(commands.size())));
+        commandSender.sendMessage(String.format(format, Sierra.PREFIX, FormatUtils.numberToText(
+            sierraCommandList.size())));
     }
 
     @Nullable
