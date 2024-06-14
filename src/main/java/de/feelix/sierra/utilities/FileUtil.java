@@ -1,5 +1,7 @@
 package de.feelix.sierra.utilities;
 
+import lombok.experimental.UtilityClass;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,6 +9,7 @@ import java.io.InputStream;
 /**
  * FileUtil is a utility class for working with files.
  */
+@UtilityClass
 public class FileUtil {
 
     /**
@@ -16,7 +19,7 @@ public class FileUtil {
      * @param filePath    The file path where the InputStream should be saved.
      * @throws IOException if there is an error saving the InputStream to file.
      */
-    public static void saveInputStreamToFile(InputStream inputStream, String filePath) throws IOException {
+    public void saveInputStreamToFile(InputStream inputStream, String filePath) throws IOException {
         FileOutputStream outputStream = new FileOutputStream(filePath);
 
         byte[] buffer = new byte[1024];

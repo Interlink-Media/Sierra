@@ -67,7 +67,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     }
 
     private void handlePluginMessage(PacketReceiveEvent event, PlayerData playerData) {
-        WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplierValue(
+        WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplier(
             () -> new WrapperPlayClientPluginMessage(event), playerData::exceptionDisconnect);
 
         if (!(wrapper.getChannelName().contains("MC|BEdit") || wrapper.getChannelName().contains("MC|BSign"))) {
@@ -91,7 +91,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     }
 
     private void handlePlayerDigging(PacketReceiveEvent event, PlayerData playerData) {
-        WrapperPlayClientPlayerDigging wrapper = CastUtil.getSupplierValue(
+        WrapperPlayClientPlayerDigging wrapper = CastUtil.getSupplier(
             () -> new WrapperPlayClientPlayerDigging(event), playerData::exceptionDisconnect);
 
         if (wrapper.getAction() != DiggingAction.DROP_ITEM) return;

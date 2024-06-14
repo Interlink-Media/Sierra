@@ -55,7 +55,7 @@ public class BrandProcessor {
      */
     public void process(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
-            WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientPluginMessage(event),
                 playerData::exceptionDisconnect
             );

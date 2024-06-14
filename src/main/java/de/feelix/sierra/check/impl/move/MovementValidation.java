@@ -55,7 +55,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     private void handleFlyingPacket(PacketReceiveEvent event, PlayerData playerData) {
-        WrapperPlayClientPlayerFlying wrapper = CastUtil.getSupplierValue(
+        WrapperPlayClientPlayerFlying wrapper = CastUtil.getSupplier(
             () -> new WrapperPlayClientPlayerFlying(event), playerData::exceptionDisconnect);
 
         if (wrapper.hasRotationChanged()) {
@@ -81,7 +81,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     private void handleVehicleMove(PacketReceiveEvent event, PlayerData data) {
-        WrapperPlayClientVehicleMove wrapper = CastUtil.getSupplierValue(
+        WrapperPlayClientVehicleMove wrapper = CastUtil.getSupplier(
             () -> new WrapperPlayClientVehicleMove(event), data::exceptionDisconnect);
 
         Vector3d location = wrapper.getPosition();

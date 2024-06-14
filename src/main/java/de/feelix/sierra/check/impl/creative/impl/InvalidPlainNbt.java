@@ -121,7 +121,7 @@ public class InvalidPlainNbt implements ItemCheck {
                                                 NBTCompound nbtCompound, PlayerData playerData) {
 
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
-            WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientPlayerBlockPlacement(event),
                 playerData::exceptionDisconnect
             );
@@ -129,7 +129,7 @@ public class InvalidPlainNbt implements ItemCheck {
                 return invalidNbt(wrapper.getItemStack().get());
             }
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
-            WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientClickWindow wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientClickWindow(event),
                 playerData::exceptionDisconnect
             );

@@ -89,14 +89,14 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             return;
         }
 
-        WrapperPlayClientEditBook wrapper = CastUtil.getSupplierValue(
+        WrapperPlayClientEditBook wrapper = CastUtil.getSupplier(
             () -> new WrapperPlayClientEditBook(event), data::exceptionDisconnect);
         pageList.addAll(wrapper.getPages());
     }
 
     private void handlePluginMessage(PacketReceiveEvent event, PlayerData data, boolean blockBooks,
                                      List<String> pageList) {
-        WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplierValue(
+        WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplier(
             () -> new WrapperPlayClientPluginMessage(event), data::exceptionDisconnect);
 
         if (wrapper.getChannelName().contains("MC|BEdit") || wrapper.getChannelName().contains("MC|BSign")) {
@@ -151,7 +151,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
     }
 
     private void handlePickItem(PacketReceiveEvent event, PlayerData data, boolean blockBooks, List<String> pageList) {
-        WrapperPlayClientPickItem wrapper = CastUtil.getSupplierValue(
+        WrapperPlayClientPickItem wrapper = CastUtil.getSupplier(
             () -> new WrapperPlayClientPickItem(event), data::exceptionDisconnect);
 
         Object buffer = null;
@@ -193,7 +193,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
 
     private void handleBlockPlacement(PacketReceiveEvent event, PlayerData data, boolean blockBooks,
                                       List<String> pageList) {
-        WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplierValue(
+        WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplier(
             () -> new WrapperPlayClientPlayerBlockPlacement(event), data::exceptionDisconnect);
 
         if (wrapper.getItemStack().isPresent()) {
@@ -235,7 +235,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             return;
         }
 
-        WrapperPlayClientCreativeInventoryAction wrapper = CastUtil.getSupplierValue(
+        WrapperPlayClientCreativeInventoryAction wrapper = CastUtil.getSupplier(
             () -> new WrapperPlayClientCreativeInventoryAction(event), data::exceptionDisconnect);
 
         int slot = wrapper.getSlot();
@@ -277,7 +277,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
 
     private void handleClickWindow(PacketReceiveEvent event, PlayerData data, boolean blockBooks,
                                    List<String> pageList) {
-        WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
+        WrapperPlayClientClickWindow wrapper = CastUtil.getSupplier(
             () -> new WrapperPlayClientClickWindow(event), data::exceptionDisconnect);
 
         if (wrapper == null) return;

@@ -38,7 +38,7 @@ public class GameModeProcessor {
         PacketTypeCommon typeCommon = event.getPacketType();
 
         if (typeCommon == PacketType.Play.Server.CHANGE_GAME_STATE) {
-            WrapperPlayServerChangeGameState packet = CastUtil.getSupplierValue(
+            WrapperPlayServerChangeGameState packet = CastUtil.getSupplier(
                 () -> new WrapperPlayServerChangeGameState(event),
                 playerData::exceptionDisconnect
             );
@@ -57,7 +57,7 @@ public class GameModeProcessor {
         }
 
         if (typeCommon == PacketType.Play.Server.JOIN_GAME) {
-            WrapperPlayServerJoinGame joinGame = CastUtil.getSupplierValue(
+            WrapperPlayServerJoinGame joinGame = CastUtil.getSupplier(
                 () -> new WrapperPlayServerJoinGame(event),
                 playerData::exceptionDisconnect
             );
@@ -65,7 +65,7 @@ public class GameModeProcessor {
         }
 
         if (typeCommon == PacketType.Play.Server.RESPAWN) {
-            WrapperPlayServerRespawn respawn = CastUtil.getSupplierValue(
+            WrapperPlayServerRespawn respawn = CastUtil.getSupplier(
                 () -> new WrapperPlayServerRespawn(event),
                 playerData::exceptionDisconnect
             );

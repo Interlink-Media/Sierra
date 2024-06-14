@@ -46,19 +46,19 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
 
         PacketTypeCommon packetType = event.getPacketType();
         if (packetType.equals(PacketType.Play.Client.UPDATE_COMMAND_BLOCK)) {
-            WrapperPlayClientUpdateCommandBlock commandBlockWrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientUpdateCommandBlock commandBlockWrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientUpdateCommandBlock(event), playerData::exceptionDisconnect);
             checkDisallowedCommand(event, commandBlockWrapper.getCommand().toLowerCase().replaceAll("\\s+", " "));
         } else if (packetType.equals(PacketType.Play.Client.CHAT_MESSAGE)) {
-            WrapperPlayClientChatMessage chatMessageWrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientChatMessage chatMessageWrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientChatMessage(event), playerData::exceptionDisconnect);
             handleChatMessage(event, chatMessageWrapper.getMessage().toLowerCase().replaceAll("\\s+", " "));
         } else if (packetType.equals(PacketType.Play.Client.NAME_ITEM)) {
-            WrapperPlayClientNameItem nameItemWrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientNameItem nameItemWrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientNameItem(event), playerData::exceptionDisconnect);
             checkForLog4J(event, nameItemWrapper.getItemName().toLowerCase().replaceAll("\\s+", " "));
         } else if (packetType.equals(PacketType.Play.Client.CHAT_COMMAND)) {
-            WrapperPlayClientChatCommand chatCommandWrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientChatCommand chatCommandWrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientChatCommand(event), playerData::exceptionDisconnect);
             handleChatMessage(event, chatCommandWrapper.getCommand().toLowerCase().replaceAll("\\s+", " "));
         }

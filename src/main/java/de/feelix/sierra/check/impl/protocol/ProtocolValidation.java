@@ -126,7 +126,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleClientSettings(PacketReceiveEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Client.CLIENT_SETTINGS) {
-            WrapperPlayClientSettings wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientSettings wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientSettings(event), playerData::exceptionDisconnect);
             adjustViewDistance(wrapper, event);
             checkLocale(wrapper, event);
@@ -155,7 +155,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleCreativeInventoryAction(PacketReceiveEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Client.CREATIVE_INVENTORY_ACTION) {
-            WrapperPlayClientCreativeInventoryAction wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientCreativeInventoryAction wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientCreativeInventoryAction(event), playerData::exceptionDisconnect);
             ItemStack itemStack = wrapper.getItemStack();
             checkItemStack(event, itemStack);
@@ -164,7 +164,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleEntityAction(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.ENTITY_ACTION) {
-            WrapperPlayClientEntityAction wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientEntityAction wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientEntityAction(event), getPlayerData()::exceptionDisconnect);
             checkEntityAction(wrapper, event);
         }
@@ -188,7 +188,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleClickWindowButton(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW_BUTTON) {
-            WrapperPlayClientClickWindowButton wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientClickWindowButton wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientClickWindowButton(event), getPlayerData()::exceptionDisconnect);
             if (wrapper.getButtonId() < 0 || wrapper.getWindowId() < 0) {
                 violation(
@@ -202,7 +202,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleChatMessage(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.CHAT_MESSAGE) {
-            WrapperPlayClientChatMessage wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientChatMessage wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientChatMessage(event), getPlayerData()::exceptionDisconnect);
             if (wrapper.getMessage().contains("${")) {
                 violation(event, createViolation("Send log4j exploit", PunishType.KICK));
@@ -212,7 +212,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleHeldItemChange(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.HELD_ITEM_CHANGE) {
-            WrapperPlayClientHeldItemChange wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientHeldItemChange wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientHeldItemChange(event), getPlayerData()::exceptionDisconnect);
             checkHeldItemChange(wrapper, event);
         }
@@ -238,7 +238,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleTabComplete(PacketReceiveEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Client.TAB_COMPLETE) {
-            WrapperPlayClientTabComplete wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientTabComplete wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientTabComplete(event), playerData::exceptionDisconnect);
             checkTabComplete(wrapper, event);
         }
@@ -270,7 +270,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleUpdateSign(PacketReceiveEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Client.UPDATE_SIGN) {
-            WrapperPlayClientUpdateSign wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientUpdateSign wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientUpdateSign(event), playerData::exceptionDisconnect);
             if (wrapper == null) return;
             checkUpdateSign(wrapper, event, playerData);
@@ -300,7 +300,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handlePluginMessage(PacketReceiveEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
-            WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientPluginMessage(event), playerData::exceptionDisconnect);
             checkPluginMessage(wrapper, event, playerData);
         }
@@ -378,7 +378,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handlePlayerBlockPlacement(PacketReceiveEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
-            WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientPlayerBlockPlacement(event), playerData::exceptionDisconnect);
 
             if (wrapper == null) return;
@@ -409,7 +409,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleSteerVehicle(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.STEER_VEHICLE) {
-            WrapperPlayClientSteerVehicle wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientSteerVehicle wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientSteerVehicle(event), getPlayerData()::exceptionDisconnect);
             checkSteerVehicle(wrapper, event);
         }
@@ -428,7 +428,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleInteractEntity(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY) {
-            WrapperPlayClientInteractEntity wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientInteractEntity wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientInteractEntity(event), getPlayerData()::exceptionDisconnect);
             checkInteractEntity(wrapper, event);
         }
@@ -444,7 +444,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleNameItem(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
-            WrapperPlayClientNameItem wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientNameItem wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientNameItem(event), getPlayerData()::exceptionDisconnect);
             checkNameItem(wrapper, event);
         }
@@ -466,7 +466,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void handlePlayerDigging(PacketReceiveEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING && isSupportedVersion(
             ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
-            WrapperPlayClientPlayerDigging dig = CastUtil.getSupplierValue(
+            WrapperPlayClientPlayerDigging dig = CastUtil.getSupplier(
                 () -> new WrapperPlayClientPlayerDigging(event), playerData::exceptionDisconnect);
             checkPlayerDigging(dig, event);
         }
@@ -481,7 +481,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void handleUseItem(PacketReceiveEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Client.USE_ITEM && isSupportedVersion(
             ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
-            WrapperPlayClientUseItem use = CastUtil.getSupplierValue(
+            WrapperPlayClientUseItem use = CastUtil.getSupplier(
                 () -> new WrapperPlayClientUseItem(event), playerData::exceptionDisconnect);
             if (use.getSequence() < 0) {
                 violation(event, createViolation("Invalid sequence in use item", PunishType.BAN));
@@ -491,7 +491,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleClickWindow(PacketReceiveEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
-            WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientClickWindow wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientClickWindow(event), playerData::exceptionDisconnect);
 
             if (wrapper == null) return;
@@ -1026,15 +1026,15 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
 
         if (event.getPacketType() == PacketType.Play.Server.SET_EXPERIENCE) {
-            WrapperPlayServerSetExperience wrapper = CastUtil.getSupplierValue(
+            WrapperPlayServerSetExperience wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayServerSetExperience(event), playerData::exceptionDisconnect);
             checkSetExperience(wrapper, event);
         } else if (event.getPacketType() == PacketType.Play.Server.WINDOW_ITEMS) {
-            WrapperPlayServerWindowItems wrapper = CastUtil.getSupplierValue(
+            WrapperPlayServerWindowItems wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayServerWindowItems(event), playerData::exceptionDisconnect);
             checkWindowItems(wrapper, event);
         } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
-            WrapperPlayServerOpenWindow window = CastUtil.getSupplierValue(
+            WrapperPlayServerOpenWindow window = CastUtil.getSupplier(
                 () -> new WrapperPlayServerOpenWindow(event), playerData::exceptionDisconnect);
             checkOpenWindow(window);
         }

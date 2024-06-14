@@ -1,5 +1,7 @@
 package de.feelix.sierra.utilities;
 
+import lombok.experimental.UtilityClass;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -8,6 +10,7 @@ import java.util.Map;
  * Utility class for formatting strings, numbers, and collections.
  */
 @SuppressWarnings("unused")
+@UtilityClass
 public class FormatUtils {
 
     /**
@@ -16,7 +19,7 @@ public class FormatUtils {
      * @param input The string representation of the integer.
      * @return The integer value of the input string, or 1 if the input string is not a valid integer.
      */
-    public static int toInt(String input) {
+    public int toInt(String input) {
         int num;
         try {
             num = Integer.parseInt(input);
@@ -32,7 +35,7 @@ public class FormatUtils {
      * @param input The input string.
      * @return The shortened string if its length is greater than 50 characters, otherwise the input string as is.
      */
-    public static String shortenString(String input) {
+    public String shortenString(String input) {
         if (input.length() > 50) {
             return input.substring(0, 50);
         } else {
@@ -46,7 +49,7 @@ public class FormatUtils {
      * @param number The double number to check the precision of.
      * @return True if the precision of the number is greater than 3 decimal places, False otherwise.
      */
-    public static boolean checkDoublePrecision(double number) {
+    public boolean checkDoublePrecision(double number) {
         String numberStr = Double.toString(number);
         if (!numberStr.contains(".")) {
             return false;
@@ -64,7 +67,7 @@ public class FormatUtils {
      * @param <V> The type of the values in the Map.
      * @return The string representation of the Map.
      */
-    public static <K, V> String mapToString(Map<K, V> map) {
+    public <K, V> String mapToString(Map<K, V> map) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
         for (Map.Entry<K, V> entry : map.entrySet()) {
@@ -87,7 +90,7 @@ public class FormatUtils {
      * @param subString The substring to count occurrences of.
      * @return The number of occurrences of the substring in the input string.
      */
-    public static int countOccurrences(String input, String subString) {
+    public int countOccurrences(String input, String subString) {
         if (input == null || subString == null || subString.isEmpty()) {
             return 0;
         }
@@ -109,7 +112,7 @@ public class FormatUtils {
      * @param millis The time in milliseconds to be converted.
      * @return The corresponding number of ticks.
      */
-    public static int convertMillisToTicks(long millis) {
+    public int convertMillisToTicks(long millis) {
         return (int) (millis * 20 / 1000);
     }
 
@@ -119,7 +122,7 @@ public class FormatUtils {
      * @param timestamp The timestamp to be formatted.
      * @return The formatted string representation of the timestamp.
      */
-    public static String formatTimestamp(long timestamp) {
+    public String formatTimestamp(long timestamp) {
         Date             date = new Date(timestamp);
         SimpleDateFormat sdf  = new SimpleDateFormat("MM/dd HH:mm:ss");
         return sdf.format(date);

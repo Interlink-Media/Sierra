@@ -72,18 +72,18 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
             if (playerData.getGameMode() != GameMode.CREATIVE) {
                 return;
             }
-            WrapperPlayClientCreativeInventoryAction wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientCreativeInventoryAction wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientCreativeInventoryAction(event), playerData::exceptionDisconnect);
             itemStack = wrapper.getItemStack();
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
-            WrapperPlayClientClickWindow wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientClickWindow wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientClickWindow(event), playerData::exceptionDisconnect);
 
             if(wrapper == null) return;
 
             itemStack = wrapper.getCarriedItemStack();
         } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
-            WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientPlayerBlockPlacement(event), playerData::exceptionDisconnect);
             itemStack = wrapper.getItemStack().orElse(null);
         }

@@ -74,7 +74,7 @@ public class PingProcessor {
      */
     public void handle(PacketSendEvent event) {
         if (event.getPacketType() == PacketType.Play.Server.KEEP_ALIVE) {
-            WrapperPlayServerKeepAlive wrapper = CastUtil.getSupplierValue(
+            WrapperPlayServerKeepAlive wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayServerKeepAlive(event),
                 playerData::exceptionDisconnect
             );
@@ -93,7 +93,7 @@ public class PingProcessor {
      */
     public void handle(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.KEEP_ALIVE) {
-            WrapperPlayClientKeepAlive wrapper = CastUtil.getSupplierValue(
+            WrapperPlayClientKeepAlive wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientKeepAlive(event),
                 playerData::exceptionDisconnect
             );
