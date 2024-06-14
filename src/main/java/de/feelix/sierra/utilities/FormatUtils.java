@@ -107,6 +107,21 @@ public class FormatUtils {
     }
 
     /**
+     * Converts a given number to its textual representation.
+     *
+     * @param number The number to be converted.
+     * @return The textual representation of the given number.
+     */
+    public static String numberToText(int number) {
+        if (number < 0 || number > 9) {
+            return "Number out of range";
+        }
+
+        return new String[]{"zero", "one", "two", "three", "four", "five", "six", "seven",
+            "eight", "nine"}[number];
+    }
+
+    /**
      * Converts a given time in milliseconds to ticks.
      *
      * @param millis The time in milliseconds to be converted.

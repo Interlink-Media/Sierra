@@ -46,12 +46,16 @@ public class MovementValidation extends SierraDetection implements IngoingProces
             return;
         }
 
+        data.getTimingProcessor().getMovementTask().prepare();
+
         if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) {
             handleFlyingPacket(event, data);
             handleLatencyAbuse(event, data);
         } else if (event.getPacketType() == PacketType.Play.Client.VEHICLE_MOVE) {
             handleVehicleMove(event, data);
         }
+
+        data.getTimingProcessor().getMovementTask().end();
     }
 
     private void handleFlyingPacket(PacketReceiveEvent event, PlayerData playerData) {
