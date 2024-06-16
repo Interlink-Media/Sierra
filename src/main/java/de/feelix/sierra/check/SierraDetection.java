@@ -15,10 +15,10 @@ import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.events.impl.AsyncUserDetectionEvent;
 import de.feelix.sierraapi.violation.PunishType;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.Collection;
 import java.util.logging.Logger;
