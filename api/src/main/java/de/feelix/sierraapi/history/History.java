@@ -39,6 +39,13 @@ public interface History {
     long timestamp();
 
     /**
+     * Returns the client version associated with the client.
+     *
+     * @return The client version as a String.
+     */
+    String clientVersion();
+
+    /**
      * Returns the HistoryType of the History instance.
      *
      * @return The HistoryType object representing the type of history.

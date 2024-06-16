@@ -44,9 +44,15 @@ commands:
     # {timestamp}: Timestamp of the entry
     # {username}: Username
     # {ping}: User's ping in milliseconds
+    # {version}: User's version
     # {punishType}: Type of punishment
     # {description}: Description of the punishment
-    entry: "&7{timestamp} &3{username} &7({ping}ms) -> &b{punishType} &7({description})"
+    entry: "&7{timestamp} &3{username}&8/&b{version} &7({ping}ms) -> &b{punishType}"
+
+    # History hover info
+    # {prefix}: Prefix
+    # {description}: Description of the punishment
+    hover: "{prefix} &7Info: &b{description}"
 
   reload:
     # Success message for reloading the configuration

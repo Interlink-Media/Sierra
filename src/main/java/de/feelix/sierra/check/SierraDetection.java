@@ -142,12 +142,13 @@ public class SierraDetection implements SierraCheck {
 
             Sierra.getPlugin().getSierraDataManager().addKick(this.checkType());
 
-            Sierra               plugin               = Sierra.getPlugin();
-            SierraDataManager    sierraDataManager    = plugin.getSierraDataManager();
+            Sierra            plugin            = Sierra.getPlugin();
+            SierraDataManager sierraDataManager = plugin.getSierraDataManager();
 
             sierraDataManager
                 .createPunishmentHistory(
-                    playerData.username(), violationDocument.punishType(), playerData.getPingProcessor().getPing(),
+                    playerData.username(), playerData.version(), violationDocument.punishType(),
+                    playerData.getPingProcessor().getPing(),
                     violationDocument.debugInformation()
                 );
 
@@ -158,7 +159,8 @@ public class SierraDetection implements SierraCheck {
 
     /**
      * Block the player's address if the punishment type is set to BAN, the ban feature is enabled in the
-     * punishment configuration, and the "block-connections-after-ban" property is set to true in the Sierra configuration.
+     * punishment configuration, and the "block-connections-after-ban" property is set to true in the Sierra
+     * configuration.
      *
      * @param violationDocument The ViolationDocument object containing information about the violation.
      */

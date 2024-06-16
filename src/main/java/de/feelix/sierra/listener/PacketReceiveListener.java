@@ -122,10 +122,13 @@ public class PacketReceiveListener extends PacketListenerAbstract {
      * @param maxPacketSize The maximum packet size allowed.
      */
     private void createHistory(PlayerData playerData, int readableBytes, int capacity, int maxPacketSize) {
-        Sierra.getPlugin().getSierraDataManager().createMitigateHistory(playerData.username(), PunishType.KICK,
-                                                                        playerData.ping(),
-                                                                        "Send: " + readableBytes + "/Max: "
-                                                                        + maxPacketSize + " (" + capacity + ")"
+        Sierra.getPlugin().getSierraDataManager().createMitigateHistory(
+            playerData.username(),
+            playerData.version(),
+            PunishType.KICK,
+            playerData.ping(),
+            "Send: " + readableBytes + "/Max: "
+            + maxPacketSize + " (" + capacity + ")"
         );
     }
 

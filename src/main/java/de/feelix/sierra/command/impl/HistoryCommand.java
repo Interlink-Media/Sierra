@@ -10,6 +10,11 @@ import de.feelix.sierra.utilities.pagination.Pagination;
 import de.feelix.sierraapi.commands.*;
 import de.feelix.sierraapi.history.History;
 import de.feelix.sierraapi.user.impl.SierraUser;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,10 +50,10 @@ public class HistoryCommand implements ISierraCommand {
         Pagination<History> pagination = setupPagination();
 
         int page = correctPage(FormatUtils.toInt(sierraArguments.getArguments().get(1)), pagination.totalPages());
-        sendHeaderMessage(user, page, pagination);
 
         List<History> historyDocumentList = pagination.itemsForPage(page);
 
+        sendPaginationMessage(user, page, pagination);
         if (historyDocumentList.isEmpty()) {
             user.sendMessage(
                 new ConfigValue(
@@ -61,6 +66,44 @@ public class HistoryCommand implements ISierraCommand {
         sendHistoryMessages(user, historyDocumentList);
     }
 
+    private void sendPaginationMessage(User user, int currentPage, Pagination<History> pagination) {
+
+        boolean hasNextPage = pagination.totalPages() > currentPage;
+        boolean hasPreviousPage = currentPage > 1;
+
+        TextComponent component = LegacyComponentSerializer.legacy('&')
+            .deserialize(new ConfigValue(
+                "commands.history.header",
+                "{prefix} &fShowing entries: &7(page &b{current} &7of &b{total} &7- "
+                + "&3{entries} &7entries)",
+                true
+            ).replacePrefix().replace("{current}", String.valueOf(currentPage))
+                             .replace("{total}", String.valueOf(pagination.totalPages()))
+                             .replace("{entries}", String.valueOf(pagination.getItems().size()))
+                             .colorize()
+                             .message())
+            .append(Component.text(" "))
+            .append(LegacyComponentSerializer.legacy('&')
+                        .deserialize(hasPreviousPage ? "§a«" : "§7«")
+                        .hoverEvent(HoverEvent.showText(
+                            Component.text(hasPreviousPage ? "View previous page" : "No previous page available")))
+                        .clickEvent(ClickEvent.clickEvent(
+                            ClickEvent.Action.RUN_COMMAND,
+                            hasPreviousPage ? "/sierra history " + (currentPage - 1) : "/sierra history 1"
+                        )))
+            .append(Component.text(" "))
+            .append(LegacyComponentSerializer.legacy('&')
+                        .deserialize(hasNextPage ? "§a»" : "§7»")
+                        .hoverEvent(HoverEvent.showText(
+                            Component.text(hasNextPage ? "View next page" : "No next page available")))
+                        .clickEvent(ClickEvent.clickEvent(
+                            ClickEvent.Action.RUN_COMMAND,
+                            hasNextPage ? "/sierra history " + (currentPage + 1) : "/sierra history " + currentPage
+                        )));
+
+        user.sendMessage(component);
+    }
+
     /**
      * Sends the history messages to the specified user.
      *
@@ -69,7 +112,17 @@ public class HistoryCommand implements ISierraCommand {
      */
     private void sendHistoryMessages(User user, List<History> historyDocumentList) {
         for (History historyDocument : historyDocumentList) {
-            user.sendMessage(createHistoryMessage((HistoryDocument) historyDocument));
+            user.sendMessage(
+                LegacyComponentSerializer.legacy('&')
+                    .deserialize(createHistoryMessage((HistoryDocument) historyDocument))
+                    .hoverEvent(HoverEvent.showText(Component.text(
+                        new ConfigValue(
+                            "commands.history.hover", "{prefix} &7Info: &b{description}",
+                            true
+                        ).replacePrefix()
+                            .replace("{description}", historyDocument.description())
+                            .colorize()
+                            .message()))));
         }
     }
 
@@ -109,28 +162,6 @@ public class HistoryCommand implements ISierraCommand {
     }
 
     /**
-     * Sends a formatted history message to the given User.
-     *
-     * @param user       The User to send the message to.
-     * @param page       The current page number.
-     * @param pagination The Pagination object containing the history items.
-     */
-    private void sendHeaderMessage(User user, int page, Pagination<History> pagination) {
-        int totalPages = pagination.totalPages();
-
-        user.sendMessage(new ConfigValue(
-            "commands.history.header",
-            "{prefix} &fShowing entries: &7(page &b{current} &7of &b{total} &7- "
-            + "&3{entries} &7entries)",
-            true
-        ).replacePrefix().replace("{current}", String.valueOf(page))
-                             .replace("{total}", String.valueOf(totalPages))
-                             .replace("{entries}", String.valueOf(pagination.getItems().size()))
-                             .colorize()
-                             .message());
-    }
-
-    /**
      * Creates a formatted history message based on the provided HistoryDocument.
      *
      * @param historyDocument The HistoryDocument containing the history information.
@@ -140,12 +171,13 @@ public class HistoryCommand implements ISierraCommand {
 
         return new ConfigValue(
             "commands.history.entry",
-            "&7{timestamp} &3{username} &7({ping}ms) -> &b{punishType} &7({description})",
+            "&7{timestamp} &3{username}&8/&b{version} &7({ping}ms) -> &b{punishType}",
             true
         ).replacePrefix()
             .replace("{timestamp}", historyDocument.formatTimestamp())
             .replace("{username}", historyDocument.username())
             .replace("{ping}", String.valueOf(historyDocument.ping()))
+            .replace("{version}", historyDocument.clientVersion().toLowerCase().replace("v_", "").replace("_", "."))
             .replace("{punishType}", historyDocument.punishType().historyMessage())
             .replace("{description}", historyDocument.shortenDescription())
             .colorize()

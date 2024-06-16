@@ -34,6 +34,13 @@ public class HistoryDocument implements History {
     private final String description;
 
     /**
+     * The clientVersion represents the version of the client that was used for an action or punishment in the history.
+     * It is a String that provides information about the version of the client software used by a user.
+     * The clientVersion is a final variable, meaning its value cannot be changed once initialized.
+     */
+    private final String clientVersion;
+
+    /**
      * Player ping
      */
     private final long ping;
@@ -104,6 +111,11 @@ public class HistoryDocument implements History {
     @Override
     public long timestamp() {
         return timestamp;
+    }
+
+    @Override
+    public String clientVersion() {
+        return clientVersion;
     }
 
     /**
