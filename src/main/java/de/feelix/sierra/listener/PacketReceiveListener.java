@@ -94,9 +94,9 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         int capacity = ByteBufHelper.capacity(event.getByteBuf());
 
         if (maxPacketSize != -1 && (readableBytes > maxPacketSize || readableBytes > capacity)) {
-            logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet is too big.");
-            logger.severe("If this is a false kick, increase the generic-packet-size-limit");
-            logger.severe("Bytes: " + readableBytes + ", capacity: " + capacity + " (Max: " + maxPacketSize + ")");
+            logger.info("Disconnecting " + playerData.getUser().getName() + ", because packet is too big.");
+            logger.info("If this is a false kick, increase the generic-packet-size-limit");
+            logger.info("Bytes: " + readableBytes + ", capacity: " + capacity + " (Max: " + maxPacketSize + ")");
             createHistory(playerData, readableBytes, capacity, maxPacketSize);
             event.cleanUp();
             event.setCancelled(true);
@@ -105,7 +105,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         }
 
         if (event.getPacketId() < 0 || event.getPacketId() > 1000) {
-            logger.severe("Disconnecting " + playerData.getUser().getName() + ", because packet id is invalid");
+            logger.info("Disconnecting " + playerData.getUser().getName() + ", because packet id is invalid");
             event.setCancelled(true);
             playerData.kick();
             return true;
