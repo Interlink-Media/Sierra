@@ -10,6 +10,7 @@ import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.impl.SierraCheck;
+import io.github.retrooper.packetevents.adventure.serializer.legacy.LegacyComponentSerializer;
 import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -18,7 +19,6 @@ import net.kyori.adventure.text.event.HoverEvent;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.events.impl.AsyncUserDetectionEvent;
 import de.feelix.sierraapi.violation.PunishType;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.Collection;
 import java.util.logging.Logger;

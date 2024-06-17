@@ -14,6 +14,7 @@ import de.feelix.sierraapi.events.impl.AsyncHistoryCreateEvent;
 import de.feelix.sierraapi.history.History;
 import de.feelix.sierraapi.history.HistoryType;
 import de.feelix.sierraapi.violation.PunishType;
+import io.github.retrooper.packetevents.adventure.serializer.legacy.LegacyComponentSerializer;
 import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Getter;
 import de.feelix.sierraapi.user.UserRepository;
@@ -21,7 +22,6 @@ import de.feelix.sierraapi.user.impl.SierraUser;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -283,11 +283,9 @@ public class SierraDataManager implements UserRepository {
      */
     public void createPunishmentHistory(String username, String clientVersion, PunishType punishType, long ping,
                                         String description) {
-
-        HistoryDocument document = new HistoryDocument(
-            username, description, clientVersion, ping, punishType, HistoryType.PUNISH);
-
-        throwHistory(document);
+        throwHistory(new HistoryDocument(username, description, clientVersion,
+                                         ping, punishType, HistoryType.PUNISH
+        ));
     }
 
     /**
@@ -307,11 +305,8 @@ public class SierraDataManager implements UserRepository {
      */
     public void createMitigateHistory(String username, String clientVersion, PunishType punishType, long ping,
                                       String description) {
-
-        HistoryDocument document = new HistoryDocument(
-            username, description, clientVersion, ping, punishType, HistoryType.MITIGATE);
-
-        throwHistory(document);
+        throwHistory(new HistoryDocument(
+            username, description, clientVersion, ping, punishType, HistoryType.MITIGATE));
     }
 
     /**

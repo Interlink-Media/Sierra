@@ -10,11 +10,11 @@ import de.feelix.sierra.utilities.pagination.Pagination;
 import de.feelix.sierraapi.commands.*;
 import de.feelix.sierraapi.history.History;
 import de.feelix.sierraapi.user.impl.SierraUser;
+import io.github.retrooper.packetevents.adventure.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 import java.util.ArrayList;
 import java.util.Collections;
