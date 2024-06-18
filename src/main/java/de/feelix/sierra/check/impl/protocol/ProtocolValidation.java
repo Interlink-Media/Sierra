@@ -1113,9 +1113,5 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                     PunishType.KICK
                 ));
         }
-
-        if (slot > 127 || slot < -999) {
-            violation(event, createViolation("Invalid slot at " + slot, PunishType.KICK));
-        }
     }
 }
