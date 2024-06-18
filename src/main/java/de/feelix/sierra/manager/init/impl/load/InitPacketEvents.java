@@ -31,7 +31,6 @@ public class InitPacketEvents implements Initable {
      * @see PacketEventsSettings#reEncodeByDefault(boolean)
      * @see PacketEventsSettings#checkForUpdates(boolean)
      * @see PacketEventsSettings#debug(boolean)
-     * @see PacketEventsSettings#bStats(boolean)
      * @since 1.0.0
      */
     @Override
@@ -41,10 +40,9 @@ public class InitPacketEvents implements Initable {
             .fullStackTrace(true)
             .kickOnPacketException(
                 Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("kick-on-packet-exception", true))
-            .reEncodeByDefault(false)
+            // .reEncodeByDefault(false)
             .checkForUpdates(false)
-            .debug(false)
-            .bStats(true);
+            .debug(false);
         PacketEvents.getAPI().load();
     }
 }

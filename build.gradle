@@ -30,6 +30,7 @@ dependencies {
     implementation(project(':api'))
     implementation 'com.github.cryptomorin:XSeries:11.0.0'
     implementation 'com.google.guava:guava:33.2.1-jre'
+    implementation 'com.google.code.gson:gson:2.11.0'
 
     compileOnly 'org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT'
 
@@ -54,6 +55,7 @@ shadowJar {
     relocate 'net.kyori', 'net.square.sierra.kyori'
     relocate 'kotlin', 'net.square.sierra.kotlin'
     relocate 'okhttp3', 'net.square.sierra.okhttp3'
+    relocate 'com.cryptomorin', 'net.square.sierra.cryptomorin'
     relocate 'okio', 'net.square.sierra.okio'
     relocate 'javax.annotation', 'net.square.sierra.javax.annotation'
     relocate 'com.github.retrooper.packetevents', 'net.square.sierra.packetevents.api'

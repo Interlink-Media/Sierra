@@ -21,32 +21,32 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum MenuType {
-    GENERIC_9x1(0),
-    GENERIC_9x2(1),
-    GENERIC_9x3(2),
-    GENERIC_9x4(3),
-    GENERIC_9x5(4),
-    GENERIC_9x6(5),
-    GENERIC_3x3(6),
-    CRAFTER_3x3(7), // only in versions 1.20.3 & greater
-    ANVIL(8),
-    BEACON(9),
-    BLAST_FURNACE(10),
-    BREWING_STAND(11),
-    CRAFTING(12),
-    ENCHANTMENT(13),
-    FURNACE(14),
-    GRINDSTONE(15),
-    HOPPER(16),
-    LECTERN(17),
-    LOOM(18),
-    MERCHANT(19),
-    SHULKER_BOX(20),
-    SMITHING(21),
-    SMOKER(22),
-    CARTOGRAPHY_TABLE(23),
-    STONECUTTER(24),
-    UNKNOWN(-1);
+    GENERIC_9x1(0, "minecraft:generic_9x1"),
+    GENERIC_9x2(1, "minecraft:generic_9x2"),
+    GENERIC_9x3(2, "minecraft:generic_9x3"),
+    GENERIC_9x4(3, "minecraft:generic_9x4"),
+    GENERIC_9x5(4, "minecraft:generic_9x5"),
+    GENERIC_9x6(5, "minecraft:generic_9x6"),
+    GENERIC_3x3(6, "minecraft:generic_3x3"),
+    CRAFTER_3x3(7, "minecraft:crafter_3x3"), // only in versions 1.20.3 & greater
+    ANVIL(8, "minecraft:anvil"),
+    BEACON(9, "minecraft:beacon"),
+    BLAST_FURNACE(10, "minecraft:blast_furnace"),
+    BREWING_STAND(11, "minecraft:brewing_stand"),
+    CRAFTING(12, "minecraft:crafting"),
+    ENCHANTMENT(13, "minecraft:enchantment"),
+    FURNACE(14, "minecraft:furnace"),
+    GRINDSTONE(15, "minecraft:grindstone"),
+    HOPPER(16, "minecraft:hopper"),
+    LECTERN(17, "minecraft:lectern"),
+    LOOM(18, "minecraft:loom"),
+    MERCHANT(19, "minecraft:merchant"),
+    SHULKER_BOX(20, "minecraft:shulker_box"),
+    SMITHING(21, "minecraft:smithing"),
+    SMOKER(22, "minecraft:smoker"),
+    CARTOGRAPHY_TABLE(23, "minecraft:cartography"),
+    STONECUTTER(24, "minecraft:stonecutter"),
+    UNKNOWN(-1, "UNKNOWN");
 
     /**
      * The id variable represents the ID of the menu type.
@@ -57,6 +57,8 @@ public enum MenuType {
      * @see MenuType
      */
     private final int id;
+
+    private final String legacyName;
 
     /**
      * The MAX_ID_OLD_VERSION variable represents the maximum ID of the old version of the MenuType enum.

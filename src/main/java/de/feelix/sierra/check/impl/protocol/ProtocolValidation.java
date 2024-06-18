@@ -37,8 +37,6 @@ import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.inventory.InventoryView;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -129,7 +127,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             WrapperPlayClientSettings wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientSettings(event), playerData::exceptionDisconnect);
 
-            if(wrapper == null) return;
+            if (wrapper == null) return;
 
             adjustViewDistance(wrapper, event);
             checkLocale(wrapper, event);
@@ -684,20 +682,21 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkForInvalidSlot(PacketReceiveEvent event, WrapperPlayClientClickWindow wrapper) {
+
         int slot = wrapper.getSlot();
-        if (slot < 0 && slot != -999 && slot != -1) {
-            violation(event, createViolation("Invalid slot " + slot, PunishType.KICK));
+        // 89 - Biggest inv is the LARGE_CHEST: https://wiki.vg/Inventory
+        int     max     = 89;
+        boolean invalid = slot > max;
+
+        if (slot < 0) {
+            if (slot != -999 && slot != -1) { // Minecraft used -id's
+                invalid = true;
+            }
         }
-        Player player = (Player) event.getPlayer();
-        if (player == null) return;
-        InventoryView openInventory = player.getOpenInventory();
-        int           max           = isSupportedServerVersion(ServerVersion.V_1_10) ? 127 : openInventory.countSlots();
-        if (openInventory.getBottomInventory().getType() == InventoryType.PLAYER
-            && openInventory.getTopInventory().getType() == InventoryType.CRAFTING) {
-            max += 4;
-        }
-        if (slot > max) {
-            violation(event, createViolation("Slot: " + slot + ", max: " + max, PunishType.KICK));
+
+        if (invalid) {
+            violation(event, createViolation("Invalid slot " + slot + ", max: " + max,
+                                             PunishType.MITIGATE));
         }
     }
 
@@ -1061,6 +1060,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkOpenWindow(WrapperPlayServerOpenWindow window) {
+
+        System.out.println("Window Type: " + window.getType());
+        System.out.println("Legacy Type: " + window.getLegacyType());
+        System.out.println("Container Id: " + window.getContainerId());
+
         if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_14)) {
             if (window.getType() == MenuType.ANVIL.getId()) {
                 hasOpenAnvil = true;
