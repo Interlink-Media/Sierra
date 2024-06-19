@@ -3,6 +3,7 @@ package de.feelix.sierra.check.impl.move;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
@@ -138,7 +139,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
         if (System.currentTimeMillis() - lastTeleportTime <= 1000) return;
 
-        if (deltaXZ > 7) {
+        if (deltaXZ > 7 || getPlayerData().getGameMode() == GameMode.SURVIVAL) {
             if (++deltaBuffer > 10) {
                 triggerViolation(event, String.format("Invalid deltaXZ: %.2f", deltaXZ), PunishType.KICK);
             }
