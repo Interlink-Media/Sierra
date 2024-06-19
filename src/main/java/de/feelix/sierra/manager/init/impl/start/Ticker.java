@@ -61,8 +61,7 @@ public class Ticker implements Initable {
                     Player player = Bukkit.getPlayer(value.getUser().getName());
                     if (player != null) {
                         Sierra.getPlugin().getSierraDataManager().setPlayerGameMode(value, player);
-                        value.setBypassPermission(player.hasPermission("sierra.bypass"));
-                        value.setPlayer(player);
+                        value.pollData(player);
                     }
                 }
 

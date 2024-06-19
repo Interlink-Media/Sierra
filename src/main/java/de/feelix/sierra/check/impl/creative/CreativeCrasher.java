@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTList;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCreativeInventoryAction;
@@ -28,13 +29,14 @@ import java.util.List;
 @SierraCheckData(checkType = CheckType.CREATIVE)
 public class CreativeCrasher extends SierraDetection implements IngoingProcessor {
 
-    private final        List<ItemCheck> checks               = new ArrayList<>();
-    private static final int             MAX_RECURSIONS       = 30;
-    private static final String          ITEMS_KEY            = "Items";
-    private static final String          TAG_KEY              = "tag";
-    private              int             recursionCount       = 0;
-    private static final String          BLOCK_ENTITY_TAG_KEY = "BlockEntityTag";
-    private static final int             MAX_ITEMS            = 54;
+    private static final int    MAX_RECURSIONS       = 30;
+    private static final String ITEMS_KEY            = "Items";
+    private static final String TAG_KEY              = "tag";
+    private static final String BLOCK_ENTITY_TAG_KEY = "BlockEntityTag";
+    private static final int    MAX_ITEMS            = 54;
+
+    private final List<ItemCheck> checks         = new ArrayList<>();
+    private       int             recursionCount = 0;
 
     public CreativeCrasher(PlayerData playerData) {
         super(playerData);
@@ -42,7 +44,7 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
     }
 
     private void initializeChecks() {
-        this.addCreativeChecks(
+        addCreativeChecks(
             new CreativeMap(),
             new CreativeClientBookCrash(),
             new PotionLimit(),
@@ -53,10 +55,10 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
         );
 
         if (Sierra.getPlugin().getSierraConfigEngine().config().getInt("max-enchantment-level", 5) != -1) {
-            this.addCreativeChecks(new EnchantLimit());
+            addCreativeChecks(new EnchantLimit());
         }
 
-        this.addCreativeChecks(new CreativeSkull());
+        addCreativeChecks(new CreativeSkull());
     }
 
     @Override
@@ -66,28 +68,7 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
             return;
         }
 
-        ItemStack itemStack = null;
-
-        if (event.getPacketType() == PacketType.Play.Client.CREATIVE_INVENTORY_ACTION) {
-            if (playerData.getGameMode() != GameMode.CREATIVE) {
-                return;
-            }
-            WrapperPlayClientCreativeInventoryAction wrapper = CastUtil.getSupplier(
-                () -> new WrapperPlayClientCreativeInventoryAction(event), playerData::exceptionDisconnect);
-            itemStack = wrapper.getItemStack();
-        } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
-            WrapperPlayClientClickWindow wrapper = CastUtil.getSupplier(
-                () -> new WrapperPlayClientClickWindow(event), playerData::exceptionDisconnect);
-
-            if(wrapper == null) return;
-
-            itemStack = wrapper.getCarriedItemStack();
-        } else if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
-            WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplier(
-                () -> new WrapperPlayClientPlayerBlockPlacement(event), playerData::exceptionDisconnect);
-            itemStack = wrapper.getItemStack().orElse(null);
-        }
-
+        ItemStack itemStack = getItemStackFromEvent(event, playerData);
         if (itemStack == null) return;
 
         NBTCompound compound = itemStack.getNBT();
@@ -100,6 +81,25 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
         }
     }
 
+    private ItemStack getItemStackFromEvent(PacketReceiveEvent event, PlayerData playerData) {
+        PacketTypeCommon packetType = event.getPacketType();
+        if (packetType.equals(PacketType.Play.Client.CREATIVE_INVENTORY_ACTION)) {
+            if (playerData.getGameMode() != GameMode.CREATIVE) return null;
+            return CastUtil.getSupplier(
+                    () -> new WrapperPlayClientCreativeInventoryAction(event), playerData::exceptionDisconnect)
+                .getItemStack();
+        } else if (packetType.equals(PacketType.Play.Client.CLICK_WINDOW)) {
+            WrapperPlayClientClickWindow clickWrapper = CastUtil.getSupplier(
+                () -> new WrapperPlayClientClickWindow(event), playerData::exceptionDisconnect);
+            return clickWrapper != null ? clickWrapper.getCarriedItemStack() : null;
+        } else if (packetType.equals(PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT)) {
+            WrapperPlayClientPlayerBlockPlacement blockPlacementWrapper = CastUtil.getSupplier(
+                () -> new WrapperPlayClientPlayerBlockPlacement(event), playerData::exceptionDisconnect);
+            return blockPlacementWrapper != null ? blockPlacementWrapper.getItemStack().orElse(null) : null;
+        }
+        return null;
+    }
+
     private void recursion(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
                            NBTCompound blockEntityTag) {
         if (exceededRecursionMax() || !blockEntityTag.getTags().containsKey(ITEMS_KEY)) {
@@ -108,7 +108,7 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
 
         NBTList<NBTCompound> items = blockEntityTag.getCompoundListTagOrNull(ITEMS_KEY);
         if (items == null || exceededMaxItems(items)) {
-            sendViolation(event, items != null ? items.size() : 0);
+            sendViolation(event, "Info: " + (items != null ? items.size() : 0), PunishType.BAN);
             return;
         }
 
@@ -116,25 +116,16 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
     }
 
     private boolean exceededRecursionMax() {
-        recursionCount++;
-        return recursionCount > MAX_RECURSIONS;
+        return ++recursionCount > MAX_RECURSIONS;
     }
 
     private boolean exceededMaxItems(NBTList<NBTCompound> items) {
         return items.size() > MAX_ITEMS;
     }
 
-    private void sendViolation(PacketReceiveEvent event, int info) {
-        violation(event, ViolationDocument.builder()
-            .debugInformation("Info: " + info)
-            .punishType(PunishType.BAN)
-            .build());
-    }
-
     private void processItems(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
                               NBTList<NBTCompound> items) {
-        for (int i = 0; i < items.size(); i++) {
-            NBTCompound item = items.getTag(i);
+        for (NBTCompound item : items.getTags()) {
             if (item.getTags().containsKey(TAG_KEY)) {
                 NBTCompound tag = item.getCompoundTagOrNull(TAG_KEY);
                 if (tag == null || processTaggedItem(event, data, clickedItem, tag)) {
@@ -163,22 +154,18 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
         for (ItemCheck check : checks) {
             Pair<String, PunishType> crashDetails = check.handleCheck(event, item, tag, data);
             if (crashDetails != null) {
-                sendViolationDocument(event, crashDetails);
+                sendViolation(event, crashDetails.getFirst() + " | R: " + recursionCount, crashDetails.getSecond());
                 return true;
             }
         }
         return false;
     }
 
-    private void sendViolationDocument(PacketReceiveEvent event, Pair<String, PunishType> crashDetails) {
-        violation(event, buildViolationDocument(crashDetails));
-    }
-
-    private ViolationDocument buildViolationDocument(Pair<String, PunishType> crashDetails) {
-        return ViolationDocument.builder()
-            .debugInformation(crashDetails.getFirst() + " | R: " + recursionCount)
-            .punishType(crashDetails.getSecond())
-            .build();
+    private void sendViolation(PacketReceiveEvent event, String debugInformation, PunishType punishType) {
+        violation(event, ViolationDocument.builder()
+            .debugInformation(debugInformation)
+            .punishType(punishType)
+            .build());
     }
 
     private void addCreativeChecks(ItemCheck... checks) {

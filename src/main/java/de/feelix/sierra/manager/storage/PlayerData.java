@@ -18,6 +18,7 @@ import de.feelix.sierraapi.check.CheckRepository;
 import de.feelix.sierraapi.user.impl.SierraUser;
 import de.feelix.sierraapi.violation.PunishType;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -65,6 +66,16 @@ public class PlayerData implements SierraUser {
     public PlayerData(User user) {
         this.user = user;
         this.clientVersion = user.getClientVersion();
+    }
+
+    /**
+     * This method polls data for the given player.
+     *
+     * @param bukkitPlayer the Bukkit player object for which data is to be polled
+     */
+    public void pollData(Player bukkitPlayer) {
+        this.player = bukkitPlayer;
+        bypassPermission = bukkitPlayer.hasPermission("sierra.bypass");
     }
 
     /**
