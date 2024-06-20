@@ -1061,10 +1061,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkOpenWindow(WrapperPlayServerOpenWindow window) {
 
-        System.out.println("Window Type: " + window.getType());
-        System.out.println("Legacy Type: " + window.getLegacyType());
-        System.out.println("Container Id: " + window.getContainerId());
-
         if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_14)) {
             if (window.getType() == MenuType.ANVIL.getId()) {
                 hasOpenAnvil = true;
