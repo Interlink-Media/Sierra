@@ -139,7 +139,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
         if (System.currentTimeMillis() - lastTeleportTime <= 1000) return;
 
-        if (deltaXZ > 7 || getPlayerData().getGameMode() == GameMode.SURVIVAL) {
+        if (deltaXZ > 7 && getPlayerData().getGameMode() == GameMode.SURVIVAL) {
             if (++deltaBuffer > 10) {
                 triggerViolation(event, String.format("Invalid deltaXZ: %.2f", deltaXZ), PunishType.KICK);
             }

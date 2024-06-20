@@ -3,6 +3,9 @@ package de.feelix.sierra.listener;
 import com.github.retrooper.packetevents.event.*;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPong;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientWindowConfirmation;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
@@ -63,6 +66,8 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
         playerData.getTimingProcessor().getPacketReceiveTask().prepare();
 
+        handleTransaction(event, playerData);
+
         checkHandling(playerData, event);
 
         if (handleExemptOrBlockedPlayer(playerData, event)) return;
@@ -72,6 +77,39 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
         processAvailableChecksReceive(playerData, event);
         playerData.getTimingProcessor().getPacketReceiveTask().end();
+    }
+
+    private void handleTransaction(PacketReceiveEvent event, PlayerData playerData) {
+        if (event.getPacketType() == PacketType.Play.Client.WINDOW_CONFIRMATION) {
+
+            WrapperPlayClientWindowConfirmation wrapper = new WrapperPlayClientWindowConfirmation(event);
+
+            short id = wrapper.getActionId();
+
+            // Vanilla always uses an ID starting from 1
+            if (id <= 0) {
+                // Check if we sent this packet before cancelling it
+                if (playerData.getTransactionProcessor().addTransactionResponse(id)) {
+                    event.setCancelled(true);
+                }
+            }
+
+        }
+
+        if (event.getPacketType() == PacketType.Play.Client.PONG) {
+
+            WrapperPlayClientPong wrapper = new WrapperPlayClientPong(event);
+
+            int id = wrapper.getId();
+            // If it wasn't below 0, it wasn't us
+            // If it wasn't in short range, it wasn't us either
+            if (id == (short) id) {
+                if (playerData.getTransactionProcessor().addTransactionResponse((short) id)) {
+                    // Not needed for vanilla as vanilla ignores this packet, needed for packet limiters
+                    event.setCancelled(true);
+                }
+            }
+        }
     }
 
 

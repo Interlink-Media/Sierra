@@ -5,10 +5,14 @@ import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.event.ProtocolPacketEvent;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPing;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowConfirmation;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
+import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.check.impl.SierraCheck;
 
 /**
@@ -48,11 +52,47 @@ public class PacketSendListener extends PacketListenerAbstract {
 
         playerData.getTimingProcessor().getPacketSendTask().prepare();
 
+        handleTransaction(event, playerData);
+
         playerData.getGameModeProcessor().process(event);
         playerData.getPingProcessor().handle(event);
 
         processAvailableChecksSend(playerData, event);
         playerData.getTimingProcessor().getPacketSendTask().end();
+    }
+
+    private void handleTransaction(PacketSendEvent event, PlayerData playerData) {
+        if (event.getPacketType() == PacketType.Play.Server.PING) {
+            WrapperPlayServerPing wrapper = new WrapperPlayServerPing(event);
+
+            int id = wrapper.getId();
+            // Check if in the short range, we only use short range
+            if (id == (short) id) {
+                // Cast ID twice so we can use the list
+                Short shortID = ((short) id);
+                if (playerData.getTransactionProcessor().didWeSendThatTrans.remove(shortID)) {
+                    Pair<Short, Long> solarPair = new Pair<>(shortID, System.nanoTime());
+                    playerData.getTransactionProcessor().transactionsSent.add(solarPair);
+                    playerData.getTransactionProcessor().lastTransactionSent.getAndIncrement();
+                }
+            }
+        }
+
+        if (event.getPacketType() == PacketType.Play.Server.WINDOW_CONFIRMATION) {
+            WrapperPlayServerWindowConfirmation wrapper = new WrapperPlayServerWindowConfirmation(event);
+
+            short id = wrapper.getActionId();
+
+            // Vanilla always uses an ID starting from 1
+            if (id <= 0) {
+
+                if (playerData.getTransactionProcessor().didWeSendThatTrans.remove((Short) id)) {
+                    Pair<Short, Long> solarPair = new Pair<>(id, System.nanoTime());
+                    playerData.getTransactionProcessor().transactionsSent.add(solarPair);
+                    playerData.getTransactionProcessor().lastTransactionSent.getAndIncrement();
+                }
+            }
+        }
     }
 
     /**

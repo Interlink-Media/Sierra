@@ -57,6 +57,8 @@ public class Ticker implements Initable {
                 value.setPacketCount(0);
                 value.setBytesSent(0);
 
+                value.sendTransaction();
+
                 if (value.getUser().getName() != null) {
                     Player player = Bukkit.getPlayer(value.getUser().getName());
                     if (player != null) {

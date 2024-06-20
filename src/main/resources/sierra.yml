@@ -114,6 +114,8 @@ block-connections-after-ban: true
 
 generic-packet-size-limit: 5000 # Set -1 to disable (Not recommended)
 
+generic-packet-frequency-limit: 150 # Set to -1 to disable (Not recommended)
+
 # Blocking time in minutes
 connection-block-time: 15 # Time in minutes
 

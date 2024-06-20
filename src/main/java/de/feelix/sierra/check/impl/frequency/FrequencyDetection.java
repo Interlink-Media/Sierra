@@ -30,6 +30,8 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     private       int                               lastCraftRequestTick = 0;
     private       int                               dropCount            = 0;
 
+    private int packets = 0;
+
     public FrequencyDetection(PlayerData playerData) {
         super(playerData);
         initializeMultiplierMap();
@@ -47,6 +49,22 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
         if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-packet-frequency", true)) {
             return;
         }
+
+        this.packets++;
+
+        int packetLimit = Sierra.getPlugin()
+            .getSierraConfigEngine()
+            .config()
+            .getInt("generic-packet-frequency-limit", 150);
+
+        if (packetLimit != -1 && this.packets > packetLimit) {
+            violation(event, ViolationDocument.builder()
+                .punishType(PunishType.KICK)
+                .debugInformation("Generic Limit: " + this.packets + " > " + packetLimit)
+                .build());
+            event.cleanUp();
+        }
+
         if (event.getPacketType() == PacketType.Play.Client.EDIT_BOOK) {
             handleEditBook(event);
         } else if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
@@ -57,6 +75,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             handlePlayerDigging(event, playerData);
         }
 
+        playerData.getTransactionProcessor()
+            .addRealTimeTask(playerData.getTransactionProcessor()
+                                 .lastTransactionSent.get() + 1, () -> this.packets = 0);
         handlePacketAllowance(event, playerData);
     }
 
