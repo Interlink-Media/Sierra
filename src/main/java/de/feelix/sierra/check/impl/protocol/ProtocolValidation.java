@@ -25,6 +25,7 @@ import de.feelix.sierra.check.impl.command.CommandValidation;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
+import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.menu.MenuType;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
@@ -669,7 +670,9 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             int asInt = customModelData.getAsInt();
             //noinspection ConditionCoveredByFurtherCondition
             if (asInt == Integer.MIN_VALUE || asInt == Integer.MAX_VALUE || asInt < 0) {
-                violation(event, createViolation("Invalid custom model data: " + asInt, PunishType.MITIGATE));
+                if(!SierraDataManager.skipModelCheck) {
+                    violation(event, createViolation("Invalid custom model data: " + asInt, PunishType.MITIGATE));
+                }
             }
         }
     }

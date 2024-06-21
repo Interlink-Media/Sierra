@@ -3,6 +3,7 @@ package de.feelix.sierra.compatibility;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.compatibility.impl.DeluxeMenusDescriptor;
 import de.feelix.sierra.compatibility.impl.FastAsyncWorldEditDescriptor;
+import de.feelix.sierra.compatibility.impl.InfiniteParkourDescriptor;
 import de.feelix.sierra.compatibility.impl.ProtocolLibDescriptor;
 
 import java.util.ArrayList;
@@ -27,11 +28,13 @@ public class CompatibilityHandler {
         descriptors.add(new ProtocolLibDescriptor());
         descriptors.add(new FastAsyncWorldEditDescriptor());
         descriptors.add(new DeluxeMenusDescriptor());
+        descriptors.add(new InfiniteParkourDescriptor());
     }
 
     /**
      * This method processes the descriptors of various plugins to check for compatibility issues.
-     * It iterates over the list of descriptors and calls the checkDescriptorAndLogResults method to check and log the results.
+     * It iterates over the list of descriptors and calls the checkDescriptorAndLogResults method to check and log
+     * the results.
      */
     public void processDescriptors() {
         Sierra.getPlugin().getLogger().info("Looking for compatibility issues...");

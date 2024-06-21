@@ -107,6 +107,11 @@ public class SierraDataManager implements UserRepository {
     public static boolean skipSkullUUIDCheck = false;
 
     /**
+     * Determines whether to skip model check or not.
+     */
+    public static boolean skipModelCheck = false;
+
+    /**
      * The DataManager function initializes the packet priority.
      */
     public SierraDataManager() {
