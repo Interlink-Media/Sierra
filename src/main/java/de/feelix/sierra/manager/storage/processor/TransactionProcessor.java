@@ -7,6 +7,7 @@ import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPing;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowConfirmation;
+import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.Pair;
 import lombok.Getter;
@@ -33,12 +34,12 @@ public class TransactionProcessor {
     public  AtomicInteger lastTransactionSent     = new AtomicInteger(0);
     public  AtomicInteger lastTransactionReceived = new AtomicInteger(0);
 
-    private long  transactionPing        = 0;
-    private long  lastTransactionPing    = 0;
-    public  long  lastTransSent          = 0;
-    public  long  lastTransReceived      = 0;
-    private long  playerClockAtLeast     = System.nanoTime();
-    private short lastId                 = 0;
+    private long  transactionPing     = 0;
+    private long  lastTransactionPing = 0;
+    public  long  lastTransSent       = 0;
+    public  long  lastTransReceived   = 0;
+    private long  playerClockAtLeast  = System.nanoTime();
+    private short lastId              = 0;
 
     // Players can get 0 ping by repeatedly sending invalid transaction packets, but that will only hurt them
     // The design is allowing players to miss transaction packets, which shouldn't be possible
@@ -79,8 +80,15 @@ public class TransactionProcessor {
 
         if (playerData.getUser() == null) return;
 
-        // Sending in non-play corrupts the pipeline, don't waste bandwidth when anticheat disabled
-        if (playerData.getUser().getConnectionState() != ConnectionState.PLAY) return;
+        try {
+            // Sending in non-play corrupts the pipeline, don't waste bandwidth when anticheat disabled
+            if (playerData.getUser().getConnectionState() != ConnectionState.PLAY) return;
+
+        } catch (IllegalArgumentException exception) {
+            Sierra.getPlugin()
+                .getLogger()
+                .warning("Skip transaction for " + this.playerData.username() + ", cause state is out of sync");
+        }
 
         // Send a packet once every 15 seconds to avoid any memory leaks
         if ((System.nanoTime() - getPlayerClockAtLeast()) > 15e9) {
