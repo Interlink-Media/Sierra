@@ -3,6 +3,7 @@ package de.feelix.sierra.check.impl.move;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.util.Vector3d;
@@ -15,6 +16,7 @@ import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
+import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.violation.PunishType;
@@ -28,14 +30,16 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     private Location lastLocation;
     private long     lastTeleportTime = 0;
     private int      deltaBuffer      = 0;
-    private long     lastFlyingTime   = 0L;
-    private long     balance          = 0L;
 
     private static final double HARD_CODED_BORDER = 2.9999999E7D;
     private static final double SPECIAL_VALUE     = 9.223372E18d;
-    private static final long   MAX_BAL           = 0;
-    private static final long   BAL_RESET         = -50;
-    private static final long   BAL_SUB_ON_TP     = 50;
+
+    long    timerBalanceRealTime              = 0;
+    long    knownPlayerClockTime              = (long) (System.nanoTime() - 6e10);
+    long    lastMovementPlayerClock           = (long) (System.nanoTime() - 6e10);
+    long    clockDrift                        = (long) 120e6;
+    long    limitAbuseOverPing                = 1000;
+    boolean hasGottenMovementAfterTransaction = false;
 
     public MovementValidation(PlayerData playerData) {
         super(playerData);
@@ -48,10 +52,10 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         }
 
         data.getTimingProcessor().getMovementTask().prepare();
+        handleLatencyAbuse(event, data);
 
         if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) {
             handleFlyingPacket(event, data);
-            handleLatencyAbuse(event, data);
         } else if (event.getPacketType() == PacketType.Play.Client.VEHICLE_MOVE) {
             handleVehicleMove(event, data);
         }
@@ -85,6 +89,61 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         lastLocation = location;
     }
 
+    private void handleLatencyAbuse(PacketReceiveEvent event, PlayerData data) {
+        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-timer-cheats", true)) {
+            return;
+        }
+
+        if (hasGottenMovementAfterTransaction && checkForTransaction(event.getPacketType())) {
+            knownPlayerClockTime = lastMovementPlayerClock;
+            lastMovementPlayerClock = data.getTransactionProcessor().getPlayerClockAtLeast();
+            hasGottenMovementAfterTransaction = false;
+        }
+
+        if (!shouldCountPacketForTimer(event.getPacketType())) return;
+
+        hasGottenMovementAfterTransaction = true;
+        timerBalanceRealTime += (long) 50e6;
+
+        doCheck(event);
+    }
+
+    public void doCheck(final PacketReceiveEvent event) {
+        final double transactionPing = getPlayerData().getTransactionProcessor().getTransactionPing();
+        // Limit using transaction ping if over 1000ms (default)
+        final boolean needsAdjustment = limitAbuseOverPing != -1 && transactionPing >= limitAbuseOverPing;
+        final boolean wouldFailNormal = timerBalanceRealTime > System.nanoTime();
+        final boolean failsAdjusted = needsAdjustment && (timerBalanceRealTime + ((transactionPing * 1e6) - clockDrift - 50e6)) > System.nanoTime();
+        if (wouldFailNormal || failsAdjusted) {
+            if (wouldFailNormal) {
+
+                long   delay      = System.nanoTime() - timerBalanceRealTime;
+                double calculated = FormatUtils.calculateResult(delay);
+
+                violation(event, ViolationDocument.builder()
+                    .debugInformation(String.format("%.5f ticks ahead", Math.abs(calculated)))
+                    .punishType(this.violations() > 30 ? PunishType.KICK : PunishType.MITIGATE)
+                    .build());
+            }
+            event.setCancelled(true);
+            event.cleanUp();
+            // Reset the violation by 1 movement
+            timerBalanceRealTime -= (long) 50e6;
+        }
+
+        timerBalanceRealTime = Math.max(timerBalanceRealTime, lastMovementPlayerClock - clockDrift);
+    }
+
+    public boolean checkForTransaction(PacketTypeCommon packetType) {
+        return packetType == PacketType.Play.Client.PONG ||
+               packetType == PacketType.Play.Client.WINDOW_CONFIRMATION;
+    }
+
+    public boolean shouldCountPacketForTimer(PacketTypeCommon packetType) {
+        // If not flying, or this was a teleport, or this was a duplicate 1.17 mojang stupidity packet
+        return WrapperPlayClientPlayerFlying.isFlying(packetType);
+    }
+
     private void handleVehicleMove(PacketReceiveEvent event, PlayerData data) {
         WrapperPlayClientVehicleMove wrapper = CastUtil.getSupplier(
             () -> new WrapperPlayClientVehicleMove(event), data::exceptionDisconnect);
@@ -98,27 +157,6 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         if (invalidValue(wrapper.getYaw(), wrapper.getPitch())) {
             triggerViolation(event, "Extreme values: float", PunishType.KICK);
         }
-    }
-
-    private void handleLatencyAbuse(PacketReceiveEvent event, PlayerData data) {
-        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-timer-cheats", true)) {
-            return;
-        }
-
-        boolean noExempt = System.currentTimeMillis() - data.getJoinTime() > 1000;
-
-        if (lastFlyingTime != 0L && noExempt) {
-            long now = System.currentTimeMillis();
-            balance += 50L;
-            balance -= now - lastFlyingTime;
-            if (balance > MAX_BAL) {
-                triggerViolation(event, "Movement frequency: bal:~" + balance,
-                                 violations() > 200 ? PunishType.KICK : PunishType.MITIGATE
-                );
-                balance = BAL_RESET;
-            }
-        }
-        lastFlyingTime = System.currentTimeMillis();
     }
 
     private void checkInvalidRotation(WrapperPlayClientPlayerFlying wrapper, PacketReceiveEvent event) {
@@ -239,10 +277,6 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     public void handle(PacketSendEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK) {
             lastTeleportTime = System.currentTimeMillis();
-        }
-        if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
-            || event.getPacketType() == PacketType.Play.Server.ENTITY_VELOCITY) {
-            balance -= BAL_SUB_ON_TP;
         }
     }
 }

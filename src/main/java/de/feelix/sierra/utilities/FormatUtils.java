@@ -39,6 +39,11 @@ public class FormatUtils {
         return sum;
     }
 
+    public static double calculateResult(double x) {
+        double nanosPerTick = 1000000000.0 / 20.0;
+        return x / nanosPerTick;
+    }
+
     /**
      * Shortens a given string if its length is greater than 50 characters.
      *
