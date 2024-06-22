@@ -24,24 +24,15 @@ import java.util.HashMap;
 @SierraCheckData(checkType = CheckType.FREQUENCY)
 public class FrequencyDetection extends SierraDetection implements IngoingProcessor {
 
-    private final HashMap<PacketTypeCommon, Double> multiplierMap        = new HashMap<>();
-    private       int                               lastBookEditTick     = 0;
-    private       int                               lastDropItemTick     = 0;
-    private       int                               lastCraftRequestTick = 0;
-    private       int                               dropCount            = 0;
+    private int lastBookEditTick     = 0;
+    private int lastDropItemTick     = 0;
+    private int lastCraftRequestTick = 0;
+    private int dropCount            = 0;
 
-    private int packets = 0;
+    private final HashMap<PacketTypeCommon, Integer> count = new HashMap<>();
 
     public FrequencyDetection(PlayerData playerData) {
         super(playerData);
-        initializeMultiplierMap();
-    }
-
-    private void initializeMultiplierMap() {
-        multiplierMap.put(PacketType.Play.Client.PLAYER_POSITION, 0.5);
-        multiplierMap.put(PacketType.Play.Client.PLAYER_POSITION_AND_ROTATION, 0.5);
-        multiplierMap.put(PacketType.Play.Client.PLAYER_ROTATION, 0.5);
-        multiplierMap.put(PacketType.Play.Client.PLAYER_FLYING, 0.5);
     }
 
     @Override
@@ -50,19 +41,32 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             return;
         }
 
-        this.packets++;
+        long currented = System.currentTimeMillis();
 
-        int packetLimit = Sierra.getPlugin()
-            .getSierraConfigEngine()
-            .config()
-            .getInt("generic-packet-frequency-limit", 150);
+        this.count.put(
+            event.getPacketType(),
+            this.count.containsKey(event.getPacketType()) ? this.count.get(event.getPacketType()) + 1 : 1
+        );
 
-        if (packetLimit != -1 && this.packets > packetLimit) {
+        int limit = Sierra.getPlugin().getSierraConfigEngine()
+            .config().getInt("generic-packet-frequency-default", 30);
+
+        for (String string : Sierra.getPlugin()
+            .getSierraConfigEngine().config().getStringList("generic-packet-frequency-limit")) {
+
+            if (string.contains(event.getPacketType().getName())) {
+                limit = Integer.parseInt(string.split(":")[1]);
+            }
+        }
+
+        Integer packetCount = this.count.get(event.getPacketType());
+
+        if (packetCount > limit) {
             violation(event, ViolationDocument.builder()
+                .debugInformation(event.getPacketType().getName() + ", " + limit + "L, " + packetCount + "PPS, " + (
+                    System.currentTimeMillis() - currented) + "ms")
                 .punishType(PunishType.KICK)
-                .debugInformation("Generic Limit: " + this.packets + " > " + packetLimit)
                 .build());
-            event.cleanUp();
         }
 
         if (event.getPacketType() == PacketType.Play.Client.EDIT_BOOK) {
@@ -76,9 +80,10 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
         }
 
         playerData.getTransactionProcessor()
-            .addRealTimeTask(playerData.getTransactionProcessor()
-                                 .lastTransactionSent.get() + 1, () -> this.packets = 0);
-        handlePacketAllowance(event, playerData);
+            .addRealTimeTask(
+                playerData.getTransactionProcessor().lastTransactionSent.get() + 1,
+                this.count::clear
+            );
     }
 
     private void handleEditBook(PacketReceiveEvent event) {
@@ -129,21 +134,6 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
                     triggerViolation(event, "Spammed digging", PunishType.KICK);
                 }
             }
-        }
-    }
-
-    private void handlePacketAllowance(PacketReceiveEvent event, PlayerData playerData) {
-        double multiplier      = multiplierMap.getOrDefault(event.getPacketType(), 1.0);
-        double packetAllowance = playerData.getPacketAllowance();
-        playerData.setPacketCount(playerData.getPacketCount() + (1 * multiplier));
-
-        if (playerData.getPacketCount() > packetAllowance) {
-            triggerViolation(
-                event, String.format("Send: %s, allowed: %s", playerData.getPacketCount(), packetAllowance),
-                PunishType.KICK
-            );
-        } else {
-            playerData.setPacketAllowance(packetAllowance - 1);
         }
     }
 

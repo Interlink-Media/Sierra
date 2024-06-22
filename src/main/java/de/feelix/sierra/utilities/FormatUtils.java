@@ -1,9 +1,11 @@
 package de.feelix.sierra.utilities;
 
+import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import lombok.experimental.UtilityClass;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -27,6 +29,14 @@ public class FormatUtils {
             num = 1;
         }
         return num;
+    }
+
+    public static int sumValuesInHashMap(HashMap<PacketTypeCommon, Integer> map) {
+        int sum = 0;
+        for (Integer value : map.values()) {
+            sum += value;
+        }
+        return sum;
     }
 
     /**

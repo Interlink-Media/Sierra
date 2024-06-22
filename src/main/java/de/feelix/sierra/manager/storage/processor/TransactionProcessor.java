@@ -85,6 +85,9 @@ public class TransactionProcessor {
             if (playerData.getUser().getConnectionState() != ConnectionState.PLAY) return;
 
         } catch (IllegalArgumentException exception) {
+
+            // In the early moments, the decoder might deviate from the EncoderState.
+            // However, this only happens for 1-2 ticks, which we can skip as it has no impact.
             Sierra.getPlugin()
                 .getLogger()
                 .warning("Skip transaction for " + this.playerData.username() + ", cause state is out of sync");

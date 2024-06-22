@@ -50,13 +50,8 @@ public class Ticker implements Initable {
         FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(), o -> currentTick++, 1, 1);
 
         FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(), o -> {
-            double maxPacketAllowance = 1000 * 2;
-
             for (PlayerData value : SierraDataManager.getInstance().getPlayerData().values()) {
-                value.setPacketAllowance(maxPacketAllowance);
-                value.setPacketCount(0);
                 value.setBytesSent(0);
-
                 value.sendTransaction();
 
                 if (value.getUser().getName() != null) {

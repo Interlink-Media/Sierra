@@ -45,8 +45,6 @@ public class PlayerData implements SierraUser {
     private boolean nameChecked        = false;
     private boolean bypassPermission   = false;
 
-    private double packetCount     = 0;
-    private double packetAllowance = 1000;
     private double bytesSent       = 0;
 
     private final AlertSettings alertSettings      = new AbstractAlertSetting();
