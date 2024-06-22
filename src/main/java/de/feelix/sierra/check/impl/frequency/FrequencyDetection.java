@@ -6,6 +6,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPluginMessage;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
@@ -14,7 +15,6 @@ import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.manager.init.impl.start.Ticker;
-import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
@@ -46,20 +46,23 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             return;
         }
 
-        long             current    = System.currentTimeMillis();
         playerData.getTimingProcessor().getFrequencyTask().prepare();
         PacketTypeCommon packetType = event.getPacketType();
 
-        packetCounts.merge(packetType, 1, Integer::sum);
+        if(!WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) {
+            long             current    = System.currentTimeMillis();
 
-        int limit       = retrieveLimitFromConfiguration(packetType, config);
-        int packetCount = packetCounts.getOrDefault(packetType, 0);
+            packetCounts.merge(packetType, 1, Integer::sum);
 
-        if (packetCount > limit) {
-            String debugInfo = String.format(
-                "%s, %dL, %dPPS, %dms", packetType.getName(), limit, packetCount, System.currentTimeMillis() - current);
-            triggerViolation(event, debugInfo, PunishType.KICK);
-            return;
+            int limit       = retrieveLimitFromConfiguration(packetType, config);
+            int packetCount = packetCounts.getOrDefault(packetType, 0);
+
+            if (packetCount > limit) {
+                String debugInfo = String.format(
+                    "%s, %dL, %dPPS, %dms", packetType.getName(), limit, packetCount, System.currentTimeMillis() - current);
+                triggerViolation(event, debugInfo, PunishType.KICK);
+                return;
+            }
         }
 
         if (packetType.equals(PacketType.Play.Client.EDIT_BOOK)) {
