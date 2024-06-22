@@ -14,6 +14,7 @@ import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.manager.init.impl.start.Ticker;
+import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
@@ -25,10 +26,10 @@ import java.util.HashMap;
 @SierraCheckData(checkType = CheckType.FREQUENCY)
 public class FrequencyDetection extends SierraDetection implements IngoingProcessor {
 
-    private int lastBookEditTick = 0;
-    private int lastDropItemTick = 0;
+    private int lastBookEditTick     = 0;
+    private int lastDropItemTick     = 0;
     private int lastCraftRequestTick = 0;
-    private int dropCount = 0;
+    private int dropCount            = 0;
 
     private final HashMap<PacketTypeCommon, Integer> packetCounts = new HashMap<>();
 
@@ -38,21 +39,25 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
 
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
+
         YamlConfiguration config = Sierra.getPlugin().getSierraConfigEngine().config();
+
         if (!config.getBoolean("prevent-packet-frequency", true)) {
             return;
         }
 
-        long current = System.currentTimeMillis();
+        long             current    = System.currentTimeMillis();
+        playerData.getTimingProcessor().getFrequencyTask().prepare();
         PacketTypeCommon packetType = event.getPacketType();
 
         packetCounts.merge(packetType, 1, Integer::sum);
 
-        int limit = retrieveLimitFromConfiguration(packetType, config);
+        int limit       = retrieveLimitFromConfiguration(packetType, config);
         int packetCount = packetCounts.getOrDefault(packetType, 0);
 
         if (packetCount > limit) {
-            String debugInfo = String.format("%s, %dL, %dPPS, %dms", packetType.getName(), limit, packetCount, System.currentTimeMillis() - current);
+            String debugInfo = String.format(
+                "%s, %dL, %dPPS, %dms", packetType.getName(), limit, packetCount, System.currentTimeMillis() - current);
             triggerViolation(event, debugInfo, PunishType.KICK);
             return;
         }
@@ -67,7 +72,10 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             handlePlayerDigging(event, playerData);
         }
 
-        playerData.getTransactionProcessor().addRealTimeTask(playerData.getTransactionProcessor().lastTransactionSent.get() + 1, packetCounts::clear);
+        playerData.getTransactionProcessor().addRealTimeTask(
+            playerData.getTransactionProcessor().lastTransactionSent.get() + 1, packetCounts::clear);
+
+        playerData.getTimingProcessor().getFrequencyTask().end();
     }
 
     private int retrieveLimitFromConfiguration(PacketTypeCommon packetType, YamlConfiguration config) {
@@ -133,8 +141,8 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     }
 
     private boolean isSpamming(int lastActionTick) {
-        int currentTick = Ticker.getInstance().getCurrentTick();
-        boolean isSpamming = lastActionTick + 20 > currentTick;
+        int     currentTick = Ticker.getInstance().getCurrentTick();
+        boolean isSpamming  = lastActionTick + 20 > currentTick;
         if (!isSpamming) {
             lastBookEditTick = currentTick;
         }

@@ -33,4 +33,14 @@ public interface TimingHandler {
      * @see Timing
      */
     Timing getPacketSendTask();
+
+    /**
+     * Retrieves the Timing object for measuring the timing of the frequency task.
+     *
+     * @return the Timing object for measuring the timing of the frequency task
+     *
+     * @see TimingHandler#getFrequencyTask()
+     * @see Timing
+     */
+    Timing getFrequencyTask();
 }

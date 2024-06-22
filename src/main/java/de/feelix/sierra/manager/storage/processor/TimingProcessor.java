@@ -32,6 +32,17 @@ public class TimingProcessor implements TimingHandler {
     private final Timing packetReceiveTiming = new SierraTiming();
 
     /**
+     * The `frequencyTiming` variable is an instance of the `Timing` interface.
+     * It is initialized with an instance of the `SierraTiming` class,
+     * which provides the implementation for measuring and tracking the timing of an event.
+     * The `frequencyTiming` variable is constant and represents the timing for a specific frequency.
+     *
+     * @see Timing
+     * @see SierraTiming
+     */
+    private final Timing frequencyTiming = new SierraTiming();
+
+    /**
      * packetSendTiming is a timing object used to measure and track the delay of sending packets.
      * It is of type Timing, which is an interface for objects that can measure and track the timing of events.
      * The packetSendTiming variable is declared as private and final, indicating that it cannot be reassigned once
@@ -91,5 +102,18 @@ public class TimingProcessor implements TimingHandler {
     @Override
     public Timing getPacketSendTask() {
         return packetSendTiming;
+    }
+
+    /**
+     * Retrieves the Timing object for measuring the timing of the frequency task.
+     *
+     * @return the Timing object for measuring the timing of the frequency task
+     *
+     * @see TimingHandler#getFrequencyTask()
+     * @see Timing
+     */
+    @Override
+    public Timing getFrequencyTask() {
+        return frequencyTiming;
     }
 }

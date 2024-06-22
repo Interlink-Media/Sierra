@@ -79,6 +79,7 @@ public class MonitorCommand implements ISierraCommand {
                 true
             ).replacePrefix().colorize().message());
         sendTiming(timingProcessor.getMovementTask(), "Movement Task", user);
+        sendTiming(timingProcessor.getFrequencyTask(), "Frequency Task", user);
     }
 
     /**
