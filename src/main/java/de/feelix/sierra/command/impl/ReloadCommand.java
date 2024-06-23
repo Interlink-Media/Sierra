@@ -2,6 +2,7 @@ package de.feelix.sierra.command.impl;
 
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
+import de.feelix.sierra.manager.config.PunishmentConfig;
 import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierraapi.commands.*;
 import de.feelix.sierraapi.user.impl.SierraUser;
@@ -36,9 +37,14 @@ public class ReloadCommand implements ISierraCommand {
         // Reset prefix
         Sierra.getPlugin().setPrefix();
 
-        user.sendMessage(new ConfigValue("commands.reload.success",
-                                         "{prefix} &fConfiguration reloaded &asuccessfully",
-                                         true
+        // Reset punishment config
+        Sierra.getPlugin().setPunishmentConfig(PunishmentConfig.valueOf(
+            new ConfigValue("internal-punishment-config", "HARD", false).message()));
+
+        user.sendMessage(new ConfigValue(
+            "commands.reload.success",
+            "{prefix} &fConfiguration reloaded &asuccessfully",
+            true
         ).replacePrefix().colorize().message());
     }
 
