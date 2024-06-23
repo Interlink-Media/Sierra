@@ -27,11 +27,12 @@ public class EnchantLimit implements ItemCheck {
     /**
      * Handles the check for valid enchantment levels on a clicked stack.
      *
-     * @param event         The PacketReceiveEvent that triggered the check.
-     * @param clickedStack  The ItemStack that was clicked.
-     * @param nbtCompound   The NBTCompound associated with the clicked stack.
-     * @param playerData    The PlayerData of the player who clicked the stack.
-     * @return A Pair object containing the error message and the PunishType if the enchantment level is protocol, or null if the enchantment level is valid.
+     * @param event        The PacketReceiveEvent that triggered the check.
+     * @param clickedStack The ItemStack that was clicked.
+     * @param nbtCompound  The NBTCompound associated with the clicked stack.
+     * @param playerData   The PlayerData of the player who clicked the stack.
+     * @return A Pair object containing the error message and the PunishType if the enchantment level is protocol, or
+     * null if the enchantment level is valid.
      */
     @Override
     public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
@@ -44,13 +45,19 @@ public class EnchantLimit implements ItemCheck {
             NBTList<NBTCompound> enchantments = nbtCompound.getCompoundListTagOrNull(
                 clickedStack.getEnchantmentsTagName(CLIENT_VERSION));
 
-            if(enchantments == null) return null;
+            if (enchantments == null) return null;
 
             for (int i = 0; i < enchantments.size(); i++) {
                 NBTCompound enchantment = enchantments.getTag(i);
                 if (enchantment.getTags().containsKey("lvl")) {
                     NBTNumber number = enchantment.getNumberTagOrNull("lvl");
-                    if (number.getAsInt() < 0 || number.getAsInt() > Sierra.getPlugin()
+
+                    if (number == null) return null;
+
+                    if ((number.getAsInt() < 0 && !Sierra.getPlugin()
+                        .getSierraConfigEngine()
+                        .config()
+                        .getBoolean("allow-negative-enchantments", false)) || number.getAsInt() > Sierra.getPlugin()
                         .getSierraConfigEngine()
                         .config()
                         .getInt("max-enchantment-level", 5)) {

@@ -79,6 +79,9 @@ disable-books-completely: false
 # We would suggest adjusting the value as needed
 max-enchantment-level: 5
 
+# Should we skip negative enchantments. (Not recommended)
+allow-negative-enchantments: false
+
 # Here you can choose between two punishment options.
 #
 # HARD: This one is capable of banning players as well as kicking them.
