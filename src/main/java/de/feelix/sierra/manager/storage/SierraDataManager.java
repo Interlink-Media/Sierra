@@ -112,6 +112,14 @@ public class SierraDataManager implements UserRepository {
     public static boolean skipModelCheck = false;
 
     /**
+     * Determines whether to skip the anvil check.
+     * <p>
+     * If set to true, the anvil check will be skipped.
+     * If set to false, the anvil check will be performed.
+     */
+    public static boolean skipAnvilCheck = false;
+
+    /**
      * The DataManager function initializes the packet priority.
      */
     public SierraDataManager() {

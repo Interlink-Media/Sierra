@@ -7,6 +7,7 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTNumber;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.violation.PunishType;
 
@@ -42,7 +43,8 @@ public class CreativeAnvil implements ItemCheck {
     @Override
     public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
                                                 NBTCompound nbtCompound, PlayerData playerData) {
-        if (invalid(clickedStack)) {
+
+        if (invalid(clickedStack) && !SierraDataManager.skipAnvilCheck) {
             return new Pair<>("Invalid anvil meta", PunishType.BAN);
         }
         if (nbtCompound.getTags().containsKey("id")) {

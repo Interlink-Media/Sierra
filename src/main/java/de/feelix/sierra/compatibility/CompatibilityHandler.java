@@ -1,10 +1,7 @@
 package de.feelix.sierra.compatibility;
 
 import de.feelix.sierra.Sierra;
-import de.feelix.sierra.compatibility.impl.DeluxeMenusDescriptor;
-import de.feelix.sierra.compatibility.impl.FastAsyncWorldEditDescriptor;
-import de.feelix.sierra.compatibility.impl.InfiniteParkourDescriptor;
-import de.feelix.sierra.compatibility.impl.ProtocolLibDescriptor;
+import de.feelix.sierra.compatibility.impl.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +26,7 @@ public class CompatibilityHandler {
         descriptors.add(new FastAsyncWorldEditDescriptor());
         descriptors.add(new DeluxeMenusDescriptor());
         descriptors.add(new InfiniteParkourDescriptor());
+        descriptors.add(new InsaneAnnouncerDescriptor());
     }
 
     /**
