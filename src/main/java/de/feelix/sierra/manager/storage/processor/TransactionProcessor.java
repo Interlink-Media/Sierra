@@ -25,6 +25,7 @@ public class TransactionProcessor {
         this.playerData = playerData;
     }
 
+
     public final  Queue<Pair<Short, Long>>            transactionsSent   = new ConcurrentLinkedQueue<>();
     private final LinkedList<Pair<Integer, Runnable>> transactionMap     = new LinkedList<>();
     public final  List<Short>                         didWeSendThatTrans = Collections.synchronizedList(
@@ -34,6 +35,7 @@ public class TransactionProcessor {
     public  AtomicInteger lastTransactionSent     = new AtomicInteger(0);
     public  AtomicInteger lastTransactionReceived = new AtomicInteger(0);
 
+    private int   lastRunnableId      = 1;
     private long  transactionPing     = 0;
     private long  lastTransactionPing = 0;
     public  long  lastTransSent       = 0;
@@ -125,6 +127,8 @@ public class TransactionProcessor {
     }
 
     public void addRealTimeTask(int transaction, Runnable runnable) {
+
+        this.lastRunnableId = transaction;
 
         if (lastTransactionReceived.get() >= transaction) { // If the player already responded to this transaction
             ChannelHelper.runInEventLoop(playerData.getUser().getChannel(), runnable); // Run it sync to player channel

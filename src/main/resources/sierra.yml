@@ -118,30 +118,30 @@ block-connections-after-ban: true
 generic-packet-size-limit: 5000 # Set -1 to disable (Not recommended)
 
 # Default packet per second limit
-generic-packet-frequency-default: 30
+generic-packet-frequency-default: 45
 
 # Limit packets per second
 # - PACKET_TYPE:Count ex. PLAYER_DIGGING:5
 generic-packet-frequency-limit:
-  - "CREATIVE_INVENTORY_ACTION:20"
-  - "PLAYER_BLOCK_PLACEMENT:30"
-  - "CRAFT_RECIPE_REQUEST:10"
-  - "WINDOW_CONFIRMATION:10"
-  - "CLICK_WINDOW_BUTTON:20"
-  - "HELD_ITEM_CHANGE:20"
+  - "CREATIVE_INVENTORY_ACTION:30"
+  - "PLAYER_BLOCK_PLACEMENT:35"
+  - "CRAFT_RECIPE_REQUEST:15"
+  - "WINDOW_CONFIRMATION:15"
+  - "CLICK_WINDOW_BUTTON:25"
+  - "HELD_ITEM_CHANGE:25"
   - "INTERACT_ENTITY:50"
-  - "CLIENT_SETTINGS:10"
+  - "CLIENT_SETTINGS:15"
   - "PLAYER_DIGGING:50"
-  - "PLUGIN_MESSAGE:10"
-  - "CLIENT_STATUS:10"
-  - "TAB_COMPLETE:10"
-  - "CLICK_WINDOW:20"
+  - "PLUGIN_MESSAGE:15"
+  - "CLIENT_STATUS:15"
+  - "TAB_COMPLETE:15"
+  - "CLICK_WINDOW:30"
   - "UPDATE_SIGN:20"
   - "CHAT_MESSAGE:5"
   - "ANIMATION:50"
   - "PICK_ITEM:20"
-  - "EDIT_BOOK:5"
-  - "USE_ITEM:30"
+  - "EDIT_BOOK:10"
+  - "USE_ITEM:40"
 
 # Blocking time in minutes
 connection-block-time: 15 # Time in minutes
