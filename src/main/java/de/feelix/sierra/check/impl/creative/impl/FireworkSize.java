@@ -8,32 +8,28 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
+import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
-import de.feelix.sierra.utilities.Pair;
+import de.feelix.sierra.utilities.Triple;
 import de.feelix.sierraapi.violation.PunishType;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
- * The FireworkSize class is an implementation of the ItemCheck interface. It handles the check for an protocol explosion
+ * The FireworkSize class is an implementation of the ItemCheck interface. It handles the check for an protocol
+ * explosion
  * size in a firework. It checks if the explosion size in a firework exceeds the maximum allowed size and returns an
  * appropriate result.
  */
 // PaperMC
 public class FireworkSize implements ItemCheck {
 
-    /**
-     * This method handles the check for an protocol explosion size in a firework.
-     * It checks if the explosion size in a firework exceeds the maximum allowed size and returns a Pair<String, PunishType>.
-     *
-     * @param event          The PacketReceiveEvent that triggered the check.
-     * @param clickedStack   The ItemStack that was clicked.
-     * @param nbtCompound    The NBTCompound associated with the ItemStack.
-     * @param playerData     The PlayerData of the player.
-     * @return A Pair<String, PunishType> which represents the result of the check. If the explosion size is protocol, it returns a Pair with an error message and PunishType.BAN. Otherwise
-     * , it returns null.
-     */
     @Override
-    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack, NBTCompound nbtCompound, PlayerData playerData) {
+    public Triple<String, PunishType, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                                  NBTCompound nbtCompound, PlayerData playerData) {
+
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
 
             WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplier(
@@ -43,7 +39,10 @@ public class FireworkSize implements ItemCheck {
 
             if (wrapper.getItemStack().isPresent()) {
                 if (this.invalid(wrapper.getItemStack().get())) {
-                    return new Pair<>("Invalid explosion size in firework (place)", PunishType.BAN);
+                    return new Triple<>(
+                        "interacted with invalid firework", PunishType.BAN,
+                        Collections.singletonList(new Debug<>("Type", "Place"))
+                    );
                 }
             }
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
@@ -53,13 +52,16 @@ public class FireworkSize implements ItemCheck {
             );
             if (wrapper.getCarriedItemStack() != null) {
                 if (this.invalid(wrapper.getCarriedItemStack())) {
-                    return new Pair<>("Invalid explosion size in firework (click)", PunishType.BAN);
+                    return new Triple<>(
+                        "interacted with invalid firework", PunishType.BAN,
+                        Collections.singletonList(new Debug<>("Type", "Click"))
+                    );
                 }
             }
         }
 
         if (invalid(clickedStack)) {
-            return new Pair<>("Invalid explosion size in firework", PunishType.BAN);
+            return new Triple<>("interacted with invalid firework", PunishType.BAN, Collections.emptyList());
         }
         return null;
     }

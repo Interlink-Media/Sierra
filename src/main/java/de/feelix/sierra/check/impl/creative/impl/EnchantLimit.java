@@ -9,9 +9,13 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTNumber;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
+import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
-import de.feelix.sierra.utilities.Pair;
+import de.feelix.sierra.utilities.Triple;
 import de.feelix.sierraapi.violation.PunishType;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * The EnchantLimit class is responsible for handling the check for valid enchantment levels on a clicked stack.
@@ -24,19 +28,9 @@ public class EnchantLimit implements ItemCheck {
         .getVersion()
         .toClientVersion();
 
-    /**
-     * Handles the check for valid enchantment levels on a clicked stack.
-     *
-     * @param event        The PacketReceiveEvent that triggered the check.
-     * @param clickedStack The ItemStack that was clicked.
-     * @param nbtCompound  The NBTCompound associated with the clicked stack.
-     * @param playerData   The PlayerData of the player who clicked the stack.
-     * @return A Pair object containing the error message and the PunishType if the enchantment level is protocol, or
-     * null if the enchantment level is valid.
-     */
     @Override
-    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
-                                                NBTCompound nbtCompound, PlayerData playerData) {
+    public Triple<String, PunishType, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                                  NBTCompound nbtCompound, PlayerData playerData) {
 
         //This is "version safe", since we check both the older 'ench' and the newer 'Enchantments' tag
         //Not a very clean approach. A way to get items within pe itemstacks would certainly be helpful
@@ -61,7 +55,11 @@ public class EnchantLimit implements ItemCheck {
                         .getSierraConfigEngine()
                         .config()
                         .getInt("max-enchantment-level", 5)) {
-                        return new Pair<>("Invalid enchantment level", PunishType.KICK);
+
+                        return new Triple<>(
+                            "interacted on an item with invalid level", PunishType.KICK,
+                            Collections.singletonList(new Debug<>("Level", number.getAsInt()))
+                        );
                     }
                 }
             }

@@ -11,7 +11,8 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientVehicleMove;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
-import de.feelix.sierra.check.violation.ViolationDocument;
+import de.feelix.sierra.check.violation.Debug;
+import de.feelix.sierra.check.violation.Violation;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
@@ -20,6 +21,9 @@ import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.violation.PunishType;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 @SierraCheckData(checkType = CheckType.MOVEMENT_VALIDATION)
 public class MovementValidation extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
@@ -84,7 +88,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         lastChunkId = chunkId;
 
         checkForBorder(position, event);
-        checkExtremeValues(location, event);
+        checkValue(event, location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
 
         lastLocation = location;
     }
@@ -113,16 +117,21 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         // Limit using transaction ping if over 1000ms (default)
         final boolean needsAdjustment = limitAbuseOverPing != -1 && transactionPing >= limitAbuseOverPing;
         final boolean wouldFailNormal = timerBalanceRealTime > System.nanoTime();
-        final boolean failsAdjusted = needsAdjustment && (timerBalanceRealTime + ((transactionPing * 1e6) - clockDrift - 50e6)) > System.nanoTime();
+        final boolean failsAdjusted = needsAdjustment
+                                      && (timerBalanceRealTime + ((transactionPing * 1e6) - clockDrift - 50e6))
+                                         > System.nanoTime();
         if (wouldFailNormal || failsAdjusted) {
             if (wouldFailNormal) {
 
                 long   delay      = System.nanoTime() - timerBalanceRealTime;
                 double calculated = FormatUtils.calculateResult(delay);
 
-                violation(event, ViolationDocument.builder()
-                    .debugInformation(String.format("%.5f ticks ahead", Math.abs(calculated)))
+                this.violation(event, Violation.builder()
+                    .description("is moving invalid")
+                    .points(1)
                     .punishType(this.violations() > 30 ? PunishType.KICK : PunishType.MITIGATE)
+                    .debugs(Collections.singletonList(
+                        new Debug<>("Ticks", String.format("%.5f ticks ahead", Math.abs(calculated)))))
                     .build());
             }
             event.setCancelled(true);
@@ -150,12 +159,33 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
         Vector3d location = wrapper.getPosition();
 
-        if (invalidValue(location.getX(), location.getY(), location.getZ())) {
-            triggerViolation(event, "Extreme values: double", PunishType.KICK);
+        checkValue(event, location.getX(), location.getY(), location.getZ(), wrapper.getYaw(), wrapper.getPitch());
+    }
+
+    private void checkValue(PacketReceiveEvent event, double x, double y, double z, float yaw, float pitch) {
+        if (invalidValue(x, y, z)) {
+            this.violation(event, Violation.builder()
+                .description("is moving invalid")
+                .punishType(PunishType.KICK)
+                .debugs(Arrays.asList(
+                    new Debug<>("X", x),
+                    new Debug<>("Y", y),
+                    new Debug<>("Z", z),
+                    new Debug<>("Tag", "Extreme Double")
+                ))
+                .build());
         }
 
-        if (invalidValue(wrapper.getYaw(), wrapper.getPitch())) {
-            triggerViolation(event, "Extreme values: float", PunishType.KICK);
+        if (invalidValue(yaw, pitch)) {
+            this.violation(event, Violation.builder()
+                .description("is rotating invalid")
+                .punishType(PunishType.KICK)
+                .debugs(Arrays.asList(
+                    new Debug<>("Yaw", yaw),
+                    new Debug<>("Pitch", pitch),
+                    new Debug<>("Tag", "Extreme Float")
+                ))
+                .build());
         }
     }
 
@@ -165,7 +195,15 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
         if (Math.abs(pitch) > 90.01 || isOutOfRange(yaw) || isOutOfRange(pitch) || yaw == SPECIAL_VALUE
             || pitch == SPECIAL_VALUE) {
-            triggerViolation(event, String.format("Yaw: %.4f, Pitch: %.4f", yaw, pitch), PunishType.KICK);
+
+            this.violation(event, Violation.builder()
+                .description("is rotating invalid")
+                .punishType(PunishType.KICK)
+                .debugs(Arrays.asList(
+                    new Debug<>("Yaw", yaw),
+                    new Debug<>("Pitch", pitch)
+                ))
+                .build());
         }
     }
 
@@ -179,14 +217,31 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
         if (deltaXZ > 7 && getPlayerData().getGameMode() == GameMode.SURVIVAL) {
             if (++deltaBuffer > 10) {
-                triggerViolation(event, String.format("Invalid deltaXZ: %.2f", deltaXZ), PunishType.KICK);
+                this.violation(event, Violation.builder()
+                    .description("is moving invalid")
+                    .punishType(PunishType.KICK)
+                    .debugs(Arrays.asList(
+                        new Debug<>("DeltaXZ", deltaXZ),
+                        new Debug<>("Buffer", deltaBuffer),
+                        new Debug<>("GameMode", getPlayerData().getGameMode().name())
+                    ))
+                    .build());
             }
         } else {
             deltaBuffer = Math.max(0, deltaBuffer - 1);
         }
 
         if (invalidDeltaValue(deltaX, deltaY, deltaZ)) {
-            triggerViolation(event, String.format("X: %.2f Y: %.2f Z: %.2f", deltaX, deltaY, deltaZ), PunishType.KICK);
+            this.violation(event, Violation.builder()
+                .description("is moving invalid")
+                .punishType(PunishType.KICK)
+                .debugs(Arrays.asList(
+                    new Debug<>("DeltaX", deltaX),
+                    new Debug<>("DeltaY", deltaY),
+                    new Debug<>("DeltaZ", deltaZ),
+                    new Debug<>("GameMode", getPlayerData().getGameMode().name())
+                ))
+                .build());
         }
     }
 
@@ -204,30 +259,30 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     private void processBufferAndViolation(long travelTime, PacketReceiveEvent event) {
         if (travelTime < 20) {
             if (++buffer > 5) {
-                triggerViolation(
-                    event, String.format("Traveled %d chunks in ~%dms", buffer, (travelTime / buffer)),
-                    PunishType.KICK
-                );
+                this.violation(event, Violation.builder()
+                    .description("is moving invalid")
+                    .punishType(PunishType.KICK)
+                    .debugs(Arrays.asList(
+                        new Debug<>("Chunks", buffer),
+                        new Debug<>("Time", (travelTime / buffer)),
+                        new Debug<>("GameMode", getPlayerData().getGameMode().name())
+                    ))
+                    .build());
             }
         } else {
             buffer = Math.max(0, buffer - 1);
         }
     }
 
-    private void checkExtremeValues(Location location, PacketReceiveEvent event) {
-        if (invalidValue(location.getX(), location.getY(), location.getZ())) {
-            triggerViolation(event, "Extreme values: double", PunishType.KICK);
-        }
-
-        if (invalidValue(location.getYaw(), location.getPitch())) {
-            triggerViolation(event, "Extreme values: float", PunishType.KICK);
-        }
-    }
-
     private void checkForBorder(Vector3d position, PacketReceiveEvent event) {
         if (Math.abs(position.getX()) > HARD_CODED_BORDER || Math.abs(position.getY()) > HARD_CODED_BORDER
             || Math.abs(position.getZ()) > HARD_CODED_BORDER) {
-            triggerViolation(event, "Moved out of border", PunishType.BAN);
+
+            this.violation(event, Violation.builder()
+                .description("is moving invalid")
+                .punishType(PunishType.BAN)
+                .debugs(Collections.singletonList(new Debug<>("Tag", "out of border")
+                )).build());
         }
     }
 
@@ -264,13 +319,6 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
     private double computeChunkId(Vector3d position) {
         return Math.floor(position.getX() / 32) + Math.floor(position.getZ() / 32);
-    }
-
-    private void triggerViolation(PacketReceiveEvent event, String debugInformation, PunishType punishType) {
-        violation(event, ViolationDocument.builder()
-            .debugInformation(debugInformation)
-            .punishType(punishType)
-            .build());
     }
 
     @Override

@@ -6,7 +6,8 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.play.client.*;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
-import de.feelix.sierra.check.violation.ViolationDocument;
+import de.feelix.sierra.check.violation.Debug;
+import de.feelix.sierra.check.violation.Violation;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
@@ -16,6 +17,7 @@ import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,9 +69,11 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
     private void handleChatMessage(PacketReceiveEvent event, String message) {
 
         if (isInvalidMultiverseCommand(message)) {
-            violation(event, ViolationDocument.builder()
-                .debugInformation("MV Exploit: " + message)
+            this.violation(event, Violation.builder()
+                .description("used an forbidden command")
                 .punishType(PunishType.MITIGATE)
+                .points(3)
+                .debugs(Collections.singletonList(new Debug<>("Command", message)))
                 .build());
         }
 
@@ -85,11 +89,12 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
         if (System.currentTimeMillis() - lastEntry < 1000) {
             commandSpamBuffer++;
             if (commandSpamBuffer > 5) {
-                violation(
-                    event, ViolationDocument.builder()
-                        .debugInformation("Extreme command frequency detected")
-                        .punishType(commandSpamBuffer > 50 ? PunishType.KICK : PunishType.MITIGATE)
-                        .build());
+                this.violation(event, Violation.builder()
+                    .description("is using commands too frequent")
+                    .punishType(commandSpamBuffer > 50 ? PunishType.KICK : PunishType.MITIGATE)
+                    .points(3)
+                    .debugs(Collections.singletonList(new Debug<>("Delay", (System.currentTimeMillis() - lastEntry))))
+                    .build());
             }
         } else {
             commandSpamBuffer = 0;
@@ -98,21 +103,23 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
         for (String placeholder : Arrays.asList("[pos]", "[time]")) {
             int count = countOccurrences(command, placeholder);
             if (count > 3) {
-                violation(
-                    event, ViolationDocument.builder()
-                        .debugInformation("More than 3 [pos] or [time] placeholders")
-                        .punishType(violations() > 100 ? PunishType.KICK : PunishType.MITIGATE)
-                        .build());
+                this.violation(event, Violation.builder()
+                    .description("is using tags too frequent")
+                    .punishType(violations() > 100 ? PunishType.KICK : PunishType.MITIGATE)
+                    .points(3)
+                    .debugs(Collections.singletonList(new Debug<>("Count", count)))
+                    .build());
             }
         }
 
         for (String string : command.split(" ")) {
             if (string.length() > 80) {
-                violation(
-                    event, ViolationDocument.builder()
-                        .debugInformation("Arg too long: " + string.length() + " > 30")
-                        .punishType(PunishType.MITIGATE)
-                        .build());
+
+                this.violation(event, Violation.builder()
+                    .description("is using an invalid command")
+                    .punishType(PunishType.MITIGATE)
+                    .debugs(Arrays.asList(new Debug<>("Length", string.length()), new Debug<>("Max", 80)))
+                    .build());
             }
         }
         lastEntry = System.currentTimeMillis();
@@ -135,47 +142,47 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
             .getStringList("disallowed-commands")) {
             if (commandLine.contains(disallowedCommand)) {
                 if (playerHasNoPermission()) {
-                    violation(
-                        event, ViolationDocument.builder()
-                            .debugInformation(commandLine)
-                            .punishType(PunishType.MITIGATE)
-                            .build());
+                    this.violation(event, Violation.builder()
+                        .description("is using an invalid command")
+                        .punishType(PunishType.MITIGATE)
+                        .debugs(Collections.singletonList(new Debug<>("Command", commandLine)))
+                        .build());
                 }
             }
         }
 
         if (WORLDEDIT_PATTERN.matcher(commandLine).find()) {
-            violation(
-                event, ViolationDocument.builder()
-                    .punishType(PunishType.KICK)
-                    .debugInformation("WorldEdit Pattern: " + commandLine)
-                    .build());
+            this.violation(event, Violation.builder()
+                .description("is using an invalid command")
+                .punishType(PunishType.KICK)
+                .debugs(Collections.singletonList(new Debug<>("Command", commandLine)))
+                .build());
         }
 
         if (MVC_PATTERN.matcher(commandLine).find()) {
-            violation(
-                event, ViolationDocument.builder()
-                    .punishType(PunishType.KICK)
-                    .debugInformation("MVC Pattern: " + commandLine)
-                    .build());
+            this.violation(event, Violation.builder()
+                .description("is using an invalid command")
+                .punishType(PunishType.KICK)
+                .debugs(Collections.singletonList(new Debug<>("Command", commandLine)))
+                .build());
         }
     }
 
     private void checkForLog4J(PacketReceiveEvent event, String message) {
         if (message.contains("${jndi:ldap") || message.contains("${jndi") || message.contains("ldap")) {
-            violation(
-                event, ViolationDocument.builder()
-                    .debugInformation("Ldap: " + message)
-                    .punishType(PunishType.MITIGATE)
-                    .build());
+            this.violation(event, Violation.builder()
+                .description("is using an invalid command")
+                .punishType(PunishType.KICK)
+                .debugs(Collections.singletonList(new Debug<>("Command", message)))
+                .build());
         }
 
         if (EXPLOIT_PATTERN.matcher(message).matches() || EXPLOIT_PATTERN2.matcher(message).matches()) {
-            violation(
-                event, ViolationDocument.builder()
-                    .debugInformation("Pattern 4J: " + message)
-                    .punishType(PunishType.MITIGATE)
-                    .build());
+            this.violation(event, Violation.builder()
+                .description("is using an invalid command")
+                .punishType(PunishType.KICK)
+                .debugs(Collections.singletonList(new Debug<>("Command", message)))
+                .build());
         }
     }
 
@@ -186,32 +193,32 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
             .getStringList("disallowed-commands")) {
             if (message.contains(disallowedCommand)) {
                 if (playerHasNoPermission()) {
-                    violation(
-                        event, ViolationDocument.builder()
-                            .debugInformation(message)
-                            .punishType(PunishType.MITIGATE)
-                            .build());
+                    this.violation(event, Violation.builder()
+                        .description("is using an invalid command")
+                        .punishType(PunishType.MITIGATE)
+                        .debugs(Collections.singletonList(new Debug<>("Command", message)))
+                        .build());
                 }
             }
             String pluginCommand = replaceGroup(PLUGIN_EXCLUSION.pattern(), message);
             if (pluginCommand.contains(disallowedCommand)) {
                 if (playerHasNoPermission()) {
-                    violation(
-                        event, ViolationDocument.builder()
-                            .debugInformation(pluginCommand)
-                            .punishType(PunishType.MITIGATE)
-                            .build());
+                    this.violation(event, Violation.builder()
+                        .description("is using an invalid command")
+                        .punishType(PunishType.MITIGATE)
+                        .debugs(Collections.singletonList(new Debug<>("Command", pluginCommand)))
+                        .build());
                 }
             }
         }
 
         if (lastCommand.equalsIgnoreCase(message)) {
             if (System.currentTimeMillis() - sentLastMessageTwice < 1000 && count++ > 5) {
-                violation(
-                    event, ViolationDocument.builder()
-                        .punishType(PunishType.MITIGATE)
-                        .debugInformation(String.format("Typed same command %s times", count))
-                        .build());
+                this.violation(event, Violation.builder()
+                    .description("is using commands too frequent")
+                    .punishType(PunishType.MITIGATE)
+                    .debugs(Collections.singletonList(new Debug<>("Repeat", count)))
+                    .build());
             }
             sentLastMessageTwice = System.currentTimeMillis();
         } else {

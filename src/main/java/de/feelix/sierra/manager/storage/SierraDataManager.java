@@ -354,7 +354,6 @@ public class SierraDataManager implements UserRepository {
     public void addPlayerData(User user) {
         PlayerData value = new PlayerData(user);
         this.playerData.put(user, value);
-
     }
 
     /**

@@ -11,7 +11,8 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPluginMessage;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
-import de.feelix.sierra.check.violation.ViolationDocument;
+import de.feelix.sierra.check.violation.Debug;
+import de.feelix.sierra.check.violation.Violation;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
@@ -23,15 +24,17 @@ import de.feelix.sierraapi.violation.PunishType;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 @SierraCheckData(checkType = CheckType.FREQUENCY)
 public class FrequencyDetection extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
 
-    private int  lastBookEditTick     = 0;
-    private int  lastDropItemTick     = 0;
-    private int  lastCraftRequestTick = 0;
-    private int  dropCount            = 0;
+    private int lastBookEditTick     = 0;
+    private int lastDropItemTick     = 0;
+    private int lastCraftRequestTick = 0;
+    private int dropCount            = 0;
 
     private long lastFlyingTime = 0L;
     private long balance        = 0L;
@@ -67,11 +70,17 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             int packetCount = packetCounts.getOrDefault(packetType, 0);
 
             if (packetCount > limit) {
-                String debugInfo = String.format(
-                    "%s, %dL, %dPPS, %dms", packetType.getName(), limit, packetCount,
-                    System.currentTimeMillis() - current
-                );
-                triggerViolation(event, debugInfo, PunishType.KICK);
+                this.violation(event, Violation.builder()
+                    .description("is sending packets too frequent")
+                    .points(3)
+                    .punishType(PunishType.KICK)
+                    .debugs(Arrays.asList(
+                        new Debug<>("Packet", packetType.getName()),
+                        new Debug<>("Limit", limit),
+                        new Debug<>("Count", packetCount),
+                        new Debug<>("Delay", (System.currentTimeMillis() - current) + "ms")
+                    ))
+                    .build());
                 return;
             }
         }
@@ -109,9 +118,18 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             balance += 50L;
             balance -= now - lastFlyingTime;
             if (balance > MAX_BAL) {
-                triggerViolation(event, "Movement frequency: bal:~" + balance,
-                                 violations() > 100 ? PunishType.KICK : PunishType.MITIGATE
-                );
+                this.violation(event, Violation.builder()
+                    .description("is moving too frequent")
+                    .points(1)
+                    .punishType(violations() > 100 ? PunishType.KICK : PunishType.MITIGATE)
+                    .debugs(Arrays.asList(
+                        new Debug<>("Balance", balance),
+                        new Debug<>("Version", getPlayerData().getClientVersion().getReleaseName()),
+                        new Debug<>("Ping", getPlayerData().getPingProcessor().getPing() + "ms"),
+                        new Debug<>(
+                            "Transaction Ping", getPlayerData().getTransactionProcessor().getTransactionPing() + "ms")
+                    ))
+                    .build());
                 balance = BAL_RESET;
             }
         }
@@ -132,7 +150,12 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
 
     private void handleEditBook(PacketReceiveEvent event) {
         if (isSpamming(lastBookEditTick)) {
-            triggerViolation(event, "Spammed edit book", PunishType.KICK);
+            this.violation(event, Violation.builder()
+                .description("is editing books too frequent")
+                .points(1)
+                .punishType(PunishType.KICK)
+                .debugs(Collections.singletonList(new Debug<>("Tag", "BookEdit")))
+                .build());
         }
     }
 
@@ -143,7 +166,12 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
         String channelName = wrapper.getChannelName();
         if (channelName.contains("MC|BEdit") || channelName.contains("MC|BSign")) {
             if (isSpamming(lastBookEditTick)) {
-                triggerViolation(event, "Spammed payload", PunishType.KICK);
+                this.violation(event, Violation.builder()
+                    .description("is sending payloads too frequent")
+                    .points(1)
+                    .punishType(PunishType.KICK)
+                    .debugs(Collections.singletonList(new Debug<>("Tag", "Payload")))
+                    .build());
             }
         }
     }
@@ -151,7 +179,12 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     private void handleCraftRecipeRequest(PacketReceiveEvent event) {
         int currentTick = Ticker.getInstance().getCurrentTick();
         if (lastCraftRequestTick + 10 > currentTick) {
-            triggerViolation(event, "Spammed recipe request", PunishType.MITIGATE);
+            this.violation(event, Violation.builder()
+                .description("is requesting recipes too frequent")
+                .points(1)
+                .punishType(PunishType.MITIGATE)
+                .debugs(Collections.singletonList(new Debug<>("Tag", "RecipeRequest")))
+                .build());
             //noinspection UnstableApiUsage
             ((Player) getPlayerData().getPlayer()).updateInventory();
         } else {
@@ -173,7 +206,12 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
                 } else {
                     dropCount++;
                     if (dropCount >= 20) {
-                        triggerViolation(event, "Spammed digging", PunishType.KICK);
+                        this.violation(event, Violation.builder()
+                            .description("is digging too frequent")
+                            .points(1)
+                            .punishType(PunishType.KICK)
+                            .debugs(Collections.singletonList(new Debug<>("Tag", "Digging")))
+                            .build());
                     }
                 }
             }
@@ -187,13 +225,6 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             lastBookEditTick = currentTick;
         }
         return isSpamming;
-    }
-
-    private void triggerViolation(PacketReceiveEvent event, String debugInformation, PunishType punishType) {
-        violation(event, ViolationDocument.builder()
-            .debugInformation(debugInformation)
-            .punishType(punishType)
-            .build());
     }
 
     @Override

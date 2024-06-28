@@ -6,11 +6,13 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTList;
 import com.github.retrooper.packetevents.protocol.nbt.NBTString;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
+import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
-import de.feelix.sierra.utilities.Pair;
+import de.feelix.sierra.utilities.Triple;
 import de.feelix.sierraapi.violation.PunishType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -27,18 +29,9 @@ public class CreativeClientBookCrash implements ItemCheck {
 
     private static final Pattern PATTERN = Pattern.compile("\\s");
 
-    /**
-     * Handles the check for an item and determines if it contains protocol translation keys.
-     *
-     * @param event         The packet receive event.
-     * @param clickedStack  The clicked item stack.
-     * @param nbtCompound   The NBT compound of the item stack.
-     * @param playerData    The player data.
-     * @return A Pair containing a String message and a PunishType if the item contains protocol translation keys, null otherwise.
-     */
     @Override
-    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
-                                                NBTCompound nbtCompound, PlayerData playerData) {
+    public Triple<String, PunishType, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                                  NBTCompound nbtCompound, PlayerData playerData) {
         List<String> pages = getPages(nbtCompound);
         if (pages.isEmpty()) {
             return null;
@@ -47,7 +40,7 @@ public class CreativeClientBookCrash implements ItemCheck {
             String withOutSpaces = PATTERN.matcher(page).replaceAll("");
             if (withOutSpaces.toLowerCase().contains("{translate:translation.test.protocol}") || withOutSpaces.contains(
                 "{translate:translation.test.invalid2}")) {
-                return new Pair<>("Contains protocol translation keys #2", PunishType.KICK);
+                return new Triple<>("interacted with an invalid translation", PunishType.KICK, Collections.emptyList());
             }
         }
         return null;

@@ -8,29 +8,28 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
+import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
-import de.feelix.sierra.utilities.Pair;
+import de.feelix.sierra.utilities.Triple;
 import de.feelix.sierraapi.violation.PunishType;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * An implementation of the {@link ItemCheck} interface that checks for protocol NBT data in an ItemStack.
  */
+@SuppressWarnings("DataFlowIssue")
 public class InvalidPlainNbt implements ItemCheck {
 
-    /**
-     * Checks if a given ItemStack has protocol NBT data and returns the corresponding
-     * punishable property and PunishType.
-     *
-     * @param itemStack the ItemStack to check for protocol NBT data
-     * @return a Pair object representing the punishable property and PunishType, or null if there are no punishable properties
-     */
-    private Pair<String, PunishType> invalidNbt(ItemStack itemStack) {
+
+    private Triple<String, PunishType, List<Debug<?>>> invalidNbt(ItemStack itemStack) {
 
         NBTCompound tag = itemStack.getNBT();
 
         if (tag != null) {
-            Pair<String, PunishType> crashDetails = checkForSpawner(tag);
+            Triple<String, PunishType, List<Debug<?>>> crashDetails = checkForSpawner(tag);
             if (crashDetails != null) {
                 return crashDetails;
             }
@@ -40,16 +39,21 @@ public class InvalidPlainNbt implements ItemCheck {
     }
 
     /**
-     * Checks if a given NBTCompound tag contains a valid map and returns a Pair object representing the punishable property and the PunishType.
+     * Checks if a given NBTCompound tag contains a valid map and returns a Pair object representing the punishable
+     * property and the PunishType.
      *
      * @param nbtTag the NBTCompound tag to check
-     * @return a Pair object representing the punishable property and the PunishType, or null if there are no punishable properties
+     * @return a Pair object representing the punishable property and the PunishType, or null if there are no
+     * punishable properties
      */
-    private Pair<String, PunishType> checkValidMap(NBTCompound nbtTag) {
-        NBTNumber range       = nbtTag.getNumberTagOrNull("range");
+    private Triple<String, PunishType, List<Debug<?>>> checkValidMap(NBTCompound nbtTag) {
+        NBTNumber range = nbtTag.getNumberTagOrNull("range");
         int       maxMapRange = 15;
         if (range != null && (range.getAsInt() > maxMapRange || range.getAsInt() < 0)) {
-            return new Pair<>("Range tag at " + range.getAsInt(), PunishType.BAN);
+            return new Triple<>(
+                "interacted with invalid map", PunishType.BAN,
+                Collections.singletonList(new Debug<>("Range", range.getAsInt()))
+            );
         }
         return null;
     }
@@ -58,9 +62,10 @@ public class InvalidPlainNbt implements ItemCheck {
      * Checks if a given NBTCompound tag contains punishable properties related to a spawner.
      *
      * @param tag the NBTCompound tag to check
-     * @return a Pair object representing the punishable property and the PunishType, or null if there are no punishable properties
+     * @return a Pair object representing the punishable property and the PunishType, or null if there are no
+     * punishable properties
      */
-    private Pair<String, PunishType> checkForSpawner(NBTCompound tag) {
+    private Triple<String, PunishType, List<Debug<?>>> checkForSpawner(NBTCompound tag) {
         if (isPunishable(tag.getNumberTagOrNull("MaxNearbyEntities"), Byte.MAX_VALUE))
             return makePunishablePair("MaxNearbyEntities", tag.getNumberTagOrNull("MaxNearbyEntities").getAsInt());
 
@@ -96,29 +101,25 @@ public class InvalidPlainNbt implements ItemCheck {
         return tag != null && (tag.getAsInt() > maxValue || tag.getAsInt() < 0);
     }
 
-    /**
-     * Creates a Pair object representing a punishable pair.
-     *
-     * @param property the property associated with the pair
-     * @param value the value associated with the pair
-     * @return a Pair object representing a punishable pair
-     */
-    private Pair<String, PunishType> makePunishablePair(String property, int value) {
-        return new Pair<>(property + " at: " + value, PunishType.BAN);
+    private Triple<String, PunishType, List<Debug<?>>> makePunishablePair(String property, int value) {
+        return new Triple<>(
+            "interacted with an item with invalid property", PunishType.KICK,
+            Collections.singletonList(new Debug<>(property, value))
+        );
     }
 
     /**
      * Handles the check based on the given event, clicked stack, NBT compound, and player data.
      *
-     * @param event         the event representing the received packet
-     * @param clickedStack  the clicked stack item
-     * @param nbtCompound   the NBT compound associated with the item
-     * @param playerData    the player data
+     * @param event        the event representing the received packet
+     * @param clickedStack the clicked stack item
+     * @param nbtCompound  the NBT compound associated with the item
+     * @param playerData   the player data
      * @return a pair of strings and a PunishType if there is an protocol NBT compound, null otherwise
      */
     @Override
-    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
-                                                NBTCompound nbtCompound, PlayerData playerData) {
+    public Triple<String, PunishType, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                                  NBTCompound nbtCompound, PlayerData playerData) {
 
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
             WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplier(

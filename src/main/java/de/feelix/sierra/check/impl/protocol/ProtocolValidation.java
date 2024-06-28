@@ -22,7 +22,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWi
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.impl.command.CommandValidation;
-import de.feelix.sierra.check.violation.ViolationDocument;
+import de.feelix.sierra.check.violation.Violation;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.SierraDataManager;
@@ -677,8 +677,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
     }
 
-    public ViolationDocument createViolation(String debugInformation, PunishType punishType) {
-        return ViolationDocument.builder()
+    public Violation createViolation(String debugInformation, PunishType punishType) {
+        return Violation.builder()
             .debugInformation(debugInformation)
             .punishType(punishType)
             .build();

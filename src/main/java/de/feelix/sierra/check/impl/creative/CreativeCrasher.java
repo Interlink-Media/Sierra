@@ -13,11 +13,12 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.impl.creative.impl.*;
-import de.feelix.sierra.check.violation.ViolationDocument;
+import de.feelix.sierra.check.violation.Debug;
+import de.feelix.sierra.check.violation.Violation;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
-import de.feelix.sierra.utilities.Pair;
+import de.feelix.sierra.utilities.Triple;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.PunishType;
@@ -108,7 +109,16 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
 
         NBTList<NBTCompound> items = blockEntityTag.getCompoundListTagOrNull(ITEMS_KEY);
         if (items == null || exceededMaxItems(items)) {
-            sendViolation(event, "Info: " + (items != null ? items.size() : 0), PunishType.BAN);
+            this.violation(event, Violation.builder()
+                .punishType(PunishType.BAN)
+                .description("performed invalid item click")
+                .points(1)
+                .debugs(Arrays.asList(
+                    new Debug<>("Items", items != null ? items.size() : 0),
+                    new Debug<>("Recursion", recursionCount),
+                    new Debug<>("Item", clickedItem.getType().getName())
+                ))
+                .build());
             return;
         }
 
@@ -152,20 +162,25 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
 
     private boolean performItemChecks(PacketReceiveEvent event, ItemStack item, NBTCompound tag, PlayerData data) {
         for (ItemCheck check : checks) {
-            Pair<String, PunishType> crashDetails = check.handleCheck(event, item, tag, data);
+            Triple<String, PunishType, List<Debug<?>>> crashDetails = check.handleCheck(event, item, tag, data);
             if (crashDetails != null) {
-                sendViolation(event, crashDetails.getFirst() + " | R: " + recursionCount, crashDetails.getSecond());
+                List<Debug<?>> debugs = crashDetails.getThird();
+
+                debugs.addAll(Arrays.asList(
+                    new Debug<>("Item", item.getType().getName()),
+                    new Debug<>("Recursion", recursionCount)
+                ));
+
+                this.violation(event, Violation.builder()
+                    .punishType(crashDetails.getSecond())
+                    .description(crashDetails.getFirst())
+                    .points(1)
+                    .debugs(debugs)
+                    .build());
                 return true;
             }
         }
         return false;
-    }
-
-    private void sendViolation(PacketReceiveEvent event, String debugInformation, PunishType punishType) {
-        violation(event, ViolationDocument.builder()
-            .debugInformation(debugInformation)
-            .punishType(punishType)
-            .build());
     }
 
     private void addCreativeChecks(ItemCheck... checks) {

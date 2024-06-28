@@ -7,14 +7,13 @@ import com.github.retrooper.packetevents.protocol.nbt.NBTList;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
+import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
-import de.feelix.sierra.utilities.Pair;
+import de.feelix.sierra.utilities.Triple;
 import de.feelix.sierraapi.violation.PunishType;
 
-import java.util.Base64;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The CreativeSkull class implements the ItemCheck interface and represents a check for a creative skull item.
@@ -23,18 +22,10 @@ import java.util.UUID;
 //Fixes crash head / glitch head
 public class CreativeSkull implements ItemCheck {
 
-    /**
-     * This method handles the check for a given packet event, clicked item stack, NBT compound, and player data.
-     *
-     * @param event         the packet receive event
-     * @param clickedStack  the clicked item stack
-     * @param nbtCompound   the NBT compound
-     * @param playerData    the player data
-     * @return a pair of string and PunishType or null
-     */
+
     @Override
-    public Pair<String, PunishType> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
-                                                NBTCompound nbtCompound, PlayerData playerData) {
+    public Triple<String, PunishType, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                                  NBTCompound nbtCompound, PlayerData playerData) {
         if (nbtCompound == null) {
             return null;
         }
@@ -45,7 +36,7 @@ public class CreativeSkull implements ItemCheck {
 
         NBTCompound skullOwner = nbtCompound.getCompoundTagOrNull("SkullOwner");
         if (skullOwner == null) {
-            return new Pair<>("Contains protocol skull owner", PunishType.KICK);
+            return new Triple<>("clicked on skull with null owner", PunishType.KICK, Collections.emptyList());
         }
 
         if (skullOwner.getTags().containsKey("Id")) {
@@ -53,8 +44,10 @@ public class CreativeSkull implements ItemCheck {
                 //noinspection unused
                 UUID uuid = UUID.fromString(Objects.requireNonNull(skullOwner.getStringTagValueOrNull("Id")));
             } catch (Exception e) {
-                if(!SierraDataManager.skipSkullUUIDCheck) {
-                    return new Pair<>("Unable to parse uuid", PunishType.MITIGATE);
+                if (!SierraDataManager.skipSkullUUIDCheck) {
+                    return new Triple<>("clicked on skull with unparsable uuid", PunishType.KICK,
+                                        Collections.singletonList(new Debug<>("Exception", e.getMessage()))
+                    );
                 }
             }
         }
@@ -62,22 +55,25 @@ public class CreativeSkull implements ItemCheck {
         if (skullOwner.getTags().containsKey("Properties")) {
             NBTCompound properties = skullOwner.getCompoundTagOrNull("Properties");
             if (properties == null) {
-                return new Pair<>("Properties doesn't exist", PunishType.KICK);
+                return new Triple<>(
+                    "clicked on skull with invalid properties", PunishType.KICK, Collections.emptyList());
             }
 
             NBTList<NBTCompound> textures = properties.getCompoundListTagOrNull("textures");
             if (textures == null) {
-                return new Pair<>("Textures doesn't exist", PunishType.KICK);
+                return new Triple<>("clicked on skull with invalid textures", PunishType.KICK, Collections.emptyList());
             }
 
             for (int i = 0; i < textures.size(); i++) {
                 NBTCompound texture = textures.getTag(i);
                 if (texture == null) {
-                    return new Pair<>("Texture tag doesn't exist", PunishType.KICK);
+                    return new Triple<>(
+                        "clicked on skull with invalid texture tag", PunishType.KICK, Collections.emptyList());
                 }
 
                 if (!texture.getTags().containsKey("Value")) {
-                    return new Pair<>("Value tag doesn't exist", PunishType.KICK);
+                    return new Triple<>(
+                        "clicked on skull with invalid value tag", PunishType.KICK, Collections.emptyList());
                 }
 
                 String value = texture.getStringTagValueOrNull("Value");
@@ -85,38 +81,50 @@ public class CreativeSkull implements ItemCheck {
                 try {
                     decoded = new String(Base64.getDecoder().decode(value));
                 } catch (Exception e) {
-                    return new Pair<>("Unable to decode Value", PunishType.KICK);
+                    return new Triple<>(
+                        "clicked on skull with invalid texture value", PunishType.KICK,
+                        Collections.singletonList(new Debug<>("Exception", e.getMessage()))
+                    );
                 }
 
                 JsonObject jsonObject;
                 try {
                     jsonObject = new Gson().fromJson(decoded, JsonObject.class);
                 } catch (Exception e) {
-                    return new Pair<>("Unable to decode JsonObject", PunishType.KICK);
+                    return new Triple<>(
+                        "clicked on skull with invalid undecidable object", PunishType.KICK, Collections.emptyList());
                 }
 
                 if (!jsonObject.has("textures")) {
-                    return new Pair<>("Texture field doesn't exist after decode", PunishType.KICK);
+                    return new Triple<>(
+                        "clicked on skull with no textures field", PunishType.KICK, Collections.emptyList());
                 }
 
                 jsonObject = jsonObject.getAsJsonObject("textures");
                 if (!jsonObject.has("SKIN")) {
-                    return new Pair<>("SKIN field doesn't exist after decode", PunishType.KICK);
+                    return new Triple<>(
+                        "clicked on skull with no skin field", PunishType.KICK, Collections.emptyList());
                 }
 
                 jsonObject = jsonObject.getAsJsonObject("SKIN");
                 if (!jsonObject.has("url")) {
-                    return new Pair<>("URL field doesn't exist after decode", PunishType.KICK);
+                    return new Triple<>(
+                        "clicked on skull with no url field", PunishType.KICK, Collections.emptyList());
                 }
 
                 String url = jsonObject.get("url").getAsString();
                 if (url.trim().isEmpty()) {
-                    return new Pair<>("URL is empty", PunishType.KICK);
+                    return new Triple<>(
+                        "clicked on skull with invalid url", PunishType.KICK, Collections.emptyList());
                 }
 
                 if (!(url.startsWith("http://textures.minecraft.net/texture/") || url.startsWith(
                     "https://textures.minecraft.net/texture/"))) {
-                    return new Pair<>("Invalid skin url", PunishType.KICK);
+
+                    return new Triple<>(
+                        "clicked on skull with invalid url", PunishType.KICK,
+                        Collections.singletonList(new Debug<>("URL", url))
+                    );
                 }
             }
         }
