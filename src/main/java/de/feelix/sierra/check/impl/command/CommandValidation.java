@@ -7,14 +7,14 @@ import com.github.retrooper.packetevents.wrapper.play.client.*;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.Debug;
-import de.feelix.sierra.check.violation.Violation;
+import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,10 +69,9 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
     private void handleChatMessage(PacketReceiveEvent event, String message) {
 
         if (isInvalidMultiverseCommand(message)) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("used an forbidden command")
-                .punishType(PunishType.MITIGATE)
-                .points(3)
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
                 .debugs(Collections.singletonList(new Debug<>("Command", message)))
                 .build());
         }
@@ -89,10 +88,9 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
         if (System.currentTimeMillis() - lastEntry < 1000) {
             commandSpamBuffer++;
             if (commandSpamBuffer > 5) {
-                this.violation(event, Violation.builder()
+                this.dispatch(event, ViolationDocument.builder()
                     .description("is using commands too frequent")
-                    .punishType(commandSpamBuffer > 50 ? PunishType.KICK : PunishType.MITIGATE)
-                    .points(3)
+                    .mitigationStrategy(commandSpamBuffer > 50 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
                     .debugs(Collections.singletonList(new Debug<>("Delay", (System.currentTimeMillis() - lastEntry))))
                     .build());
             }
@@ -103,10 +101,9 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
         for (String placeholder : Arrays.asList("[pos]", "[time]")) {
             int count = countOccurrences(command, placeholder);
             if (count > 3) {
-                this.violation(event, Violation.builder()
+                this.dispatch(event, ViolationDocument.builder()
                     .description("is using tags too frequent")
-                    .punishType(violations() > 100 ? PunishType.KICK : PunishType.MITIGATE)
-                    .points(3)
+                    .mitigationStrategy(violations() > 100 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
                     .debugs(Collections.singletonList(new Debug<>("Count", count)))
                     .build());
             }
@@ -115,9 +112,9 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
         for (String string : command.split(" ")) {
             if (string.length() > 80) {
 
-                this.violation(event, Violation.builder()
+                this.dispatch(event, ViolationDocument.builder()
                     .description("is using an invalid command")
-                    .punishType(PunishType.MITIGATE)
+                    .mitigationStrategy(MitigationStrategy.MITIGATE)
                     .debugs(Arrays.asList(new Debug<>("Length", string.length()), new Debug<>("Max", 80)))
                     .build());
             }
@@ -142,9 +139,9 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
             .getStringList("disallowed-commands")) {
             if (commandLine.contains(disallowedCommand)) {
                 if (playerHasNoPermission()) {
-                    this.violation(event, Violation.builder()
+                    this.dispatch(event, ViolationDocument.builder()
                         .description("is using an invalid command")
-                        .punishType(PunishType.MITIGATE)
+                        .mitigationStrategy(MitigationStrategy.MITIGATE)
                         .debugs(Collections.singletonList(new Debug<>("Command", commandLine)))
                         .build());
                 }
@@ -152,17 +149,17 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
         }
 
         if (WORLDEDIT_PATTERN.matcher(commandLine).find()) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("is using an invalid command")
-                .punishType(PunishType.KICK)
+                .mitigationStrategy(MitigationStrategy.KICK)
                 .debugs(Collections.singletonList(new Debug<>("Command", commandLine)))
                 .build());
         }
 
         if (MVC_PATTERN.matcher(commandLine).find()) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("is using an invalid command")
-                .punishType(PunishType.KICK)
+                .mitigationStrategy(MitigationStrategy.KICK)
                 .debugs(Collections.singletonList(new Debug<>("Command", commandLine)))
                 .build());
         }
@@ -170,17 +167,17 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
 
     private void checkForLog4J(PacketReceiveEvent event, String message) {
         if (message.contains("${jndi:ldap") || message.contains("${jndi") || message.contains("ldap")) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("is using an invalid command")
-                .punishType(PunishType.KICK)
+                .mitigationStrategy(MitigationStrategy.KICK)
                 .debugs(Collections.singletonList(new Debug<>("Command", message)))
                 .build());
         }
 
         if (EXPLOIT_PATTERN.matcher(message).matches() || EXPLOIT_PATTERN2.matcher(message).matches()) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("is using an invalid command")
-                .punishType(PunishType.KICK)
+                .mitigationStrategy(MitigationStrategy.KICK)
                 .debugs(Collections.singletonList(new Debug<>("Command", message)))
                 .build());
         }
@@ -193,9 +190,9 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
             .getStringList("disallowed-commands")) {
             if (message.contains(disallowedCommand)) {
                 if (playerHasNoPermission()) {
-                    this.violation(event, Violation.builder()
+                    this.dispatch(event, ViolationDocument.builder()
                         .description("is using an invalid command")
-                        .punishType(PunishType.MITIGATE)
+                        .mitigationStrategy(MitigationStrategy.MITIGATE)
                         .debugs(Collections.singletonList(new Debug<>("Command", message)))
                         .build());
                 }
@@ -203,9 +200,9 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
             String pluginCommand = replaceGroup(PLUGIN_EXCLUSION.pattern(), message);
             if (pluginCommand.contains(disallowedCommand)) {
                 if (playerHasNoPermission()) {
-                    this.violation(event, Violation.builder()
+                    this.dispatch(event, ViolationDocument.builder()
                         .description("is using an invalid command")
-                        .punishType(PunishType.MITIGATE)
+                        .mitigationStrategy(MitigationStrategy.MITIGATE)
                         .debugs(Collections.singletonList(new Debug<>("Command", pluginCommand)))
                         .build());
                 }
@@ -214,9 +211,9 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
 
         if (lastCommand.equalsIgnoreCase(message)) {
             if (System.currentTimeMillis() - sentLastMessageTwice < 1000 && count++ > 5) {
-                this.violation(event, Violation.builder()
+                this.dispatch(event, ViolationDocument.builder()
                     .description("is using commands too frequent")
-                    .punishType(PunishType.MITIGATE)
+                    .mitigationStrategy(MitigationStrategy.MITIGATE)
                     .debugs(Collections.singletonList(new Debug<>("Repeat", count)))
                     .build());
             }

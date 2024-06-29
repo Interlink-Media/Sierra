@@ -3,19 +3,22 @@ package de.feelix.sierra.check;
 import com.github.retrooper.packetevents.event.ProtocolPacketEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
-import de.feelix.sierra.check.violation.Violation;
+import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
+import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.impl.SierraCheck;
+import de.feelix.sierraapi.events.impl.AsyncUserDetectionEvent;
 import io.github.retrooper.packetevents.adventure.serializer.legacy.LegacyComponentSerializer;
+import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import de.feelix.sierraapi.check.CheckType;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.Collection;
 import java.util.logging.Logger;
@@ -65,13 +68,12 @@ public class SierraDetection implements SierraCheck {
     }
 
     /**
-     * Handle violation event.
+     * Dispatches a ProtocolPacketEvent with a ViolationDocument.
      *
-     * @param event             The ProtocolPacketEvent that triggered the violation
-     * @param violation The ViolationDocument containing information about the violation
+     * @param event             The ProtocolPacketEvent to be dispatched.
+     * @param violationDocument The ViolationDocument containing information about the violation.
      */
-    // Handle violation event
-    public void violation(ProtocolPacketEvent<Object> event, Violation violation) {
+    public void dispatch(ProtocolPacketEvent<Object> event, ViolationDocument violationDocument) {
 
         // Cancel the packet event
         event.setCancelled(true);
@@ -83,31 +85,30 @@ public class SierraDetection implements SierraCheck {
         this.violations++;
 
         // Asynchronously call user detection event
-        throwDetectionEvent(violation);
+        throwDetectionEvent(violationDocument);
 
         // Log to console, alert staff, create history, and potentially punish
         User user = event.getUser();
-        consoleLog(user, violation);
-        alert(user, violation);
+        consoleLog(user, violationDocument);
+        alert(user, violationDocument);
 
-        if (violation.getPunishType() != PunishType.MITIGATE) {
+        if (violationDocument.getMitigationStrategy() != MitigationStrategy.MITIGATE) {
 
             Sierra.getPlugin().getSierraDataManager().addKick(this.checkType());
 
             Sierra            plugin            = Sierra.getPlugin();
             SierraDataManager sierraDataManager = plugin.getSierraDataManager();
 
-            // Todo: patch it
 
-            // sierraDataManager
-            //     .createPunishmentHistory(
-            //         playerData.username(), playerData.version(), violation.getPunishType(),
-            //         playerData.getPingProcessor().getPing(),
-            //         violation.debugInformation()
-            //     );
+            sierraDataManager
+                .createPunishmentHistory(
+                    playerData.username(), playerData.version(), violationDocument.getMitigationStrategy(),
+                    playerData.getPingProcessor().getPing(),
+                    FormatUtils.chainDebugs(true, violationDocument.getDebugs())
+                );
 
-            blockAddressIfEnabled(violation);
-            playerData.punish(violation.getPunishType());
+            blockAddressIfEnabled(violationDocument);
+            playerData.punish(violationDocument.getMitigationStrategy());
         }
     }
 
@@ -116,10 +117,10 @@ public class SierraDetection implements SierraCheck {
      * punishment configuration, and the "block-connections-after-ban" property is set to true in the Sierra
      * configuration.
      *
-     * @param violation The ViolationDocument object containing information about the violation.
+     * @param violationDocument The ViolationDocument object containing information about the violation.
      */
-    private void blockAddressIfEnabled(Violation violation) {
-        if (violation.getPunishType() == PunishType.BAN && Sierra.getPlugin().getPunishmentConfig().isBan()
+    private void blockAddressIfEnabled(ViolationDocument violationDocument) {
+        if (violationDocument.getMitigationStrategy() == MitigationStrategy.BAN && Sierra.getPlugin().getPunishmentConfig().isBan()
             && Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("block-connections-after-ban", true)) {
             Sierra.getPlugin()
                 .getAddressStorage()
@@ -130,63 +131,52 @@ public class SierraDetection implements SierraCheck {
     /**
      * Throws a detection event asynchronously.
      *
-     * @param violation The ViolationDocument containing information about the violation
+     * @param violationDocument The ViolationDocument containing information about the violation
      */
-    private void throwDetectionEvent(Violation violation) {
+    private void throwDetectionEvent(ViolationDocument violationDocument) {
 
-        // Todo: Fix new violation
-
-        // FoliaScheduler.getAsyncScheduler().runNow(
-        //     Sierra.getPlugin(),
-        //     o -> Sierra.getPlugin()
-        //         .getEventBus()
-        //         .publish(new AsyncUserDetectionEvent(violation, playerData, checkType(), this.violations))
-        // );
+        FoliaScheduler.getAsyncScheduler().runNow(
+            Sierra.getPlugin(),
+            o -> Sierra.getPlugin()
+                .getEventBus()
+                .publish(new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))
+        );
     }
 
     /**
      * Logs a message to the console.
      *
      * @param user              The User object representing the player.
-     * @param violation The ViolationDocument containing information about the violation.
+     * @param violationDocument The ViolationDocument containing information about the violation.
      */
-    protected void consoleLog(User user, Violation violation) {
+    protected void consoleLog(User user, ViolationDocument violationDocument) {
 
         if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("log-violation-to-console", true)) {
             return;
         }
 
-        if (violation.getPunishType() == PunishType.MITIGATE) return;
+        if (violationDocument.getMitigationStrategy() == MitigationStrategy.MITIGATE) return;
 
-        logToConsole(createGeneralMessage(user, violation.getPunishType()));
-        logToConsole(createGeneralInformation(violation));
+        logToConsole(createGeneralMessage(user, violationDocument.getMitigationStrategy()));
+        logToConsole(createGeneralInformation(violationDocument));
         logToConsole(createGeneralCheck());
     }
 
-    /**
-     * Creates a general message for a given user and punish type.
-     * The message is formatted as "Player [username] got [friendlyMessage] sending an protocol packet".
-     *
-     * @param user       The User object representing the player.
-     * @param punishType The PunishType enum representing the type of punishment.
-     * @return A string representing the general message.
-     */
-    private String createGeneralMessage(User user, PunishType punishType) {
-        return "Player " + user.getName() + " got " + punishType.friendlyMessage() + " sending an protocol packet";
+    private String createGeneralMessage(User user, MitigationStrategy mitigationStrategy) {
+        return "Player " + user.getName() + " got " + mitigationStrategy.friendlyMessage() + " sending an protocol packet";
     }
 
     /**
      * Creates general information for a violation document.
      *
-     * @param violation The ViolationDocument object containing information about the violation.
+     * @param violationDocument The ViolationDocument object containing information about the violation.
      * @return A string representing the general information.
      */
-    private String createGeneralInformation(Violation violation) {
-        // Todo : Patch it
-        // return String.format(
-        //     "Debug information: %s", violation.getDebugInformation().isEmpty()
-        //         ? "No debug available" : FormatUtils.shortenString(violation.getDebugInformation()));
-        return "";
+    private String createGeneralInformation(ViolationDocument violationDocument) {
+        return String.format(
+            "Debug information: %s", violationDocument.getDebugs().isEmpty()
+                ? "No debug available"
+                : FormatUtils.shortenString(violationDocument.debugInformation()));
     }
 
     /**
@@ -213,19 +203,19 @@ public class SierraDetection implements SierraCheck {
      * Sends an alert message to staff members with information about the violation.
      *
      * @param user              The User object representing the player.
-     * @param violation The ViolationDocument containing information about the violation.
+     * @param violationDocument The ViolationDocument containing information about the violation.
      */
-    protected void alert(User user, Violation violation) {
+    protected void alert(User user, ViolationDocument violationDocument) {
 
-        PunishType punishType    = violation.getPunishType();
-        String     staffAlert    = formatStaffAlertMessage(user, punishType);
-        String     username      = this.playerData.getUser().getName();
+        MitigationStrategy mitigationStrategy = violationDocument.getMitigationStrategy();
+        String             staffAlert         = formatStaffAlertMessage(user, mitigationStrategy);
+        String             username           = this.playerData.getUser().getName();
         String     clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
 
         String content = new ConfigValue(
             "layout.detection-message.alert-content",
             " &7Username: &b{username}{n} &7Version: &b{clientVersion}{n} &7Brand: &b{brand}{n} &7Exist since: "
-            + "&b{ticksExisted}{n} &7Game mode: &b{gameMode}{n} &7Tag: &b{tags}{n} &7Debug info: &b{debugInfo}{n}{n} "
+            + "&b{ticksExisted}{n} &7Game mode: &b{gameMode}{n} &7Tag: &b{tags}{n} &7Description: &b{description}{n} &7Debug info: &b{debugInfo}{n}{n} "
             + "{alertNote}",
             true
         )
@@ -234,8 +224,9 @@ public class SierraDetection implements SierraCheck {
             .replace("{brand}", this.playerData.brand())
             .replace("{ticksExisted}", this.playerData.ticksExisted() + " ticks")
             .replace("{gameMode}", this.playerData.gameMode().name())
+            .replace("{description}", violationDocument.getDescription())
             .replace("{tags}", this.friendlyName.toLowerCase())
-            // .replace("{debugInfo}", FormatUtils.shortenString(violation.getDebugInformation())) // Todo: Patch
+            .replace("{debugInfo}", FormatUtils.shortenString(violationDocument.debugInformation()))
             .replace("{alertNote}", getAlertNote())
             .stripped().colorize().replacePrefix().message();
 
@@ -243,7 +234,7 @@ public class SierraDetection implements SierraCheck {
 
         Collection<PlayerData> playerDataList = Sierra.getPlugin().getSierraDataManager().getPlayerData().values();
 
-        if (punishType == PunishType.MITIGATE) {
+        if (mitigationStrategy == MitigationStrategy.MITIGATE) {
             for (PlayerData playerData : playerDataList) {
                 if (playerData.getMitigationSettings().enabled()) {
                     playerData.getUser().sendMessage(
@@ -291,21 +282,14 @@ public class SierraDetection implements SierraCheck {
         ).replace("{username}", username).message();
     }
 
-    /**
-     * Formats the staff alert message with the given user, punish type, and SierraConfigEngine.
-     *
-     * @param user       The User object representing the player.
-     * @param punishType The PunishType enum representing the type of punishment.
-     * @return The formatted staff alert message.
-     */
-    private String formatStaffAlertMessage(User user, PunishType punishType) {
+    private String formatStaffAlertMessage(User user, MitigationStrategy mitigationStrategy) {
 
         return new ConfigValue(
             "layout.detection-message.staff-alert",
             "{prefix} &b{username} &8┃ &f{mitigation} &b{checkname} &8┃ &3x{violations}", true
         ).colorize().replacePrefix()
             .replace("{username}", user.getName())
-            .replace("{mitigation}", punishType.friendlyMessage())
+            .replace("{mitigation}", mitigationStrategy.friendlyMessage())
             .replace("{checkname}", this.friendlyName)
             .replace("{violations}", String.valueOf(violations)).message();
     }

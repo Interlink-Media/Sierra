@@ -13,7 +13,7 @@ import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.events.impl.AsyncHistoryCreateEvent;
 import de.feelix.sierraapi.history.History;
 import de.feelix.sierraapi.history.HistoryType;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 import io.github.retrooper.packetevents.adventure.serializer.legacy.LegacyComponentSerializer;
 import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Getter;
@@ -292,12 +292,12 @@ public class SierraDataManager implements UserRepository {
      * Creates a punishment history entry for a user.
      *
      * @param username   The username of the user to create the punishment history for.
-     * @param punishType The type of punishment applied.
+     * @param mitigationStrategy The type of punishment applied.
      */
-    public void createPunishmentHistory(String username, String clientVersion, PunishType punishType, long ping,
+    public void createPunishmentHistory(String username, String clientVersion, MitigationStrategy mitigationStrategy, long ping,
                                         String description) {
         throwHistory(new HistoryDocument(username, description, clientVersion,
-                                         ping, punishType, HistoryType.PUNISH
+                                         ping, mitigationStrategy, HistoryType.PUNISH
         ));
     }
 
@@ -309,17 +309,17 @@ public class SierraDataManager implements UserRepository {
      * method to add it to the collection of histories.
      *
      * @param username    The username of the user to create the mitigation history for.
-     * @param punishType  The type of punishment applied.
+     * @param mitigationStrategy  The type of punishment applied.
      * @param ping        The user's ping at the time of the mitigation.
      * @param description The description of the mitigation.
      * @see HistoryDocument
-     * @see PunishType
+     * @see MitigationStrategy
      * @see HistoryType
      */
-    public void createMitigateHistory(String username, String clientVersion, PunishType punishType, long ping,
+    public void createMitigateHistory(String username, String clientVersion, MitigationStrategy mitigationStrategy, long ping,
                                       String description) {
         throwHistory(new HistoryDocument(
-            username, description, clientVersion, ping, punishType, HistoryType.MITIGATE));
+            username, description, clientVersion, ping, mitigationStrategy, HistoryType.MITIGATE));
     }
 
     /**

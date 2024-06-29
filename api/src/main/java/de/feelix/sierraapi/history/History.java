@@ -1,6 +1,6 @@
 package de.feelix.sierraapi.history;
 
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 
 /**
  * The History interface represents the history of a user's actions or punishments. It includes information such as
@@ -23,12 +23,7 @@ public interface History {
      */
     String description();
 
-    /**
-     * Returns the PunishType of the History instance.
-     *
-     * @return The PunishType object representing the type of punishment applied.
-     */
-    PunishType punishType();
+    MitigationStrategy mitigationStrategy();
 
     /**
      * Returns the timestamp associated with the instance of History.

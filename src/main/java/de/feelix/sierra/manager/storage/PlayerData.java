@@ -16,7 +16,7 @@ import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
 import lombok.Data;
 import de.feelix.sierraapi.check.CheckRepository;
 import de.feelix.sierraapi.user.impl.SierraUser;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -252,11 +252,11 @@ public class PlayerData implements SierraUser {
      * If the punish type is BAN and the ban feature is enabled, the player will be banned.
      * In any case, the player will be kicked.
      *
-     * @param punishType the type of punishment to be applied
+     * @param mitigationStrategy the type of punishment to be applied
      */
-    public void punish(PunishType punishType) {
+    public void punish(MitigationStrategy mitigationStrategy) {
         setReceivedPunishment(true);
-        if (punishType == PunishType.BAN && Sierra.getPlugin().getPunishmentConfig().isBan()) {
+        if (mitigationStrategy == MitigationStrategy.BAN && Sierra.getPlugin().getPunishmentConfig().isBan()) {
             ban();
         }
         kick();

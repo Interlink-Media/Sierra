@@ -15,7 +15,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.*;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.Debug;
-import de.feelix.sierra.check.violation.Violation;
+import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
@@ -23,7 +23,7 @@ import de.feelix.sierra.utilities.FieldReader;
 import de.feelix.sierra.utilities.Triple;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 import org.bukkit.ChatColor;
 import org.jetbrains.annotations.Nullable;
 
@@ -66,24 +66,22 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             handleClickWindow(event, data, blockBooks, pageList);
         }
 
-        Triple<String, PunishType, List<Debug<?>>> invalid = validatePages(pageList);
+        Triple<String, MitigationStrategy, List<Debug<?>>> invalid = validatePages(pageList);
         if (invalid != null) {
 
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description(invalid.getFirst())
-                .punishType(invalid.getSecond())
+                .mitigationStrategy(invalid.getSecond())
                 .debugs(invalid.getThird())
-                .points(1)
                 .build());
         }
     }
 
     private void handleEditBook(PacketReceiveEvent event, PlayerData data, boolean blockBooks, List<String> pageList) {
         if (blockBooks) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("used book while disabled")
-                .punishType(PunishType.BAN)
-                .points(1)
+                .mitigationStrategy(MitigationStrategy.BAN)
                 .debugs(Collections.emptyList())
                 .build());
             return;
@@ -117,10 +115,9 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
 
                 checkGeneral(event, blockBooks, pageList, wrappedItemStack);
             } catch (IndexOutOfBoundsException exception) {
-                this.violation(event, Violation.builder()
+                this.dispatch(event, ViolationDocument.builder()
                     .description("send invalid payload")
-                    .punishType(PunishType.KICK)
-                    .points(1)
+                    .mitigationStrategy(MitigationStrategy.KICK)
                     .debugs(Collections.singletonList(new Debug<>("Exception", exception.getMessage())))
                     .build());
             }
@@ -144,10 +141,9 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             if ((wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK
                  || wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK) && blockBooks) {
 
-                this.violation(event, Violation.builder()
+                this.dispatch(event, ViolationDocument.builder()
                     .description("used book while disabled")
-                    .punishType(PunishType.KICK)
-                    .points(1)
+                    .mitigationStrategy(MitigationStrategy.KICK)
                     .debugs(Collections.emptyList())
                     .build());
             }
@@ -172,10 +168,9 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
     private void handleCreativeInventoryAction(PacketReceiveEvent event, PlayerData data, boolean blockBooks,
                                                List<String> pageList) {
         if (getPlayerData() != null && getPlayerData().getGameMode() != GameMode.CREATIVE) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("spoofed his game-mode")
-                .punishType(PunishType.BAN)
-                .points(1)
+                .mitigationStrategy(MitigationStrategy.BAN)
                 .debugs(Arrays.asList(
                     new Debug<>("GameMode", getPlayerData().getGameMode().name()),
                     new Debug<>("Fake", "CREATIVE")
@@ -190,10 +185,9 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
         int slot = wrapper.getSlot();
 
         if ((slot >= 100 || slot < -1) && slot != -999) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("clicked invalid slot")
-                .punishType(PunishType.KICK)
-                .points(1)
+                .mitigationStrategy(MitigationStrategy.KICK)
                 .debugs(Arrays.asList(new Debug<>("Slot", slot), new Debug<>("Tag", "CREATIVE")))
                 .build());
             return;
@@ -209,10 +203,9 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
 
         if (invalidTitleOrAuthor(itemStack)) {
             removeTags(itemStack);
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("used invalid book")
-                .punishType(PunishType.BAN)
-                .points(1)
+                .mitigationStrategy(MitigationStrategy.BAN)
                 .debugs(Collections.singletonList(new Debug<>("Tag", "Author")))
                 .build());
         }
@@ -223,10 +216,9 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
     private boolean checkForInvalidAuthor(PacketReceiveEvent event, boolean blockBooks, ItemStack itemStack) {
         if ((itemStack.getType() == ItemTypes.WRITTEN_BOOK || itemStack.getType() == ItemTypes.WRITTEN_BOOK)
             && blockBooks) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("used book while disabled")
-                .punishType(PunishType.BAN)
-                .points(1)
+                .mitigationStrategy(MitigationStrategy.BAN)
                 .debugs(Collections.emptyList())
                 .build());
         }
@@ -245,10 +237,9 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             ItemStack itemStack = wrapper.getCarriedItemStack();
             if ((itemStack.getType() == ItemTypes.WRITTEN_BOOK || itemStack.getType() == ItemTypes.WRITTEN_BOOK)
                 && blockBooks) {
-                this.violation(event, Violation.builder()
+                this.dispatch(event, ViolationDocument.builder()
                     .description("used book while disabled")
-                    .punishType(PunishType.BAN)
-                    .points(1)
+                    .mitigationStrategy(MitigationStrategy.BAN)
                     .debugs(Collections.emptyList())
                     .build());
             }
@@ -264,10 +255,9 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
 
         if (invalidTitleOrAuthor(itemStack)) {
             removeTags(itemStack);
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("used invalid book")
-                .punishType(PunishType.BAN)
-                .points(1)
+                .mitigationStrategy(MitigationStrategy.BAN)
                 .debugs(Collections.singletonList(new Debug<>("Tag", "Author")))
                 .build());
         }
@@ -281,34 +271,34 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
         Objects.requireNonNull(carriedItemStack.getNBT()).removeTag("title");
     }
 
-    private Triple<String, PunishType, List<Debug<?>>> validatePages(List<String> pageList) {
+    private Triple<String, MitigationStrategy, List<Debug<?>>> validatePages(List<String> pageList) {
         long totalBytes   = 0;
         long allowedBytes = 2560;
 
-        if (pageList.size() > 50) return new Triple<>("interacted with an invalid item", PunishType.KICK,
+        if (pageList.size() > 50) return new Triple<>("interacted with an invalid item", MitigationStrategy.KICK,
                                                       Collections.singletonList(new Debug<>("Pages", pageList.size()))
         );
 
         for (String pageContent : pageList) {
-            Triple<String, PunishType, List<Debug<?>>> duplicatedContent = isDuplicatedContent(pageContent);
+            Triple<String, MitigationStrategy, List<Debug<?>>> duplicatedContent = isDuplicatedContent(pageContent);
             if (duplicatedContent != null) return duplicatedContent;
 
             String strippedContent = ChatColor.stripColor(pageContent.replaceAll("\\+", ""));
             //noinspection ConstantValue
             if (strippedContent == null || strippedContent.equals("null")) {
                 return new Triple<>(
-                    "interacted with an invalid item", PunishType.KICK,
+                    "interacted with an invalid item", MitigationStrategy.KICK,
                     Collections.singletonList(new Debug<>("Tag", "Color Strip"))
                 );
             }
 
-            Triple<String, PunishType, List<Debug<?>>> invalidColor = isInvalidColor(strippedContent);
+            Triple<String, MitigationStrategy, List<Debug<?>>> invalidColor = isInvalidColor(strippedContent);
             if (invalidColor != null) return invalidColor;
 
-            Triple<String, PunishType, List<Debug<?>>> extraFrequency = isExtraFrequency(pageContent);
+            Triple<String, MitigationStrategy, List<Debug<?>>> extraFrequency = isExtraFrequency(pageContent);
             if (extraFrequency != null) return extraFrequency;
 
-            Triple<String, PunishType, List<Debug<?>>> fieldIsReadable = checkFieldReadable(pageContent);
+            Triple<String, MitigationStrategy, List<Debug<?>>> fieldIsReadable = checkFieldReadable(pageContent);
             if (fieldIsReadable != null) return fieldIsReadable;
 
             String noSpaces = pageContent.replace(" ", "");
@@ -317,7 +307,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
                     String translationJson = String.format("{\"translate\":\"%s\"}", crashTranslation);
                     if (pageContent.equalsIgnoreCase(translationJson)) {
                         return new Triple<>(
-                            "interacted with an invalid item", PunishType.KICK,
+                            "interacted with an invalid item", MitigationStrategy.KICK,
                             Collections.singletonList(new Debug<>("Tag", "Mojang crash translations"))
                         );
                     }
@@ -325,12 +315,12 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
                 continue;
             }
 
-            Triple<String, PunishType, List<Debug<?>>> invalidChars = tooManyInvalidChars(pageContent);
+            Triple<String, MitigationStrategy, List<Debug<?>>> invalidChars = tooManyInvalidChars(pageContent);
             if (invalidChars != null) return invalidChars;
 
             int contentLength = pageContent.getBytes(
                 StandardCharsets.UTF_8).length;
-            Triple<String, PunishType, List<Debug<?>>> invalidPageSize = isInvalidPageSize(contentLength);
+            Triple<String, MitigationStrategy, List<Debug<?>>> invalidPageSize = isInvalidPageSize(contentLength);
             if (invalidPageSize != null) return invalidPageSize;
 
             totalBytes += contentLength;
@@ -353,7 +343,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
 
         if (totalBytes > allowedBytes) {
             return new Triple<>(
-                "interacted with too large book", PunishType.KICK,
+                "interacted with too large book", MitigationStrategy.KICK,
                 Arrays.asList(new Debug<>("Total", totalBytes), new Debug<>("Max", allowedBytes))
             );
         }
@@ -361,17 +351,17 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
         return null;
     }
 
-    private static @Nullable Triple<String, PunishType, List<Debug<?>>> isInvalidPageSize(int contentLength) {
+    private static @Nullable Triple<String, MitigationStrategy, List<Debug<?>>> isInvalidPageSize(int contentLength) {
         if (contentLength > 256 * 4) {
             return new Triple<>(
-                "interacted with an invalid item", PunishType.KICK,
+                "interacted with an invalid item", MitigationStrategy.KICK,
                 Collections.singletonList(new Debug<>("Tag", "Page byte size"))
             );
         }
         return null;
     }
 
-    private static @Nullable Triple<String, PunishType, List<Debug<?>>> tooManyInvalidChars(String pageContent) {
+    private static @Nullable Triple<String, MitigationStrategy, List<Debug<?>>> tooManyInvalidChars(String pageContent) {
         int oversizedChars = 0;
         for (int charIndex = 0; charIndex < pageContent.length(); charIndex++) {
             char currentChar = pageContent.charAt(charIndex);
@@ -379,7 +369,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
                 oversizedChars++;
                 if (oversizedChars > 15) {
                     return new Triple<>(
-                        "interacted with an invalid item", PunishType.KICK,
+                        "interacted with an invalid item", MitigationStrategy.KICK,
                         Collections.singletonList(new Debug<>("Tag", "Big characters"))
                     );
                 }
@@ -388,41 +378,41 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
         return null;
     }
 
-    private static @Nullable Triple<String, PunishType, List<Debug<?>>> checkFieldReadable(String pageContent) {
+    private static @Nullable Triple<String, MitigationStrategy, List<Debug<?>>> checkFieldReadable(String pageContent) {
         if (FieldReader.isReadable(pageContent) && !pageContent.isEmpty()) {
             return new Triple<>(
-                "interacted with an invalid item", PunishType.KICK,
+                "interacted with an invalid item", MitigationStrategy.KICK,
                 Collections.singletonList(new Debug<>("Tag", "Not readable"))
             );
         }
         return null;
     }
 
-    private static @Nullable Triple<String, PunishType, List<Debug<?>>> isExtraFrequency(String pageContent) {
+    private static @Nullable Triple<String, MitigationStrategy, List<Debug<?>>> isExtraFrequency(String pageContent) {
         if (pageContent.split("extra").length > 8.0) {
             return new Triple<>(
-                "interacted with an invalid item", PunishType.KICK,
+                "interacted with an invalid item", MitigationStrategy.KICK,
                 Collections.singletonList(new Debug<>("Tag", "Extra frequency"))
             );
         }
         return null;
     }
 
-    private static @Nullable Triple<String, PunishType, List<Debug<?>>> isInvalidColor(String strippedContent) {
+    private static @Nullable Triple<String, MitigationStrategy, List<Debug<?>>> isInvalidColor(String strippedContent) {
         if (strippedContent.length() > 256.0) {
             return new Triple<>(
-                "interacted with an invalid item", PunishType.KICK,
+                "interacted with an invalid item", MitigationStrategy.KICK,
                 Collections.singletonList(new Debug<>("Tag", "Color Code"))
             );
         }
         return null;
     }
 
-    private @Nullable Triple<String, PunishType, List<Debug<?>>> isDuplicatedContent(String pageContent) {
+    private @Nullable Triple<String, MitigationStrategy, List<Debug<?>>> isDuplicatedContent(String pageContent) {
         if (pageContent.equalsIgnoreCase(lastContent)) {
             if (lastContentCount++ > 4) {
                 return new Triple<>(
-                    "interacted with an invalid item", PunishType.KICK,
+                    "interacted with an invalid item", MitigationStrategy.KICK,
                     Arrays.asList(new Debug<>("Tag", "Many equal pages"), new Debug<>("Count", lastContentCount))
                 );
             }

@@ -1,12 +1,12 @@
 package de.feelix.sierra.utilities;
 
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
+import de.feelix.sierra.check.violation.Debug;
 import lombok.experimental.UtilityClass;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Utility class for formatting strings, numbers, and collections.
@@ -29,6 +29,28 @@ public class FormatUtils {
             num = 1;
         }
         return num;
+    }
+
+    public static String chainDebugs(boolean commaSeparated, List<Debug<?>> debugList) {
+
+        boolean isValid = debugList.stream()
+            .anyMatch(debug -> !debug.getName().isEmpty() && !String.valueOf(debug.getInfo()).isEmpty());
+
+        if (isValid) {
+            if (commaSeparated) {
+                return debugList.stream()
+                    .filter(debug -> !debug.getName().isEmpty() && !String.valueOf(debug.getInfo()).isEmpty())
+                    .map(debug -> debug.getName() + ": " + debug.getInfo())
+                    .collect(Collectors.joining(", "));
+            } else {
+                return "\n\n&4Info:\n" +
+                       debugList.stream()
+                           .filter(debug -> !debug.getName().isEmpty() && !String.valueOf(debug.getInfo()).isEmpty())
+                           .map(debug -> "&7" + debug.getName() + ": &f" + debug.getInfo() + "\n")
+                           .collect(Collectors.joining());
+            }
+        }
+        return "";
     }
 
     public static int sumValuesInHashMap(HashMap<PacketTypeCommon, Integer> map) {

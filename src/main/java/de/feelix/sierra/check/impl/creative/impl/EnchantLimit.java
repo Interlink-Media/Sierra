@@ -12,7 +12,7 @@ import de.feelix.sierra.check.impl.creative.ItemCheck;
 import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.Triple;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,8 +29,8 @@ public class EnchantLimit implements ItemCheck {
         .toClientVersion();
 
     @Override
-    public Triple<String, PunishType, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
-                                                                  NBTCompound nbtCompound, PlayerData playerData) {
+    public Triple<String, MitigationStrategy, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                                          NBTCompound nbtCompound, PlayerData playerData) {
 
         //This is "version safe", since we check both the older 'ench' and the newer 'Enchantments' tag
         //Not a very clean approach. A way to get items within pe itemstacks would certainly be helpful
@@ -57,7 +57,7 @@ public class EnchantLimit implements ItemCheck {
                         .getInt("max-enchantment-level", 5)) {
 
                         return new Triple<>(
-                            "interacted on an item with invalid level", PunishType.KICK,
+                            "interacted on an item with invalid level", MitigationStrategy.KICK,
                             Collections.singletonList(new Debug<>("Level", number.getAsInt()))
                         );
                     }

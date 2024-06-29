@@ -12,7 +12,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.Debug;
-import de.feelix.sierra.check.violation.Violation;
+import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
@@ -20,7 +20,7 @@ import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.manager.init.impl.start.Ticker;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
@@ -70,10 +70,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             int packetCount = packetCounts.getOrDefault(packetType, 0);
 
             if (packetCount > limit) {
-                this.violation(event, Violation.builder()
+                this.dispatch(event, ViolationDocument.builder()
                     .description("is sending packets too frequent")
-                    .points(3)
-                    .punishType(PunishType.KICK)
+                    .mitigationStrategy(MitigationStrategy.KICK)
                     .debugs(Arrays.asList(
                         new Debug<>("Packet", packetType.getName()),
                         new Debug<>("Limit", limit),
@@ -118,10 +117,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             balance += 50L;
             balance -= now - lastFlyingTime;
             if (balance > MAX_BAL) {
-                this.violation(event, Violation.builder()
+                this.dispatch(event, ViolationDocument.builder()
                     .description("is moving too frequent")
-                    .points(1)
-                    .punishType(violations() > 100 ? PunishType.KICK : PunishType.MITIGATE)
+                    .mitigationStrategy(violations() > 100 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
                     .debugs(Arrays.asList(
                         new Debug<>("Balance", balance),
                         new Debug<>("Version", getPlayerData().getClientVersion().getReleaseName()),
@@ -150,10 +148,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
 
     private void handleEditBook(PacketReceiveEvent event) {
         if (isSpamming(lastBookEditTick)) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("is editing books too frequent")
-                .points(1)
-                .punishType(PunishType.KICK)
+                .mitigationStrategy(MitigationStrategy.KICK)
                 .debugs(Collections.singletonList(new Debug<>("Tag", "BookEdit")))
                 .build());
         }
@@ -166,10 +163,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
         String channelName = wrapper.getChannelName();
         if (channelName.contains("MC|BEdit") || channelName.contains("MC|BSign")) {
             if (isSpamming(lastBookEditTick)) {
-                this.violation(event, Violation.builder()
+                this.dispatch(event, ViolationDocument.builder()
                     .description("is sending payloads too frequent")
-                    .points(1)
-                    .punishType(PunishType.KICK)
+                    .mitigationStrategy(MitigationStrategy.KICK)
                     .debugs(Collections.singletonList(new Debug<>("Tag", "Payload")))
                     .build());
             }
@@ -179,10 +175,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     private void handleCraftRecipeRequest(PacketReceiveEvent event) {
         int currentTick = Ticker.getInstance().getCurrentTick();
         if (lastCraftRequestTick + 10 > currentTick) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("is requesting recipes too frequent")
-                .points(1)
-                .punishType(PunishType.MITIGATE)
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
                 .debugs(Collections.singletonList(new Debug<>("Tag", "RecipeRequest")))
                 .build());
             //noinspection UnstableApiUsage
@@ -206,10 +201,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
                 } else {
                     dropCount++;
                     if (dropCount >= 20) {
-                        this.violation(event, Violation.builder()
+                        this.dispatch(event, ViolationDocument.builder()
                             .description("is digging too frequent")
-                            .points(1)
-                            .punishType(PunishType.KICK)
+                            .mitigationStrategy(MitigationStrategy.KICK)
                             .debugs(Collections.singletonList(new Debug<>("Tag", "Digging")))
                             .build());
                     }

@@ -11,7 +11,7 @@ import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierraapi.check.impl.SierraCheck;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -163,7 +163,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         Sierra.getPlugin().getSierraDataManager().createMitigateHistory(
             playerData.username(),
             playerData.version(),
-            PunishType.KICK,
+            MitigationStrategy.KICK,
             playerData.ping(),
             "Send: " + readableBytes + "/Max: "
             + maxPacketSize + " (" + capacity + ")"

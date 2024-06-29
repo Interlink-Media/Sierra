@@ -9,7 +9,7 @@ import de.feelix.sierra.check.impl.creative.ItemCheck;
 import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.Triple;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,8 +30,8 @@ public class CreativeClientBookCrash implements ItemCheck {
     private static final Pattern PATTERN = Pattern.compile("\\s");
 
     @Override
-    public Triple<String, PunishType, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
-                                                                  NBTCompound nbtCompound, PlayerData playerData) {
+    public Triple<String, MitigationStrategy, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                                          NBTCompound nbtCompound, PlayerData playerData) {
         List<String> pages = getPages(nbtCompound);
         if (pages.isEmpty()) {
             return null;
@@ -40,7 +40,7 @@ public class CreativeClientBookCrash implements ItemCheck {
             String withOutSpaces = PATTERN.matcher(page).replaceAll("");
             if (withOutSpaces.toLowerCase().contains("{translate:translation.test.protocol}") || withOutSpaces.contains(
                 "{translate:translation.test.invalid2}")) {
-                return new Triple<>("interacted with an invalid translation", PunishType.KICK, Collections.emptyList());
+                return new Triple<>("interacted with an invalid translation", MitigationStrategy.KICK, Collections.emptyList());
             }
         }
         return null;

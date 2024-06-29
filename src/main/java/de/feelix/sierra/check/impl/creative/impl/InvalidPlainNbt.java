@@ -12,7 +12,7 @@ import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.Triple;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,12 +24,12 @@ import java.util.List;
 public class InvalidPlainNbt implements ItemCheck {
 
 
-    private Triple<String, PunishType, List<Debug<?>>> invalidNbt(ItemStack itemStack) {
+    private Triple<String, MitigationStrategy, List<Debug<?>>> invalidNbt(ItemStack itemStack) {
 
         NBTCompound tag = itemStack.getNBT();
 
         if (tag != null) {
-            Triple<String, PunishType, List<Debug<?>>> crashDetails = checkForSpawner(tag);
+            Triple<String, MitigationStrategy, List<Debug<?>>> crashDetails = checkForSpawner(tag);
             if (crashDetails != null) {
                 return crashDetails;
             }
@@ -38,34 +38,19 @@ public class InvalidPlainNbt implements ItemCheck {
         return null;
     }
 
-    /**
-     * Checks if a given NBTCompound tag contains a valid map and returns a Pair object representing the punishable
-     * property and the PunishType.
-     *
-     * @param nbtTag the NBTCompound tag to check
-     * @return a Pair object representing the punishable property and the PunishType, or null if there are no
-     * punishable properties
-     */
-    private Triple<String, PunishType, List<Debug<?>>> checkValidMap(NBTCompound nbtTag) {
+    private Triple<String, MitigationStrategy, List<Debug<?>>> checkValidMap(NBTCompound nbtTag) {
         NBTNumber range = nbtTag.getNumberTagOrNull("range");
         int       maxMapRange = 15;
         if (range != null && (range.getAsInt() > maxMapRange || range.getAsInt() < 0)) {
             return new Triple<>(
-                "interacted with invalid map", PunishType.BAN,
+                "interacted with invalid map", MitigationStrategy.BAN,
                 Collections.singletonList(new Debug<>("Range", range.getAsInt()))
             );
         }
         return null;
     }
 
-    /**
-     * Checks if a given NBTCompound tag contains punishable properties related to a spawner.
-     *
-     * @param tag the NBTCompound tag to check
-     * @return a Pair object representing the punishable property and the PunishType, or null if there are no
-     * punishable properties
-     */
-    private Triple<String, PunishType, List<Debug<?>>> checkForSpawner(NBTCompound tag) {
+    private Triple<String, MitigationStrategy, List<Debug<?>>> checkForSpawner(NBTCompound tag) {
         if (isPunishable(tag.getNumberTagOrNull("MaxNearbyEntities"), Byte.MAX_VALUE))
             return makePunishablePair("MaxNearbyEntities", tag.getNumberTagOrNull("MaxNearbyEntities").getAsInt());
 
@@ -101,25 +86,17 @@ public class InvalidPlainNbt implements ItemCheck {
         return tag != null && (tag.getAsInt() > maxValue || tag.getAsInt() < 0);
     }
 
-    private Triple<String, PunishType, List<Debug<?>>> makePunishablePair(String property, int value) {
+    private Triple<String, MitigationStrategy, List<Debug<?>>> makePunishablePair(String property, int value) {
         return new Triple<>(
-            "interacted with an item with invalid property", PunishType.KICK,
+            "interacted with an item with invalid property", MitigationStrategy.KICK,
             Collections.singletonList(new Debug<>(property, value))
         );
     }
 
-    /**
-     * Handles the check based on the given event, clicked stack, NBT compound, and player data.
-     *
-     * @param event        the event representing the received packet
-     * @param clickedStack the clicked stack item
-     * @param nbtCompound  the NBT compound associated with the item
-     * @param playerData   the player data
-     * @return a pair of strings and a PunishType if there is an protocol NBT compound, null otherwise
-     */
+
     @Override
-    public Triple<String, PunishType, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
-                                                                  NBTCompound nbtCompound, PlayerData playerData) {
+    public Triple<String, MitigationStrategy, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                                          NBTCompound nbtCompound, PlayerData playerData) {
 
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
             WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplier(

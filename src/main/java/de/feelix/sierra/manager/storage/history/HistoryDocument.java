@@ -2,7 +2,7 @@ package de.feelix.sierra.manager.storage.history;
 
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.history.HistoryType;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 import lombok.AllArgsConstructor;
 import de.feelix.sierraapi.history.History;
 
@@ -17,20 +17,6 @@ public class HistoryDocument implements History {
      */
     private final String username;
 
-    /**
-     * The private final variable "description" represents the description associated with a History instance.
-     * <p>
-     * It is a string that provides additional details or information about the user's action or punishment.
-     * This variable is declared as "private final" to ensure that it cannot be modified once it is assigned a value.
-     * <p>
-     * This variable is part of the class "HistoryDocument" which is an implementation of the "History" interface.
-     * The "HistoryDocument" class provides methods to retrieve information such as the username, punishType, timestamp,
-     * and historyType associated with the history instance.
-     * <p>
-     * This variable is also used in methods such as "description()" and "shortenDescription()" to retrieve or modify
-     * the
-     * description of the history instance.
-     */
     private final String description;
 
     /**
@@ -45,14 +31,7 @@ public class HistoryDocument implements History {
      */
     private final long ping;
 
-    /**
-     * The punishType variable represents the type of punishment associated with a history document.
-     * It is an instance of the PunishType enum, which defines different types of punishments that can be applied.
-     *
-     * @see PunishType
-     * @see HistoryDocument
-     */
-    private final PunishType punishType;
+    private final MitigationStrategy mitigationStrategy;
 
     /**
      * The `HistoryType` enum represents the type of history that can be associated with a user's actions or
@@ -93,14 +72,10 @@ public class HistoryDocument implements History {
         return description;
     }
 
-    /**
-     * Retrieves the type of punishment associated with this HistoryDocument.
-     *
-     * @return The punishType as a PunishType object.
-     */
+
     @Override
-    public PunishType punishType() {
-        return punishType;
+    public MitigationStrategy mitigationStrategy() {
+        return mitigationStrategy;
     }
 
     /**

@@ -22,24 +22,27 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWi
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.impl.command.CommandValidation;
-import de.feelix.sierra.check.violation.Violation;
+import de.feelix.sierra.check.violation.Debug;
+import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
+import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.menu.MenuType;
-import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.FieldReader;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierra.utilities.attributes.AttributeMapper;
 import de.feelix.sierra.utilities.types.BannerType;
 import de.feelix.sierra.utilities.types.ShulkerBoxType;
-import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.check.SierraCheckData;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 import org.bukkit.entity.Player;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -86,7 +89,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         int capacity = ByteBufHelper.capacity(event.getByteBuf());
         int maxBytes = 64000 * (playerData.getClientVersion().isOlderThan(ClientVersion.V_1_8) ? 2 : 1);
         if (capacity > maxBytes) {
-            violation(event, createViolation("Bytes: " + capacity + " Max Bytes: " + maxBytes, PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("sends too big packet")
+                .debugs(Arrays.asList(new Debug<>("Bytes", capacity), new Debug<>("Max Bytes", maxBytes)))
+                .build());
         }
 
         int readableBytes     = ByteBufHelper.readableBytes(event.getByteBuf());
@@ -94,13 +101,14 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         playerData.setBytesSent(playerData.getBytesSent() + readableBytes);
 
         if (playerData.getBytesSent() > maxBytesPerSecond) {
-            violation(
-                event,
-                createViolation(
-                    "Bytes Sent: " + playerData.getBytesSent() + " Max Bytes/s: " + maxBytesPerSecond,
-                    PunishType.KICK
-                )
-            );
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("sends too big packet in a second")
+                .debugs(Arrays.asList(
+                    new Debug<>("Bytes", playerData.getBytesSent()),
+                    new Debug<>("Max Bytes", maxBytesPerSecond)
+                ))
+                .build());
         }
 
         handleClientSettings(event, playerData);
@@ -148,10 +156,18 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkLocale(WrapperPlayClientSettings wrapper, PacketReceiveEvent event) {
         if (wrapper.getLocale() == null) {
-            violation(event, createViolation("Locale is null in settings", PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send null value in packet")
+                .debugs(Collections.singletonList(new Debug<>("Tag", "ClientSettings")))
+                .build());
         }
         if (EXPLOIT_PATTERN.matcher(wrapper.getLocale()).matches()) {
-            violation(event, createViolation("Invalid locale: " + wrapper.getLocale(), PunishType.MITIGATE));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .description("send exploit in locale")
+                .debugs(Collections.singletonList(new Debug<>("Locale", wrapper.getLocale())))
+                .build());
         }
     }
 
@@ -174,17 +190,30 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkEntityAction(WrapperPlayClientEntityAction wrapper, PacketReceiveEvent event) {
         if (wrapper.getEntityId() < 0) {
-            violation(event, createViolation("Invalid entity action: " + wrapper.getEntityId(), PunishType.BAN));
+
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.BAN)
+                .description("send invalid entity id")
+                .debugs(Collections.singletonList(new Debug<>("Id", wrapper.getEntityId())))
+                .build());
         }
         if (wrapper.getJumpBoost() < 0 || wrapper.getJumpBoost() > 100) {
-            violation(event, createViolation("boost: " + wrapper.getJumpBoost(), PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send invalid jump boost")
+                .debugs(Collections.singletonList(new Debug<>("Boost", wrapper.getJumpBoost())))
+                .build());
         }
     }
 
     private void handleSpectate(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.SPECTATE
             && getPlayerData().getGameMode() != GameMode.SPECTATOR) {
-            violation(event, createViolation("Spoofed spectator state", PunishType.BAN));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.BAN)
+                .description("spoofed his game-mode")
+                .debugs(Collections.singletonList(new Debug<>("GameMode", GameMode.SPECTATOR.name())))
+                .build());
         }
     }
 
@@ -193,11 +222,15 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             WrapperPlayClientClickWindowButton wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientClickWindowButton(event), getPlayerData()::exceptionDisconnect);
             if (wrapper.getButtonId() < 0 || wrapper.getWindowId() < 0) {
-                violation(
-                    event, createViolation(
-                        "Invalid click slot: " + wrapper.getWindowId() + "/" + wrapper.getButtonId(),
-                        PunishType.BAN
-                    ));
+
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.BAN)
+                    .description("clicked on invalid button")
+                    .debugs(Arrays.asList(
+                        new Debug<>("WindowId", wrapper.getWindowId()),
+                        new Debug<>("ButtonId", wrapper.getButtonId())
+                    ))
+                    .build());
             }
         }
     }
@@ -207,7 +240,12 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             WrapperPlayClientChatMessage wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientChatMessage(event), getPlayerData()::exceptionDisconnect);
             if (wrapper.getMessage().contains("${")) {
-                violation(event, createViolation("Send log4j exploit", PunishType.KICK));
+
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.KICK)
+                    .description("send log4j exploit")
+                    .debugs(Collections.singletonList(new Debug<>("Message", wrapper.getMessage())))
+                    .build());
             }
         }
     }
@@ -223,17 +261,29 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void checkHeldItemChange(WrapperPlayClientHeldItemChange wrapper, PacketReceiveEvent event) {
         int slot = wrapper.getSlot();
         if (slot > 36 || slot < 0) {
-            violation(event, createViolation("Invalid slot at (HOTBAR): " + slot, PunishType.BAN));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.BAN)
+                .description("send invalid hot-bar slot")
+                .debugs(Collections.singletonList(new Debug<>("Slot", slot)))
+                .build());
         }
         Player player = (Player) event.getPlayer();
         if (player == null) return;
         int length = player.getInventory().getContents().length;
         if (!(wrapper.getSlot() >= 0 && wrapper.getSlot() < length)) {
-            violation(
-                event, createViolation("Invalid slot at: " + wrapper.getSlot() + ", max: " + length, PunishType.BAN));
+
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.BAN)
+                .description("send invalid hot-bar slot")
+                .debugs(Arrays.asList(new Debug<>("Slot", slot), new Debug<>("Max", length)))
+                .build());
         }
         if (slot == lastSlot) {
-            violation(event, createViolation("Selected slot twice: " + wrapper.getSlot(), PunishType.MITIGATE));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .description("send hot-bar slot twice")
+                .debugs(Arrays.asList(new Debug<>("Slot", slot), new Debug<>("Last", lastSlot)))
+                .build());
         }
         this.lastSlot = slot;
     }
@@ -248,25 +298,49 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkTabComplete(WrapperPlayClientTabComplete wrapper, PacketReceiveEvent event) {
         if (wrapper.getText() == null) {
-            violation(event, createViolation("Send packet with null value", PunishType.BAN));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.BAN)
+                .description("send null value in tab-complete")
+                .debugs(Collections.singletonList(new Debug<>("Tag", "Null")))
+                .build());
         }
         String text   = wrapper.getText();
         int    length = text.length();
         if (CommandValidation.WORLDEDIT_PATTERN.matcher(text).matches()) {
-            violation(event, createViolation("WorldEdit Pat/Tab: " + text, PunishType.MITIGATE));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .description("send invalid tab-complete")
+                .debugs(Arrays.asList(new Debug<>("Tag", "WorldEdit"), new Debug<>("Text", text)))
+                .build());
         }
         if (areBracketsTooFrequent(text, 15) || CommandValidation.WORLDEDIT_PATTERN.matcher(text).matches()) {
-            violation(event, createViolation("Text: " + wrapper.getText(), PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send invalid tab-complete")
+                .debugs(Arrays.asList(new Debug<>("Tag", "WorldEdit-Brackets"), new Debug<>("Text", text)))
+                .build());
         }
         if (length > 256) {
-            violation(event, createViolation("(length) length=" + length, PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .description("send invalid tab-complete")
+                .debugs(Arrays.asList(new Debug<>("Tag", "Length"), new Debug<>("Length", length)))
+                .build());
         }
         if ((text.equals("/") || text.trim().isEmpty()) && isSupportedServerVersion(ServerVersion.V_1_13)) {
-            violation(event, createViolation("Trimmed empty tab to zero", PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .description("send invalid tab-complete")
+                .debugs(Collections.singletonList(new Debug<>("Tag", "Trim")))
+                .build());
         }
         int index;
         if (text.length() > 64 && ((index = text.indexOf(' ')) == -1 || index >= 64)) {
-            violation(event, createViolation("(protocol) length=" + length, PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send invalid tab-complete")
+                .debugs(Collections.singletonList(new Debug<>("Length", length)))
+                .build());
         }
     }
 
@@ -284,18 +358,26 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             .toVector3d()
             .distanceSquared(playerData.getLastLocation().getPosition());
         if (distanceFromLastLocation > 64) {
-            violation(
-                event, createViolation(
-                    String.format("Sign is too far away: %.2f", distanceFromLastLocation),
-                    PunishType.KICK
-                ));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send sign update out of distance")
+                .debugs(Collections.singletonList(new Debug<>("Distance", distanceFromLastLocation)))
+                .build());
         }
         for (String textLine : wrapper.getTextLines()) {
             if (textLine.toLowerCase().contains("run_command")) {
-                violation(event, createViolation("Sign contains json command", PunishType.KICK));
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.KICK)
+                    .description("send raw json in sign update")
+                    .debugs(Collections.emptyList())
+                    .build());
             }
             if (textLine.length() > MAX_SIGN_LENGTH) {
-                violation(event, createViolation("Sign length: " + textLine.length(), PunishType.BAN));
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.BAN)
+                    .description("send to big sign-update")
+                    .debugs(Collections.singletonList(new Debug<>("Length", textLine.length())))
+                    .build());
             }
         }
     }
@@ -310,32 +392,50 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkPluginMessage(WrapperPlayClientPluginMessage wrapper, PacketReceiveEvent event,
                                     PlayerData playerData) {
+
         String channelName = wrapper.getChannelName();
+
         if (channelName.equalsIgnoreCase("MC|ItemName") && !hasOpenAnvil) {
-            violation(event, createViolation("Send anvil name, without anvil", PunishType.KICK));
+
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send anvil payload with closed inventory")
+                .debugs(Collections.emptyList())
+                .build());
         }
         if (isBookChannel(channelName) && System.currentTimeMillis() - this.lastBookUse > 60000L) {
-            violation(event, createViolation("Send book sign, without book use", PunishType.MITIGATE));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .description("send book sign without book use")
+                .debugs(Collections.emptyList())
+                .build());
         }
         if (channelName.contains("${")) {
-            violation(event, createViolation("Send protocol channel in plugin message", PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send protocol channel in plugin message")
+                .debugs(Collections.singletonList(new Debug<>("Channel", channelName)))
+                .build());
         }
         checkPayload(wrapper, event, playerData);
     }
 
     private boolean isBookChannel(String channelName) {
-        return channelName.equals("MC|BEdit") || channelName.equals("MC|BSign") || channelName.equals("minecraft:bedit")
-               || channelName.equals("minecraft:bsign");
+        return channelName.equalsIgnoreCase("MC|BEdit")
+               || channelName.equalsIgnoreCase("MC|BSign")
+               || channelName.equalsIgnoreCase("minecraft:bedit")
+               || channelName.equalsIgnoreCase("minecraft:bsign");
     }
 
     private void checkPayload(WrapperPlayClientPluginMessage wrapper, PacketReceiveEvent event, PlayerData playerData) {
         String payload = new String(wrapper.getData(), StandardCharsets.UTF_8);
         if (payload.equalsIgnoreCase("N")) {
-            violation(
-                event, createViolation(
-                    "Console Spammer of Liquid",
-                    this.violations() > 3 ? PunishType.BAN : PunishType.MITIGATE
-                ));
+
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(this.violations() > 3 ? MitigationStrategy.BAN : MitigationStrategy.MITIGATE)
+                .description("send liquid-bounce console spammer")
+                .debugs(Collections.emptyList())
+                .build());
         }
         checkBookInHand(event, payload);
         handleChannels(event, payload, playerData, wrapper.getChannelName());
@@ -348,7 +448,12 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             XMaterial xMaterial = XMaterial.matchXMaterial(player.getItemInHand());
             if (xMaterial != XMaterial.WRITABLE_BOOK && xMaterial != XMaterial.WRITTEN_BOOK
                 && xMaterial != XMaterial.BOOK) {
-                violation(event, createViolation("No book in hand", PunishType.KICK));
+
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.KICK)
+                    .description("send book packet without book in hand")
+                    .debugs(Collections.emptyList())
+                    .build());
             }
         }
     }
@@ -364,7 +469,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleRegisterChannels(PacketReceiveEvent event, PlayerData playerData, String[] channels) {
         if (playerData.getChannels().size() + channels.length > 124 || channels.length > 124) {
-            violation(event, createViolation("Invalid channel length: " + channels.length, PunishType.BAN));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.BAN)
+                .description("send to big channel in payload")
+                .debugs(Collections.singletonList(new Debug<>("Length", channels.length)))
+                .build());
         } else {
             for (String channel : channels) {
                 playerData.getChannels().add(channel);
@@ -393,7 +502,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
         if (wrapper.getSequence() < 0 && isSupportedVersion(
             ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
-            violation(event, createViolation("Invalid sequence in block place", PunishType.BAN));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.BAN)
+                .description("send invalid sequence in block place")
+                .debugs(Collections.singletonList(new Debug<>("Sequence", wrapper.getSequence())))
+                .build());
         }
         if (wrapper.getItemStack().isPresent()) {
             ItemStack itemStack = wrapper.getItemStack().get();
@@ -421,10 +534,18 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         float forward  = wrapper.getForward();
         float sideways = wrapper.getSideways();
         if (forward > 0.98f || forward < -0.98f) {
-            violation(event, createViolation(String.format("forward: %.2f", forward), PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send invalid steer vehicle")
+                .debugs(Collections.singletonList(new Debug<>("Forward", forward)))
+                .build());
         }
         if (sideways > 0.98f || sideways < -0.98f) {
-            violation(event, createViolation(String.format("sideways: %.2f", sideways), PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send invalid steer vehicle")
+                .debugs(Collections.singletonList(new Debug<>("Sideways", sideways)))
+                .build());
         }
     }
 
@@ -439,8 +560,15 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void checkInteractEntity(WrapperPlayClientInteractEntity wrapper, PacketReceiveEvent event) {
         int entityId = event.getUser().getEntityId();
         if (wrapper.getEntityId() < 0 || entityId == wrapper.getEntityId()) {
-            violation(
-                event, createViolation("Id at " + wrapper.getEntityId() + ", player id: " + entityId, PunishType.KICK));
+
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send invalid interact")
+                .debugs(Arrays.asList(
+                    new Debug<>("Id", wrapper.getEntityId()),
+                    new Debug<>("Own", entityId == wrapper.getEntityId())
+                ))
+                .build());
         }
     }
 
@@ -454,14 +582,26 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkNameItem(WrapperPlayClientNameItem wrapper, PacketReceiveEvent event) {
         if (wrapper.getItemName().contains("${")) {
-            violation(event, createViolation("Send log4j exploit in item name", PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send log4j exploit in item name")
+                .debugs(Collections.singletonList(new Debug<>("Message", wrapper.getItemName())))
+                .build());
         }
         int length = wrapper.getItemName().length();
         if (length > 0 && FieldReader.isReadable(wrapper.getItemName())) {
-            violation(event, createViolation("Name is not readable: " + wrapper.getItemName(), PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send unreadable item name")
+                .debugs(Collections.singletonList(new Debug<>("Name", wrapper.getItemName())))
+                .build());
         }
         if (length > 50) {
-            violation(event, createViolation("Name longer than 50: " + length, PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send too big item name")
+                .debugs(Collections.singletonList(new Debug<>("Length", length)))
+                .build());
         }
     }
 
@@ -476,7 +616,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkPlayerDigging(WrapperPlayClientPlayerDigging dig, PacketReceiveEvent event) {
         if (dig.getSequence() < 0 && isSupportedVersion(ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
-            violation(event, createViolation("Invalid sequence in dig", PunishType.BAN));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.BAN)
+                .description("send invalid dig sequence")
+                .debugs(Collections.emptyList())
+                .build());
         }
     }
 
@@ -486,7 +630,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             WrapperPlayClientUseItem use = CastUtil.getSupplier(
                 () -> new WrapperPlayClientUseItem(event), playerData::exceptionDisconnect);
             if (use.getSequence() < 0) {
-                violation(event, createViolation("Invalid sequence in use item", PunishType.BAN));
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.BAN)
+                    .description("send invalid use item sequence")
+                    .debugs(Collections.emptyList())
+                    .build());
             }
         }
     }
@@ -508,7 +656,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             int button    = wrapper.getButton();
             int windowId  = wrapper.getWindowId();
             if (type == MenuType.LECTERN && windowId > 0 && windowId == lecternId) {
-                violation(event, createViolation("clickType=" + clickType + ", button=" + button, PunishType.KICK));
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.KICK)
+                    .description("send invalid window click")
+                    .debugs(Arrays.asList(new Debug<>("ClickType", clickType), new Debug<>("Button", button)))
+                    .build());
             }
         }
 
@@ -538,25 +690,49 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkGenericBookPages(PacketReceiveEvent event, ItemStack itemStack) {
-        //noinspection DataFlowIssue
+
+        if (itemStack == null || itemStack.getNBT() == null) return;
+
         NBTList<NBTString> pages = itemStack.getNBT().getStringListTagOrNull("pages");
+
         if (pages == null) return;
+
         if (pages.getTags().size() > 50) {
-            violation(event, createViolation("Too many pages, pv", PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send book with too many pages")
+                .debugs(Collections.singletonList(new Debug<>("Pages", pages.getTags().size())))
+                .build());
         }
         int totalLength = pages.getTags().stream().mapToInt(tag -> tag.getValue().length()).sum();
         if (totalLength > 12800) {
-            violation(event, createViolation("Reached general book limit", PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .description("send book with too big content")
+                .debugs(Arrays.asList(new Debug<>("Length", totalLength), new Debug<>("Max", 12800)))
+                .build());
         }
     }
 
     private void checkLanguageExploit(PacketReceiveEvent event, ItemStack itemStack) {
-        //noinspection DataFlowIssue
+
+        if (itemStack == null || itemStack.getNBT() == null) return;
+
         String mapped = FormatUtils.mapToString(itemStack.getNBT().getTags());
+
         if (mapped.contains("translate") || mapped.contains("options.snooper.desc")
             || FormatUtils.countOccurrences(mapped, "translate") > 20) {
+
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .description("send raw translate request")
+                .debugs(Arrays.asList(
+                    new Debug<>("Contains", mapped.contains("translate")),
+                    new Debug<>("Snooper", mapped.contains("options.snooper.desc")),
+                    new Debug<>("Count", FormatUtils.countOccurrences(mapped, "translate")),
+                    new Debug<>("Max Count", 20)
+                )).build());
             itemStack.setNBT(new NBTCompound());
-            violation(event, createViolation("Contains translate request", PunishType.MITIGATE));
         }
     }
 
@@ -590,24 +766,52 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("generic-nbt-limit", true)) {
             return;
         }
-        //noinspection DataFlowIssue
+
+        if (itemStack == null || itemStack.getNBT() == null) return;
+
         int length = FormatUtils.mapToString(itemStack.getNBT().getTags()).length();
         int limit  = getPlayerData().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_16) ? 30000 : 25000;
         if (length > limit) {
-            violation(event, createViolation("length=" + length + ", limit=" + limit, PunishType.MITIGATE));
+
+            dispatch(event, ViolationDocument.builder()
+                .description("send item-stack with too big nbt tag")
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .debugs(Arrays.asList(new Debug<>("Length", length), new Debug<>("Limit", limit)))
+                .build());
         }
     }
 
     private void handleAttributeViolation(ProtocolPacketEvent<Object> event, boolean vanillaMapping,
                                           AttributeMapper attributeMapper, NBTCompound tag) {
-        //noinspection DataFlowIssue
-        double amount = tag.getNumberTagOrNull("Amount").getAsDouble();
+
+        if (tag == null) return;
+
+        NBTNumber numberTagOrNull = tag.getNumberTagOrNull("Amount");
+
+        if (numberTagOrNull == null) return;
+
+        double amount = numberTagOrNull.getAsDouble();
+
         if (isAmountInvalid(vanillaMapping, attributeMapper, amount)) {
-            violation(event, createViolation("Invalid attribute modifier. Amount: " + amount, PunishType.KICK));
+
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid attribute modifier")
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .debugs(Collections.singletonList(new Debug<>("Amount", amount)))
+                .build());
+
         } else if (!vanillaMapping && isSierraModifierInvalid(amount)) {
-            violation(event, createViolation("Sierra attribute modifier. Amount: " + amount, PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid sierra-attribute modifier")
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .debugs(Collections.singletonList(new Debug<>("Amount", amount)))
+                .build());
         } else if (FormatUtils.checkDoublePrecision(amount)) {
-            violation(event, createViolation("Double is to precisely", PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid attribute modifier")
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .debugs(Collections.singletonList(new Debug<>("Tag", "Precision")))
+                .build());
         }
     }
 
@@ -629,7 +833,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         NBTList<NBTCompound> items = nbt.getTagListOfTypeOrNull("Items", NBTCompound.class);
         if (items != null) {
             if (items.size() > 64) {
-                violation(event, createViolation("Too big items list", PunishType.MITIGATE));
+                dispatch(event, ViolationDocument.builder()
+                    .description("send to big item-list")
+                    .mitigationStrategy(MitigationStrategy.MITIGATE)
+                    .debugs(Collections.singletonList(new Debug<>("Size", items.size())))
+                    .build());
             }
             for (NBTCompound tag : items.getTags()) {
                 checkItemTag(tag, event);
@@ -640,11 +848,18 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkItemTag(NBTCompound tag, PacketReceiveEvent event) {
-        if (tag.getStringTagOrNull("id") != null) {
-            //noinspection DataFlowIssue
-            String value = tag.getStringTagOrNull("id").getValue();
-            if (value.equalsIgnoreCase("minecraft:air") || value.equalsIgnoreCase("minecraft:bundle")) {
-                violation(event, createViolation("Invalid item: " + value, PunishType.MITIGATE));
+        NBTString id = tag.getStringTagOrNull("id");
+
+        if (id != null) {
+            String value = id.getValue();
+            if (value.equalsIgnoreCase("minecraft:air")
+                || value.equalsIgnoreCase("minecraft:bundle")) {
+
+                dispatch(event, ViolationDocument.builder()
+                    .description("send invalid item-stack id")
+                    .mitigationStrategy(MitigationStrategy.MITIGATE)
+                    .debugs(Collections.singletonList(new Debug<>("Id", value)))
+                    .build());
             }
         }
     }
@@ -658,7 +873,12 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 if (tag1 != null && tag1.getStringTagOrNull("Potion") != null && tag1.getStringTagOrNull("Potion")
                     .getValue()
                     .endsWith("empty")) {
-                    violation(event, createViolation("Invalid projectile: empty", PunishType.MITIGATE));
+
+                    dispatch(event, ViolationDocument.builder()
+                        .description("send invalid projectile tag")
+                        .mitigationStrategy(MitigationStrategy.MITIGATE)
+                        .debugs(Collections.singletonList(new Debug<>("Tag", "empty")))
+                        .build());
                 }
             }
         }
@@ -670,18 +890,15 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             int asInt = customModelData.getAsInt();
             //noinspection ConditionCoveredByFurtherCondition
             if (asInt == Integer.MIN_VALUE || asInt == Integer.MAX_VALUE || asInt < 0) {
-                if(!SierraDataManager.skipModelCheck) {
-                    violation(event, createViolation("Invalid custom model data: " + asInt, PunishType.MITIGATE));
+                if (!SierraDataManager.skipModelCheck) {
+                    dispatch(event, ViolationDocument.builder()
+                        .description("send invalid custom-model data")
+                        .mitigationStrategy(MitigationStrategy.MITIGATE)
+                        .debugs(Collections.singletonList(new Debug<>("Data", asInt)))
+                        .build());
                 }
             }
         }
-    }
-
-    public Violation createViolation(String debugInformation, PunishType punishType) {
-        return Violation.builder()
-            .debugInformation(debugInformation)
-            .punishType(punishType)
-            .build();
     }
 
     private void checkForInvalidSlot(PacketReceiveEvent event, WrapperPlayClientClickWindow wrapper) {
@@ -698,8 +915,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
 
         if (invalid) {
-            violation(event, createViolation("Invalid slot " + slot + ", max: " + max,
-                                             PunishType.MITIGATE));
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid slot packet")
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .debugs(Arrays.asList(new Debug<>("Slot", slot), new Debug<>("Max", max)))
+                .build());
         }
     }
 
@@ -712,11 +932,16 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         int     button    = wrapper.getButton();
         boolean flag      = isInvalidButtonClick(clickType, button);
         if (flag) {
-            violation(
-                event, createViolation(
-                    "clickType=" + clickType + " button=" + button + (wrapper.getWindowId() == containerId
-                        ? " container=" + containerType
-                        : ""), PunishType.MITIGATE));
+
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid button click position")
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .debugs(Arrays.asList(new Debug<>("ClickType", clickType), new Debug<>("Button", button),
+                                      new Debug<>("Container", (wrapper.getWindowId() == containerId
+                                          ? containerType
+                                          : "Empty"))
+                ))
+                .build());
         }
     }
 
@@ -740,11 +965,19 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkForInvalidShulker(PacketReceiveEvent event, ItemStack itemStack) {
+
+        if (itemStack == null || itemStack.getNBT() == null) return;
+
         if (isShulkerBox(itemStack)) {
-            //noinspection DataFlowIssue
             String string = FormatUtils.mapToString(itemStack.getNBT().getTags());
-            if (string.getBytes(StandardCharsets.UTF_8).length > 10000) {
-                violation(event, createViolation("Invalid shulker size", PunishType.KICK));
+            int    length = string.getBytes(StandardCharsets.UTF_8).length;
+            if (length > 10000) {
+
+                dispatch(event, ViolationDocument.builder()
+                    .description("send to big shulker box")
+                    .mitigationStrategy(MitigationStrategy.KICK)
+                    .debugs(Arrays.asList(new Debug<>("Size", length), new Debug<>("Max", 10000)))
+                    .build());
             }
         }
     }
@@ -773,10 +1006,21 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkForInvalidSizeAndPresence(PacketReceiveEvent event, String string) {
         if (string.getBytes(StandardCharsets.UTF_8).length > MAX_BYTE_SIZE) {
-            violation(event, createViolation("Invalid container size", PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .description("send to big container")
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .debugs(Arrays.asList(
+                    new Debug<>("Size", string.getBytes(StandardCharsets.UTF_8).length),
+                    new Debug<>("Max", MAX_BYTE_SIZE)
+                ))
+                .build());
         }
         if (string.contains(WURSTCLIENT_URL)) {
-            violation(event, createViolation("Wurstclient container", PunishType.BAN));
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid container")
+                .mitigationStrategy(MitigationStrategy.BAN)
+                .debugs(Collections.singletonList(new Debug<>("Tag", "WurstClient")))
+                .build());
         }
     }
 
@@ -803,16 +1047,32 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         NBTList<NBTCompound> tagOrNull = itemStack.getNBT().getCompoundListTagOrNull(s);
         if (tagOrNull != null) {
             if (tagOrNull.getTags().size() > 50) {
-                violation(event, createViolation("Too big nbt list size", PunishType.KICK));
+                dispatch(event, ViolationDocument.builder()
+                    .description("send invalid nbt list size")
+                    .mitigationStrategy(MitigationStrategy.KICK)
+                    .debugs(Arrays.asList(new Debug<>("Size", tagOrNull.getTags().size()), new Debug<>("Max", 50)))
+                    .build());
             }
             for (NBTCompound tag : tagOrNull.getTags()) {
                 if (tag == null || tag.toString().equalsIgnoreCase("null") || tag.toString().length() > 900) {
-                    violation(event, createViolation("Invalid tag in nbt list", PunishType.KICK));
+
+                    dispatch(event, ViolationDocument.builder()
+                        .description("send invalid nbt list")
+                        .mitigationStrategy(MitigationStrategy.KICK)
+                        .debugs(Arrays.asList(
+                            new Debug<>("Size", tagOrNull.getTags().size()),
+                            new Debug<>("Tag", "Null/Length")
+                        ))
+                        .build());
                 }
             }
         }
         if (listContent.incrementAndGet() > 10) {
-            violation(event, createViolation("Too many nbt lists", PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .description("send too many invalid nbt list")
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .debugs(Collections.singletonList(new Debug<>("Content", listContent.get())))
+                .build());
         }
     }
 
@@ -821,15 +1081,27 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         NBTList<NBTIntArray> tagListOfTypeOrNull = itemStack.getNBT().getTagListOfTypeOrNull(key, NBTIntArray.class);
         if (tagListOfTypeOrNull != null) {
             if (tagListOfTypeOrNull.size() > 50) {
-                violation(event, createViolation("Too big int array size", PunishType.KICK));
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.KICK)
+                    .description("send invalid int array")
+                    .debugs(Collections.singletonList(new Debug<>("Tag", "Size")))
+                    .build());
             }
             for (NBTIntArray tag : tagListOfTypeOrNull.getTags()) {
                 if (tag.getValue().length > 150) {
-                    violation(event, createViolation("Invalid integer length", PunishType.KICK));
+                    dispatch(event, ViolationDocument.builder()
+                        .mitigationStrategy(MitigationStrategy.KICK)
+                        .description("send invalid int array")
+                        .debugs(Collections.singletonList(new Debug<>("Tag", "Length")))
+                        .build());
                 }
                 for (int i : tag.getValue()) {
                     if (i == Integer.MAX_VALUE || i == Integer.MIN_VALUE) {
-                        violation(event, createViolation("Integer size out of bounds", PunishType.KICK));
+                        dispatch(event, ViolationDocument.builder()
+                            .mitigationStrategy(MitigationStrategy.KICK)
+                            .description("send invalid int array")
+                            .debugs(Collections.singletonList(new Debug<>("Tag", "MAX")))
+                            .build());
                     }
                 }
             }
@@ -841,15 +1113,27 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         NBTList<NBTLongArray> tagListOfTypeOrNull = itemStack.getNBT().getTagListOfTypeOrNull(key, NBTLongArray.class);
         if (tagListOfTypeOrNull != null) {
             if (tagListOfTypeOrNull.size() > 50) {
-                violation(event, createViolation("Too big long array size", PunishType.KICK));
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.KICK)
+                    .description("send invalid long array")
+                    .debugs(Collections.singletonList(new Debug<>("Tag", "Size")))
+                    .build());
             }
             for (NBTLongArray tag : tagListOfTypeOrNull.getTags()) {
                 if (tag.getValue().length > 150) {
-                    violation(event, createViolation("Invalid long length", PunishType.KICK));
+                    dispatch(event, ViolationDocument.builder()
+                        .mitigationStrategy(MitigationStrategy.KICK)
+                        .description("send invalid long array")
+                        .debugs(Collections.singletonList(new Debug<>("Tag", "Length")))
+                        .build());
                 }
                 for (long i : tag.getValue()) {
                     if (i == Long.MAX_VALUE || i == Long.MIN_VALUE) {
-                        violation(event, createViolation("Long size out of bounds", PunishType.KICK));
+                        dispatch(event, ViolationDocument.builder()
+                            .mitigationStrategy(MitigationStrategy.KICK)
+                            .description("send invalid long array")
+                            .debugs(Collections.singletonList(new Debug<>("Tag", "Max")))
+                            .build());
                     }
                 }
             }
@@ -861,15 +1145,27 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         NBTList<NBTByteArray> tagListOfTypeOrNull = itemStack.getNBT().getTagListOfTypeOrNull(key, NBTByteArray.class);
         if (tagListOfTypeOrNull != null) {
             if (tagListOfTypeOrNull.size() > 50) {
-                violation(event, createViolation("Too big byte array size", PunishType.KICK));
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.KICK)
+                    .description("send invalid byte array")
+                    .debugs(Collections.singletonList(new Debug<>("Tag", "Size")))
+                    .build());
             }
             for (NBTByteArray tag : tagListOfTypeOrNull.getTags()) {
                 if (tag.getValue().length > 150) {
-                    violation(event, createViolation("Invalid byte length", PunishType.KICK));
+                    dispatch(event, ViolationDocument.builder()
+                        .mitigationStrategy(MitigationStrategy.KICK)
+                        .description("send invalid byte array")
+                        .debugs(Collections.singletonList(new Debug<>("Tag", "Length")))
+                        .build());
                 }
                 for (byte i : tag.getValue()) {
                     if (i == Byte.MAX_VALUE || i == Byte.MIN_VALUE) {
-                        violation(event, createViolation("Byte size out of bounds", PunishType.KICK));
+                        dispatch(event, ViolationDocument.builder()
+                            .mitigationStrategy(MitigationStrategy.KICK)
+                            .description("send invalid byte array")
+                            .debugs(Collections.singletonList(new Debug<>("Tag", "Max")))
+                            .build());
                     }
                 }
             }
@@ -901,11 +1197,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void checkInvalidCustomName(PacketReceiveEvent event, NBTCompound entityTag) {
         NBTString customName = entityTag.getStringTagOrNull("CustomName");
         if (customName != null && customName.getValue().length() > 70) {
-            violation(
-                event, createViolation(
-                    "Invalid armor stand name length: " + customName.getValue().length(),
-                    PunishType.MITIGATE
-                ));
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .description("send invalid armor stand name")
+                .debugs(Collections.singletonList(new Debug<>("Length", customName.getValue().length())))
+                .build());
         }
     }
 
@@ -924,8 +1220,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             for (NBTNumber tag : rotation.getTags()) {
                 float armorStandRotation = tag.getAsFloat();
                 if (armorStandRotation < 0 || armorStandRotation > 360) {
-                    violation(
-                        event, createViolation("Invalid armor stand rotation: " + armorStandRotation, PunishType.KICK));
+                    dispatch(event, ViolationDocument.builder()
+                        .mitigationStrategy(MitigationStrategy.KICK)
+                        .description("send invalid armor stand rotation")
+                        .debugs(Collections.singletonList(new Debug<>("Rotation", armorStandRotation)))
+                        .build());
                 }
             }
         }
@@ -939,7 +1238,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 if (skullOwner != null) {
                     String name = skullOwner.getValue();
                     if (name.length() < 3 || name.length() > 16 || !name.matches("^[a-zA-Z0-9_\\-.]{3,16}$")) {
-                        violation(event, createViolation("Invalid skull owner name: " + name, PunishType.KICK));
+                        dispatch(event, ViolationDocument.builder()
+                            .mitigationStrategy(MitigationStrategy.KICK)
+                            .description("send invalid skull name")
+                            .debugs(Collections.singletonList(new Debug<>("Name", name)))
+                            .build());
                     }
                 }
             }
@@ -952,12 +1255,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             for (NBTNumber tag : angles.getTags()) {
                 double value = tag.getAsDouble();
                 if (value < -360.0 || value > 360.0) {
-                    violation(
-                        event, createViolation(
-                            String.format("Invalid rotation, limb: %s[%s]", limb, value),
-                            PunishType.KICK
-                        ));
-                    return;
+                    dispatch(event, ViolationDocument.builder()
+                        .mitigationStrategy(MitigationStrategy.KICK)
+                        .description("send invalid armor stand limb rotation")
+                        .debugs(Arrays.asList(new Debug<>("Rotation", value), new Debug<>("Limb", limb)))
+                        .build());
                 }
             }
         }
@@ -977,7 +1279,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
         List<NBTCompound> tags = tagOrNull.getTags();
         if (tags.size() > MAX_BANNER_LAYERS) {
-            createViolation(event, "Too many banner layers");
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid banner layers")
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .debugs(Arrays.asList(new Debug<>("Size", tags.size()), new Debug<>("Max", MAX_BANNER_LAYERS)))
+                .build());
             return;
         }
         for (NBTCompound tag : tags) {
@@ -988,30 +1294,55 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void validatePattern(PacketReceiveEvent event, NBTString pattern) {
         if (pattern == null || pattern.getValue() == null) {
-            createViolation(event, "Banner pattern is null");
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid banner pattern")
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .debugs(Collections.singletonList(new Debug<>("Tag", "Null")))
+                .build());
             return;
         }
         if (pattern.getValue().length() > MAX_PATTERN_LENGTH) {
-            createViolation(event, "Banner pattern is too long: " + pattern.getValue().length());
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid banner pattern length")
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .debugs(Arrays.asList(
+                    new Debug<>("Length", pattern.getValue().length()),
+                    new Debug<>("Max", MAX_PATTERN_LENGTH)
+                ))
+                .build());
         }
-    }
-
-    private void createViolation(PacketReceiveEvent event, String message) {
-        violation(event, createViolation(message, PunishType.MITIGATE));
     }
 
     private void validateColor(PacketReceiveEvent event, NBTNumber color) {
         if (color == null) {
-            createViolation(event, "Banner color is null");
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid banner color")
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .debugs(Collections.singletonList(
+                    new Debug<>("Tag", "null")
+                ))
+                .build());
             return;
         }
         try {
             int rgb = color.getAsInt();
             if (rgb < MIN_VALID_COLOR || rgb > MAX_VALID_COLOR) {
-                createViolation(event, "Banner color is protocol: " + rgb);
+                dispatch(event, ViolationDocument.builder()
+                    .description("send invalid banner color")
+                    .mitigationStrategy(MitigationStrategy.MITIGATE)
+                    .debugs(Collections.singletonList(
+                        new Debug<>("Color", rgb)
+                    ))
+                    .build());
             }
         } catch (Exception exception) {
-            createViolation(event, "BANNER: " + exception.getMessage());
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid banner color")
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .debugs(Collections.singletonList(
+                    new Debug<>("Exception", exception.getMessage())
+                ))
+                .build());
         }
     }
 
@@ -1047,11 +1378,16 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkSetExperience(WrapperPlayServerSetExperience wrapper, PacketSendEvent event) {
         if (wrapper.getLevel() < 0 || wrapper.getExperienceBar() < 0 || wrapper.getTotalExperience() < 0) {
-            violation(
-                event, createViolation(
-                    String.format("Stats at %d/%s/%d", wrapper.getLevel(), wrapper.getExperienceBar(),
-                                  wrapper.getTotalExperience()
-                    ), PunishType.KICK));
+
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid experience request")
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .debugs(Arrays.asList(
+                    new Debug<>("Level", wrapper.getLevel()),
+                    new Debug<>("Experience Bar", wrapper.getExperienceBar()),
+                    new Debug<>("Total", wrapper.getTotalExperience())
+                ))
+                .build());
         }
     }
 
@@ -1097,20 +1433,37 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         int slot      = wrapper.getSlot();
 
         if (button < 0 || windowId < 0) {
-            violation(
-                event, createViolation(
-                    "Button: " + button + ", window: " + windowId + ", slot: " + slot,
-                    PunishType.KICK
-                ));
+
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid window click")
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .debugs(Arrays.asList(new Debug<>("Button", button), new Debug<>("Window", windowId),
+                                      new Debug<>("Slot", slot)
+                ))
+                .build());
         }
         if ((clickType == 1 || clickType == 2) && windowId >= 0 && button < 0) {
-            violation(event, createViolation("clickType=" + clickType + ", button=" + button, PunishType.KICK));
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid window click")
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .debugs(Arrays.asList(
+                    new Debug<>("Button", button),
+                    new Debug<>("Window", windowId),
+                    new Debug<>("ClickType", clickType),
+                    new Debug<>("Slot", slot)
+                ))
+                .build());
         } else if (windowId >= 0 && clickType == 2 && slot < 0) {
-            violation(
-                event, createViolation(
-                    "clickType=" + clickType + ", button=" + button + ", slot=" + slot,
-                    PunishType.KICK
-                ));
+            dispatch(event, ViolationDocument.builder()
+                .description("send invalid window click")
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .debugs(Arrays.asList(
+                    new Debug<>("Button", button),
+                    new Debug<>("Window", windowId),
+                    new Debug<>("ClickType", clickType),
+                    new Debug<>("Slot", slot)
+                ))
+                .build());
         }
     }
 }

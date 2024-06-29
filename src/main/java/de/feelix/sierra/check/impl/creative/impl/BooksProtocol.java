@@ -9,7 +9,7 @@ import de.feelix.sierra.check.impl.creative.ItemCheck;
 import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.Triple;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.Collections;
 import java.util.List;
@@ -22,15 +22,15 @@ public class BooksProtocol implements ItemCheck {
 
 
     @Override
-    public Triple<String, PunishType, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
-                                                               NBTCompound nbtCompound, PlayerData playerData) {
+    public Triple<String, MitigationStrategy, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                                          NBTCompound nbtCompound, PlayerData playerData) {
 
         if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("disable-books-completely", false)) {
             return null;
         }
 
         if (clickedStack.getType() == ItemTypes.WRITTEN_BOOK || clickedStack.getType() == ItemTypes.WRITABLE_BOOK) {
-            return new Triple<>("used an book, while disabled", PunishType.BAN, Collections.emptyList());
+            return new Triple<>("used an book, while disabled", MitigationStrategy.BAN, Collections.emptyList());
         }
         return null;
     }

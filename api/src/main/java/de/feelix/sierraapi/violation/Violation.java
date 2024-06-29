@@ -13,10 +13,12 @@ public interface Violation {
      */
     String debugInformation();
 
+    String description();
+
     /**
      * Retrieves the punishment type of the violation document.
      *
      * @return The punishment type of the violation document.
      */
-    PunishType punishType();
+    MitigationStrategy mitigationStrategy();
 }

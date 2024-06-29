@@ -14,14 +14,14 @@ import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.impl.creative.impl.*;
 import de.feelix.sierra.check.violation.Debug;
-import de.feelix.sierra.check.violation.Violation;
+import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.Triple;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -109,10 +109,9 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
 
         NBTList<NBTCompound> items = blockEntityTag.getCompoundListTagOrNull(ITEMS_KEY);
         if (items == null || exceededMaxItems(items)) {
-            this.violation(event, Violation.builder()
-                .punishType(PunishType.BAN)
+            this.dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.BAN)
                 .description("performed invalid item click")
-                .points(1)
                 .debugs(Arrays.asList(
                     new Debug<>("Items", items != null ? items.size() : 0),
                     new Debug<>("Recursion", recursionCount),
@@ -162,7 +161,7 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
 
     private boolean performItemChecks(PacketReceiveEvent event, ItemStack item, NBTCompound tag, PlayerData data) {
         for (ItemCheck check : checks) {
-            Triple<String, PunishType, List<Debug<?>>> crashDetails = check.handleCheck(event, item, tag, data);
+            Triple<String, MitigationStrategy, List<Debug<?>>> crashDetails = check.handleCheck(event, item, tag, data);
             if (crashDetails != null) {
                 List<Debug<?>> debugs = crashDetails.getThird();
 
@@ -171,10 +170,9 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
                     new Debug<>("Recursion", recursionCount)
                 ));
 
-                this.violation(event, Violation.builder()
-                    .punishType(crashDetails.getSecond())
+                this.dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(crashDetails.getSecond())
                     .description(crashDetails.getFirst())
-                    .points(1)
                     .debugs(debugs)
                     .build());
                 return true;

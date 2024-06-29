@@ -45,9 +45,9 @@ commands:
     # {username}: Username
     # {ping}: User's ping in milliseconds
     # {version}: User's version
-    # {punishType}: Type of punishment
+    # {mitigationStrategy}: Type of punishment
     # {description}: Description of the punishment
-    entry: "&7{timestamp} &3{username}&8/&b{version} &7({ping}ms) -> &b{punishType}"
+    entry: "&7{timestamp} &3{username}&8/&b{version} &7({ping}ms) -> &b{mitigationStrategy}"
 
     # History hover info
     # {prefix}: Prefix
@@ -141,4 +141,4 @@ layout:
     alert-command: "/tp {username}"
 
     # Hover information on mitigation / punishment
-    alert-content: " &7Username: &b{username}{n} &7Version: &b{clientVersion}{n} &7Brand: &b{brand}{n} &7Exist since: &b{ticksExisted}{n} &7Game mode: &b{gameMode}{n} &7Tag: &b{tags}{n} &7Debug info: &b{debugInfo}{n}{n} {alertNote}"
+    alert-content: " &7Username: &b{username}{n} &7Version: &b{clientVersion}{n} &7Brand: &b{brand}{n} &7Exist since: &b{ticksExisted}{n} &7Game mode: &b{gameMode}{n} &7Tag: &b{tags}{n} &7Description: &b{description}{n} &7Debug info: &b{debugInfo}{n}{n} {alertNote}"

@@ -12,7 +12,7 @@ import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.Triple;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,8 +27,8 @@ import java.util.List;
 public class FireworkSize implements ItemCheck {
 
     @Override
-    public Triple<String, PunishType, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
-                                                                  NBTCompound nbtCompound, PlayerData playerData) {
+    public Triple<String, MitigationStrategy, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                                          NBTCompound nbtCompound, PlayerData playerData) {
 
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
 
@@ -40,7 +40,7 @@ public class FireworkSize implements ItemCheck {
             if (wrapper.getItemStack().isPresent()) {
                 if (this.invalid(wrapper.getItemStack().get())) {
                     return new Triple<>(
-                        "interacted with invalid firework", PunishType.BAN,
+                        "interacted with invalid firework", MitigationStrategy.BAN,
                         Collections.singletonList(new Debug<>("Type", "Place"))
                     );
                 }
@@ -53,7 +53,7 @@ public class FireworkSize implements ItemCheck {
             if (wrapper.getCarriedItemStack() != null) {
                 if (this.invalid(wrapper.getCarriedItemStack())) {
                     return new Triple<>(
-                        "interacted with invalid firework", PunishType.BAN,
+                        "interacted with invalid firework", MitigationStrategy.BAN,
                         Collections.singletonList(new Debug<>("Type", "Click"))
                     );
                 }
@@ -61,7 +61,7 @@ public class FireworkSize implements ItemCheck {
         }
 
         if (invalid(clickedStack)) {
-            return new Triple<>("interacted with invalid firework", PunishType.BAN, Collections.emptyList());
+            return new Triple<>("interacted with invalid firework", MitigationStrategy.BAN, Collections.emptyList());
         }
         return null;
     }

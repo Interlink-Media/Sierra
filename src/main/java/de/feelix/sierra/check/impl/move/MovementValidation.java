@@ -12,7 +12,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientVe
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.Debug;
-import de.feelix.sierra.check.violation.Violation;
+import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
@@ -20,7 +20,7 @@ import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.check.SierraCheckData;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -126,10 +126,9 @@ public class MovementValidation extends SierraDetection implements IngoingProces
                 long   delay      = System.nanoTime() - timerBalanceRealTime;
                 double calculated = FormatUtils.calculateResult(delay);
 
-                this.violation(event, Violation.builder()
+                this.dispatch(event, ViolationDocument.builder()
                     .description("is moving invalid")
-                    .points(1)
-                    .punishType(this.violations() > 30 ? PunishType.KICK : PunishType.MITIGATE)
+                    .mitigationStrategy(this.violations() > 30 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
                     .debugs(Collections.singletonList(
                         new Debug<>("Ticks", String.format("%.5f ticks ahead", Math.abs(calculated)))))
                     .build());
@@ -164,9 +163,9 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
     private void checkValue(PacketReceiveEvent event, double x, double y, double z, float yaw, float pitch) {
         if (invalidValue(x, y, z)) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("is moving invalid")
-                .punishType(PunishType.KICK)
+                .mitigationStrategy(MitigationStrategy.KICK)
                 .debugs(Arrays.asList(
                     new Debug<>("X", x),
                     new Debug<>("Y", y),
@@ -177,9 +176,9 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         }
 
         if (invalidValue(yaw, pitch)) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("is rotating invalid")
-                .punishType(PunishType.KICK)
+                .mitigationStrategy(MitigationStrategy.KICK)
                 .debugs(Arrays.asList(
                     new Debug<>("Yaw", yaw),
                     new Debug<>("Pitch", pitch),
@@ -196,9 +195,9 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         if (Math.abs(pitch) > 90.01 || isOutOfRange(yaw) || isOutOfRange(pitch) || yaw == SPECIAL_VALUE
             || pitch == SPECIAL_VALUE) {
 
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("is rotating invalid")
-                .punishType(PunishType.KICK)
+                .mitigationStrategy(MitigationStrategy.KICK)
                 .debugs(Arrays.asList(
                     new Debug<>("Yaw", yaw),
                     new Debug<>("Pitch", pitch)
@@ -217,9 +216,9 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
         if (deltaXZ > 7 && getPlayerData().getGameMode() == GameMode.SURVIVAL) {
             if (++deltaBuffer > 10) {
-                this.violation(event, Violation.builder()
+                this.dispatch(event, ViolationDocument.builder()
                     .description("is moving invalid")
-                    .punishType(PunishType.KICK)
+                    .mitigationStrategy(MitigationStrategy.KICK)
                     .debugs(Arrays.asList(
                         new Debug<>("DeltaXZ", deltaXZ),
                         new Debug<>("Buffer", deltaBuffer),
@@ -232,9 +231,9 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         }
 
         if (invalidDeltaValue(deltaX, deltaY, deltaZ)) {
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("is moving invalid")
-                .punishType(PunishType.KICK)
+                .mitigationStrategy(MitigationStrategy.KICK)
                 .debugs(Arrays.asList(
                     new Debug<>("DeltaX", deltaX),
                     new Debug<>("DeltaY", deltaY),
@@ -259,9 +258,9 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     private void processBufferAndViolation(long travelTime, PacketReceiveEvent event) {
         if (travelTime < 20) {
             if (++buffer > 5) {
-                this.violation(event, Violation.builder()
+                this.dispatch(event, ViolationDocument.builder()
                     .description("is moving invalid")
-                    .punishType(PunishType.KICK)
+                    .mitigationStrategy(MitigationStrategy.KICK)
                     .debugs(Arrays.asList(
                         new Debug<>("Chunks", buffer),
                         new Debug<>("Time", (travelTime / buffer)),
@@ -278,9 +277,9 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         if (Math.abs(position.getX()) > HARD_CODED_BORDER || Math.abs(position.getY()) > HARD_CODED_BORDER
             || Math.abs(position.getZ()) > HARD_CODED_BORDER) {
 
-            this.violation(event, Violation.builder()
+            this.dispatch(event, ViolationDocument.builder()
                 .description("is moving invalid")
-                .punishType(PunishType.BAN)
+                .mitigationStrategy(MitigationStrategy.BAN)
                 .debugs(Collections.singletonList(new Debug<>("Tag", "out of border")
                 )).build());
         }

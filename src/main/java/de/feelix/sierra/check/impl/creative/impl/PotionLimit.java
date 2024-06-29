@@ -9,7 +9,7 @@ import de.feelix.sierra.check.impl.creative.ItemCheck;
 import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.Triple;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,8 +22,8 @@ public class PotionLimit implements ItemCheck {
 
 
     @Override
-    public Triple<String, PunishType, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
-                                                                  NBTCompound nbtCompound, PlayerData playerData) {
+    public Triple<String, MitigationStrategy, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                                          NBTCompound nbtCompound, PlayerData playerData) {
         if (!nbtCompound.getTags().containsKey("CustomPotionEffects")) {
             return null;
         }
@@ -36,7 +36,7 @@ public class PotionLimit implements ItemCheck {
         //Limit how many custom potion effects a potion can have
         if (potionEffects.size() >= maxPotionEffects) {
             return new Triple<>(
-                "interacted with too big potion", PunishType.KICK,
+                "interacted with too big potion", MitigationStrategy.KICK,
                 Arrays.asList(new Debug<>("Size", potionEffects.size()), new Debug<>("Max", maxPotionEffects))
             );
         }
@@ -50,7 +50,7 @@ public class PotionLimit implements ItemCheck {
                     int maxEffectDuration = 9600;
                     if (nbtNumber.getAsInt() >= maxEffectDuration) {
                         return new Triple<>(
-                            "interacted with too big potion", PunishType.KICK,
+                            "interacted with too big potion", MitigationStrategy.KICK,
                             Arrays.asList(
                                 new Debug<>("Duration", nbtNumber.getAsInt()), new Debug<>("Max", maxEffectDuration))
                         );
@@ -66,7 +66,7 @@ public class PotionLimit implements ItemCheck {
                 if (nbtNumber != null) {
                     if (nbtNumber.getAsInt() < 0) {
                         return new Triple<>(
-                            "interacted with invalid potion", PunishType.BAN,
+                            "interacted with invalid potion", MitigationStrategy.BAN,
                             Collections.singletonList(
                                 new Debug<>("Amplifier", nbtNumber.getAsInt()))
                         );
@@ -74,7 +74,7 @@ public class PotionLimit implements ItemCheck {
                     int maxPotionEffectAmplifier = 10;
                     if (nbtNumber.getAsInt() > maxPotionEffectAmplifier) {
                         return new Triple<>(
-                            "interacted with invalid potion", PunishType.KICK,
+                            "interacted with invalid potion", MitigationStrategy.KICK,
                             Arrays.asList(
                                 new Debug<>("Amplifier", nbtNumber.getAsInt()),
                                 new Debug<>("Max", maxPotionEffectAmplifier)

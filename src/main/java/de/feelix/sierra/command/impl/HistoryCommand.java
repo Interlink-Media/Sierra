@@ -171,14 +171,14 @@ public class HistoryCommand implements ISierraCommand {
 
         return new ConfigValue(
             "commands.history.entry",
-            "&7{timestamp} &3{username}&8/&b{version} &7({ping}ms) -> &b{punishType}",
+            "&7{timestamp} &3{username}&8/&b{version} &7({ping}ms) -> &b{mitigationStrategy}",
             true
         ).replacePrefix()
             .replace("{timestamp}", historyDocument.formatTimestamp())
             .replace("{username}", historyDocument.username())
             .replace("{ping}", String.valueOf(historyDocument.ping()))
             .replace("{version}", historyDocument.clientVersion().toLowerCase().replace("v_", "").replace("_", "."))
-            .replace("{punishType}", historyDocument.punishType().historyMessage())
+            .replace("{mitigationStrategy}", historyDocument.mitigationStrategy().historyMessage())
             .replace("{description}", historyDocument.shortenDescription())
             .colorize()
             .message();

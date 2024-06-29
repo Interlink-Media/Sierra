@@ -5,16 +5,13 @@ import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTNumber;
-import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.impl.creative.ItemCheck;
 import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
-import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierra.utilities.Triple;
-import de.feelix.sierraapi.violation.PunishType;
+import de.feelix.sierraapi.violation.MitigationStrategy;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -24,15 +21,15 @@ import java.util.List;
 public class CreativeAnvil implements ItemCheck {
 
     @Override
-    public Triple<String, PunishType, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
-                                                                  NBTCompound nbtCompound, PlayerData playerData) {
+    public Triple<String, MitigationStrategy, List<Debug<?>>> handleCheck(PacketReceiveEvent event, ItemStack clickedStack,
+                                                                          NBTCompound nbtCompound, PlayerData playerData) {
 
         // This prevents the creation of buggy anvils that crash the client when placed
         // https://bugs.mojang.com/browse/MC-82677
         if (clickedStack.getType() == ItemTypes.ANVIL) {
             if (clickedStack.getLegacyData() < 0 || clickedStack.getLegacyData() > 2) {
                 if (!SierraDataManager.skipAnvilCheck) {
-                    return new Triple<>("clicked on an invalid anvil", PunishType.BAN, Collections.singletonList(
+                    return new Triple<>("clicked on an invalid anvil", MitigationStrategy.BAN, Collections.singletonList(
                         new Debug<>("LegacyData", clickedStack.getLegacyData())));
                 }
             }
@@ -51,7 +48,7 @@ public class CreativeAnvil implements ItemCheck {
 
                     if (damage.getAsInt() > 3 || damage.getAsInt() < 0) {
                         return new Triple<>(
-                            "clicked on an invalid anvil", PunishType.BAN,
+                            "clicked on an invalid anvil", MitigationStrategy.BAN,
                             Collections.singletonList(new Debug<>("Damage", damage.getAsInt()))
                         );
                     }
