@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 public class ViolationDocument implements Violation {
 
-    private String         description;
+    private String             description;
     private MitigationStrategy mitigationStrategy;
     private List<Debug<?>>     debugs;
 

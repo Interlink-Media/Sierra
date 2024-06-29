@@ -38,6 +38,7 @@ public class ConfigValue {
      * @return The message value.
      */
     public String message() {
+        this.colorize();
         return message;
     }
 

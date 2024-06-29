@@ -21,6 +21,7 @@ import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Logger;
 
 /**
@@ -84,6 +85,9 @@ public class SierraDetection implements SierraCheck {
         // Update violation count
         this.violations++;
 
+        // If i forget anything in calling to prevent null pointers
+        correctViolation(violationDocument);
+
         // Asynchronously call user detection event
         throwDetectionEvent(violationDocument);
 
@@ -99,7 +103,6 @@ public class SierraDetection implements SierraCheck {
             Sierra            plugin            = Sierra.getPlugin();
             SierraDataManager sierraDataManager = plugin.getSierraDataManager();
 
-
             sierraDataManager
                 .createPunishmentHistory(
                     playerData.username(), playerData.version(), violationDocument.getMitigationStrategy(),
@@ -113,6 +116,20 @@ public class SierraDetection implements SierraCheck {
     }
 
     /**
+     * Corrects a violation in the provided ViolationDocument.
+     *
+     * @param violationDocument The ViolationDocument containing information about the violation.
+     */
+    private void correctViolation(ViolationDocument violationDocument) {
+        if (violationDocument.getDebugs() == null) violationDocument.setDebugs(Collections.emptyList());
+
+        if (violationDocument.getDescription() == null) violationDocument.setDescription("No description provided");
+
+        if (violationDocument.getMitigationStrategy() == null)
+            violationDocument.setMitigationStrategy(MitigationStrategy.MITIGATE);
+    }
+
+    /**
      * Block the player's address if the punishment type is set to BAN, the ban feature is enabled in the
      * punishment configuration, and the "block-connections-after-ban" property is set to true in the Sierra
      * configuration.
@@ -120,7 +137,9 @@ public class SierraDetection implements SierraCheck {
      * @param violationDocument The ViolationDocument object containing information about the violation.
      */
     private void blockAddressIfEnabled(ViolationDocument violationDocument) {
-        if (violationDocument.getMitigationStrategy() == MitigationStrategy.BAN && Sierra.getPlugin().getPunishmentConfig().isBan()
+        if (violationDocument.getMitigationStrategy() == MitigationStrategy.BAN && Sierra.getPlugin()
+            .getPunishmentConfig()
+            .isBan()
             && Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("block-connections-after-ban", true)) {
             Sierra.getPlugin()
                 .getAddressStorage()
@@ -163,7 +182,8 @@ public class SierraDetection implements SierraCheck {
     }
 
     private String createGeneralMessage(User user, MitigationStrategy mitigationStrategy) {
-        return "Player " + user.getName() + " got " + mitigationStrategy.friendlyMessage() + " sending an protocol packet";
+        return "Player " + user.getName() + " got " + mitigationStrategy.friendlyMessage()
+               + " sending an protocol packet";
     }
 
     /**
@@ -208,14 +228,16 @@ public class SierraDetection implements SierraCheck {
     protected void alert(User user, ViolationDocument violationDocument) {
 
         MitigationStrategy mitigationStrategy = violationDocument.getMitigationStrategy();
-        String             staffAlert         = formatStaffAlertMessage(user, mitigationStrategy);
-        String             username           = this.playerData.getUser().getName();
-        String     clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
+        String staffAlert = formatStaffAlertMessage(
+            user, mitigationStrategy, violationDocument.getDescription());
+        String username      = this.playerData.getUser().getName();
+        String clientVersion = this.playerData.getUser().getClientVersion().getReleaseName();
 
         String content = new ConfigValue(
             "layout.detection-message.alert-content",
             " &7Username: &b{username}{n} &7Version: &b{clientVersion}{n} &7Brand: &b{brand}{n} &7Exist since: "
-            + "&b{ticksExisted}{n} &7Game mode: &b{gameMode}{n} &7Tag: &b{tags}{n} &7Description: &b{description}{n} &7Debug info: &b{debugInfo}{n}{n} "
+            + "&b{ticksExisted}{n} &7Game mode: &b{gameMode}{n} &7Tag: &b{tags}{n} &7Description: &b{description}{n} "
+            + "&7Debug info: &b{debugInfo}{n}{n} "
             + "{alertNote}",
             true
         )
@@ -282,7 +304,7 @@ public class SierraDetection implements SierraCheck {
         ).replace("{username}", username).message();
     }
 
-    private String formatStaffAlertMessage(User user, MitigationStrategy mitigationStrategy) {
+    private String formatStaffAlertMessage(User user, MitigationStrategy mitigationStrategy, String description) {
 
         return new ConfigValue(
             "layout.detection-message.staff-alert",
@@ -290,6 +312,7 @@ public class SierraDetection implements SierraCheck {
         ).colorize().replacePrefix()
             .replace("{username}", user.getName())
             .replace("{mitigation}", mitigationStrategy.friendlyMessage())
+            .replace("{description}", description)
             .replace("{checkname}", this.friendlyName)
             .replace("{violations}", String.valueOf(violations)).message();
     }

@@ -296,6 +296,7 @@ public class SierraDataManager implements UserRepository {
      */
     public void createPunishmentHistory(String username, String clientVersion, MitigationStrategy mitigationStrategy, long ping,
                                         String description) {
+
         throwHistory(new HistoryDocument(username, description, clientVersion,
                                          ping, mitigationStrategy, HistoryType.PUNISH
         ));
