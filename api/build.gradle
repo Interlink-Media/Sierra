@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'de.feelix.sierra'
-version = '1.0.4'
+version = '1.0.5'
 description = 'api'
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8
