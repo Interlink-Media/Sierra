@@ -77,6 +77,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
                         new Debug<>("Packet", packetType.getName()),
                         new Debug<>("Limit", limit),
                         new Debug<>("Count", packetCount),
+                        new Debug<>("Alive", getPlayerData().getPingProcessor().getPing()),
+                        new Debug<>("Transaction", getPlayerData().getTransactionProcessor().getTransactionPing()),
+                        new Debug<>("Version", getPlayerData().getClientVersion().getReleaseName()),
                         new Debug<>("Delay", (System.currentTimeMillis() - current) + "ms")
                     ))
                     .build());
@@ -123,9 +126,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
                     .debugs(Arrays.asList(
                         new Debug<>("Balance", balance),
                         new Debug<>("Version", getPlayerData().getClientVersion().getReleaseName()),
-                        new Debug<>("Ping", getPlayerData().getPingProcessor().getPing() + "ms"),
+                        new Debug<>("Ping", getPlayerData().getPingProcessor().getPing()),
                         new Debug<>(
-                            "Transaction Ping", getPlayerData().getTransactionProcessor().getTransactionPing() + "ms")
+                            "Transaction", getPlayerData().getTransactionProcessor().getTransactionPing())
                     ))
                     .build());
                 balance = BAL_RESET;
