@@ -138,14 +138,14 @@ public class PacketReceiveListener extends PacketListenerAbstract {
             createHistory(playerData, readableBytes, capacity, maxPacketSize);
             event.cleanUp();
             event.setCancelled(true);
-            playerData.kick();
+            playerData.punish(MitigationStrategy.KICK);
             return true;
         }
 
         if (event.getPacketId() < 0 || event.getPacketId() > 1000) {
             logger.info("Disconnecting " + playerData.getUser().getName() + ", because packet id is invalid");
             event.setCancelled(true);
-            playerData.kick();
+            playerData.punish(MitigationStrategy.KICK);
             return true;
         }
         return false;
@@ -274,7 +274,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
                     .getLogger()
                     .info("Invalid username: " + event.getUser().getName() + ", kicked player");
                 event.setCancelled(true);
-                playerData.kick();
+                playerData.punish(MitigationStrategy.KICK);
             }
             playerData.setNameChecked(true);
         }

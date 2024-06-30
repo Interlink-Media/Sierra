@@ -45,7 +45,7 @@ public class PlayerData implements SierraUser {
     private boolean nameChecked        = false;
     private boolean bypassPermission   = false;
 
-    private double bytesSent       = 0;
+    private double bytesSent = 0;
 
     private final AlertSettings alertSettings      = new AbstractAlertSetting();
     private final AlertSettings mitigationSettings = new AbstractAlertSetting();
@@ -242,9 +242,12 @@ public class PlayerData implements SierraUser {
      * @param exception the exception that occurred
      */
     public void exceptionDisconnect(Exception exception) {
+
+        if (receivedPunishment) return;
+
         Sierra.getPlugin().getLogger().warning("We disconnect " + this.username() + " for security purpose");
         Sierra.getPlugin().getLogger().warning("Exception: " + exception.getMessage());
-        this.kick();
+        punish(MitigationStrategy.KICK);
     }
 
     /**

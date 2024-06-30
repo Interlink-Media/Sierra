@@ -166,7 +166,8 @@ public class SierraDataManager implements UserRepository {
                 PlayerData data = Sierra.getPlugin().getSierraDataManager().getPlayerData(user).get();
 
                 if (data == null) return;
-                data.kick();
+
+                data.punish(MitigationStrategy.KICK);
             }
         }
     }
