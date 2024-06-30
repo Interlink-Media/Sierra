@@ -67,7 +67,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private static final int           MAX_PATTERN_LENGTH = 50;
     private static final int           MIN_VALID_COLOR    = 0;
     private static final int           MAX_SIGN_LENGTH    = 45;
-    private              boolean       hasOpenAnvil       = false;
     private final        AtomicInteger listContent        = new AtomicInteger(0);
     private static final int           MAX_VALID_COLOR    = 255;
 
@@ -120,7 +119,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         handleHeldItemChange(event);
         handleTabComplete(event, playerData);
         handleUpdateSign(event, playerData);
-        handlePluginMessage(event, playerData);
         handlePlayerBlockPlacement(event, playerData);
         handleSteerVehicle(event);
         handleInteractEntity(event);
@@ -128,7 +126,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         handlePlayerDigging(event, playerData);
         handleUseItem(event, playerData);
         handleClickWindow(event, playerData);
-        handleCloseWindow();
+        handlePluginMessage(event, playerData);
     }
 
     private void handleClientSettings(PacketReceiveEvent event, PlayerData playerData) {
@@ -395,14 +393,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
         String channelName = wrapper.getChannelName();
 
-        if (channelName.equalsIgnoreCase("MC|ItemName") && !hasOpenAnvil) {
-
-            dispatch(event, ViolationDocument.builder()
-                .mitigationStrategy(MitigationStrategy.KICK)
-                .description("send anvil payload with closed inventory")
-                .debugs(Collections.emptyList())
-                .build());
-        }
         if (isBookChannel(channelName) && System.currentTimeMillis() - this.lastBookUse > 60000L) {
             dispatch(event, ViolationDocument.builder()
                 .mitigationStrategy(MitigationStrategy.MITIGATE)
@@ -670,11 +660,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         checkForInvalidSlot(event, wrapper);
         checkInvalidClick(wrapper, event);
     }
-
-    private void handleCloseWindow() {
-        hasOpenAnvil = false;
-    }
-
     private void checkItemStack(PacketReceiveEvent event, ItemStack itemStack) {
         if (itemStack == null || itemStack.getNBT() == null) return;
         checkGenericBookPages(event, itemStack);
@@ -1357,6 +1342,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     @Override
     public void handle(PacketSendEvent event, PlayerData playerData) {
+
         if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-protocol-packet", true)) {
             return;
         }
@@ -1399,16 +1385,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkOpenWindow(WrapperPlayServerOpenWindow window) {
-
-        if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_14)) {
-            if (window.getType() == MenuType.ANVIL.getId()) {
-                hasOpenAnvil = true;
-            }
-        } else {
-            if (window.getLegacyType().contains("anvil")) {
-                hasOpenAnvil = true;
-            }
-        }
         if (isSupportedServerVersion(ServerVersion.V_1_14)) {
             this.type = MenuType.getMenuType(window.getType());
             if (type == MenuType.LECTERN) lecternId = window.getContainerId();
