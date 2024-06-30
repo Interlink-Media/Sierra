@@ -162,7 +162,7 @@ public class PlayerData implements SierraUser {
      */
     @Override
     public String version() {
-        return user.getClientVersion().name();
+        return user.getClientVersion().name().replace("V_", "").replace("_", ".");
     }
 
     /**

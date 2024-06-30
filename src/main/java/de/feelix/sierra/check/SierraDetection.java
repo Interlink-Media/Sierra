@@ -157,7 +157,7 @@ public class SierraDetection implements SierraCheck {
     private void alertStaff(User user, ViolationDocument violationDocument) {
         String staffAlert = formatStaffAlertMessage(
             user, violationDocument.getMitigationStrategy(), violationDocument.getDescription());
-        String content    = formatAlertContent(user, violationDocument);
+        String content = formatAlertContent(user, violationDocument);
 
         Collection<PlayerData> playerDataList = Sierra.getPlugin().getSierraDataManager().getPlayerData().values();
         playerDataList.forEach(playerData -> {
@@ -200,7 +200,10 @@ public class SierraDetection implements SierraCheck {
             true
         )
             .replace("{username}", user.getName())
-            .replace("{clientVersion}", playerData.getUser().getClientVersion().getReleaseName())
+            .replace(
+                "{clientVersion}",
+                playerData.getUser().getClientVersion().getReleaseName().replace("V_", "").replace("_", ".")
+            )
             .replace("{brand}", playerData.brand())
             .replace("{ticksExisted}", playerData.ticksExisted() + " ticks")
             .replace("{gameMode}", playerData.gameMode().name())
