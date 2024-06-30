@@ -6,6 +6,8 @@ import lombok.experimental.UtilityClass;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -214,6 +216,9 @@ public class FormatUtils {
      * @return The formatted string representation of the timestamp.
      */
     public static String formatTimestamp(long timestamp) {
-        return DATE_TIME_FORMATTER.format(Instant.ofEpochMilli(timestamp));
+        // Convert Instant to LocalDateTime
+        LocalDateTime dateTime = Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime();
+        // Format the LocalDateTime
+        return DATE_TIME_FORMATTER.format(dateTime);
     }
 }
