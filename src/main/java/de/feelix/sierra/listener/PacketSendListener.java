@@ -15,28 +15,14 @@ import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.utilities.Pair;
 import de.feelix.sierraapi.check.impl.SierraCheck;
 
-/**
- * A packet listener that listens for packet send events and performs necessary processing
- */
 public class PacketSendListener extends PacketListenerAbstract {
 
-    /**
-     * PacketSendListener is a class that extends PacketListenerAbstract and represents a listener for packet send
-     * events.
-     * It is used to handle actions and logic when a packet is sent.
-     */
     public PacketSendListener() {
         super(PacketListenerPriority.MONITOR);
     }
 
-    /**
-     * Called when a packet is sent.
-     *
-     * @param event the PacketSendEvent representing the event
-     */
     @Override
     public void onPacketSend(PacketSendEvent event) {
-
         if (event.getConnectionState() != ConnectionState.PLAY) {
             return;
         }
@@ -55,7 +41,7 @@ public class PacketSendListener extends PacketListenerAbstract {
         handleTransaction(event, playerData);
 
         playerData.getGameModeProcessor().process(event);
-        playerData.getPingProcessor().handle(event);
+        playerData.getPingProcessor().handlePacketSend(event);
 
         processAvailableChecksSend(playerData, event);
         playerData.getTimingProcessor().getPacketSendTask().end();
@@ -63,44 +49,33 @@ public class PacketSendListener extends PacketListenerAbstract {
 
     private void handleTransaction(PacketSendEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Server.PING) {
-            WrapperPlayServerPing wrapper = new WrapperPlayServerPing(event);
-
-            int id = wrapper.getId();
-            // Check if in the short range, we only use short range
-            if (id == (short) id) {
-                // Cast ID twice so we can use the list
-                Short shortID = ((short) id);
-                if (playerData.getTransactionProcessor().didWeSendThatTrans.remove(shortID)) {
-                    Pair<Short, Long> solarPair = new Pair<>(shortID, System.nanoTime());
-                    playerData.getTransactionProcessor().transactionsSent.add(solarPair);
-                    playerData.getTransactionProcessor().lastTransactionSent.getAndIncrement();
-                }
-            }
-        }
-
-        if (event.getPacketType() == PacketType.Play.Server.WINDOW_CONFIRMATION) {
-            WrapperPlayServerWindowConfirmation wrapper = new WrapperPlayServerWindowConfirmation(event);
-
-            short id = wrapper.getActionId();
-
-            // Vanilla always uses an ID starting from 1
-            if (id <= 0) {
-
-                if (playerData.getTransactionProcessor().didWeSendThatTrans.remove((Short) id)) {
-                    Pair<Short, Long> solarPair = new Pair<>(id, System.nanoTime());
-                    playerData.getTransactionProcessor().transactionsSent.add(solarPair);
-                    playerData.getTransactionProcessor().lastTransactionSent.getAndIncrement();
-                }
-            }
+            handlePingTransaction(event, playerData);
+        } else if (event.getPacketType() == PacketType.Play.Server.WINDOW_CONFIRMATION) {
+            handleWindowConfirmationTransaction(event, playerData);
         }
     }
 
-    /**
-     * Process the available checks for packet send events.
-     *
-     * @param playerData The PlayerData object associated with the player
-     * @param event      The PacketSendEvent object representing the packet send event
-     */
+    private void handlePingTransaction(PacketSendEvent event, PlayerData playerData) {
+        WrapperPlayServerPing wrapper = new WrapperPlayServerPing(event);
+        short                 id      = (short) wrapper.getId();
+        if (playerData.getTransactionProcessor().didWeSendThatTrans.contains(id)) {
+            playerData.getTransactionProcessor().didWeSendThatTrans.remove(id);
+            Pair<Short, Long> solarPair = new Pair<>(id, System.nanoTime());
+            playerData.getTransactionProcessor().transactionsSent.add(solarPair);
+            playerData.getTransactionProcessor().lastTransactionSent.getAndIncrement();
+        }
+    }
+
+    private void handleWindowConfirmationTransaction(PacketSendEvent event, PlayerData playerData) {
+        WrapperPlayServerWindowConfirmation wrapper = new WrapperPlayServerWindowConfirmation(event);
+        short                               id      = wrapper.getActionId();
+        if (id <= 0 && playerData.getTransactionProcessor().didWeSendThatTrans.remove((Short) id)) {
+            Pair<Short, Long> transactionPair = new Pair<>(id, System.nanoTime());
+            playerData.getTransactionProcessor().transactionsSent.add(transactionPair);
+            playerData.getTransactionProcessor().lastTransactionSent.getAndIncrement();
+        }
+    }
+
     private void processAvailableChecksSend(PlayerData playerData, PacketSendEvent event) {
         for (SierraCheck availableCheck : playerData.getCheckManager().availableChecks()) {
             if (availableCheck instanceof OutgoingProcessor) {
@@ -109,26 +84,11 @@ public class PacketSendListener extends PacketListenerAbstract {
         }
     }
 
-    /**
-     * Checks whether bypass permission is enabled and if the player has the bypass permission.
-     *
-     * @param playerData The PlayerData object associated with the player
-     * @return true if bypass permission is enabled and the player has the bypass permission, false otherwise
-     */
     private boolean bypassPermission(PlayerData playerData) {
-        if (Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("enable-bypass-permission", false)) {
-            return playerData.isBypassPermission();
-        }
-        return false;
+        return Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("enable-bypass-permission", false)
+               && playerData.isBypassPermission();
     }
 
-    /**
-     * Handles exemption or blocking of a player.
-     *
-     * @param playerData The PlayerData object associated with the player
-     * @param event      The ProtocolPacketEvent representing the event
-     * @return true if the player is exempt or blocked, false otherwise
-     */
     private boolean handleExemptOrBlockedPlayer(PlayerData playerData, ProtocolPacketEvent<?> event) {
         if (playerData.isExempt()) {
             event.setCancelled(false);
@@ -141,12 +101,6 @@ public class PacketSendListener extends PacketListenerAbstract {
         return false;
     }
 
-    /**
-     * Retrieves the PlayerData object associated with a given ProtocolPacketEvent.
-     *
-     * @param event the ProtocolPacketEvent representing the event
-     * @return the PlayerData object associated with the event
-     */
     private PlayerData getPlayerData(ProtocolPacketEvent<Object> event) {
         return SierraDataManager.getInstance().getPlayerData(event.getUser()).get();
     }

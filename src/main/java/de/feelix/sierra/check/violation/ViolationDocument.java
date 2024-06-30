@@ -18,7 +18,7 @@ public class ViolationDocument implements Violation {
 
     @Override
     public String debugInformation() {
-        return FormatUtils.chainDebugs(true, debugs);
+        return FormatUtils.chainDebugs(debugs);
     }
 
     @Override

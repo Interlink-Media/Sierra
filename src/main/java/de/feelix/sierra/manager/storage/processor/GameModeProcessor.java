@@ -11,65 +11,58 @@ import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
 import lombok.Getter;
 
-/**
- * The GameModeProcessor class processes different packet events related to the game mode of a player.
- */
 @Getter
 public class GameModeProcessor {
 
-    /**
-     * The playerData variable represents the data of a player in the game.
-     */
     private final PlayerData playerData;
 
-    /**
-     * The GameModeProcessor class processes different packet events related to the game mode of a player.
-     */
     public GameModeProcessor(PlayerData playerData) {
         this.playerData = playerData;
     }
 
-    /**
-     * The process method processes different packet events related to the game mode of a player.
-     *
-     * @param event The PacketSendEvent representing the packet send event
-     */
     public void process(PacketSendEvent event) {
         PacketTypeCommon typeCommon = event.getPacketType();
 
-        if (typeCommon == PacketType.Play.Server.CHANGE_GAME_STATE) {
-            WrapperPlayServerChangeGameState packet = CastUtil.getSupplier(
-                () -> new WrapperPlayServerChangeGameState(event),
-                playerData::exceptionDisconnect
-            );
-
-            if (packet.getReason() == WrapperPlayServerChangeGameState.Reason.CHANGE_GAME_MODE) {
-
-                int gameMode = (int) packet.getValue();
-
-                // Some plugins send protocol values such as -1, this is what the client does
-                if (gameMode < 0 || gameMode >= GameMode.values().length) {
-                    playerData.setGameMode(GameMode.SURVIVAL);
-                } else {
-                    playerData.setGameMode(GameMode.values()[gameMode]);
-                }
-            }
+        if (typeCommon.equals(PacketType.Play.Server.CHANGE_GAME_STATE)) {
+            handleGameStateChange(event);
+        } else if (typeCommon.equals(PacketType.Play.Server.JOIN_GAME)) {
+            handleJoinGame(event);
+        } else if (typeCommon.equals(PacketType.Play.Server.RESPAWN)) {
+            handleRespawn(event);
         }
+    }
 
-        if (typeCommon == PacketType.Play.Server.JOIN_GAME) {
-            WrapperPlayServerJoinGame joinGame = CastUtil.getSupplier(
-                () -> new WrapperPlayServerJoinGame(event),
-                playerData::exceptionDisconnect
-            );
-            playerData.setGameMode(joinGame.getGameMode());
-        }
+    private void handleGameStateChange(PacketSendEvent event) {
+        WrapperPlayServerChangeGameState packet = CastUtil.getSupplier(
+            () -> new WrapperPlayServerChangeGameState(event),
+            playerData::exceptionDisconnect
+        );
 
-        if (typeCommon == PacketType.Play.Server.RESPAWN) {
-            WrapperPlayServerRespawn respawn = CastUtil.getSupplier(
-                () -> new WrapperPlayServerRespawn(event),
-                playerData::exceptionDisconnect
-            );
-            playerData.setGameMode(respawn.getGameMode());
+        if (packet.getReason() == WrapperPlayServerChangeGameState.Reason.CHANGE_GAME_MODE) {
+            int gameModeValue = (int) packet.getValue();
+
+            // Set default to SURVIVAL if the value is out of bounds
+            GameMode gameMode = (gameModeValue < 0 || gameModeValue >= GameMode.values().length) ?
+                GameMode.SURVIVAL :
+                GameMode.values()[gameModeValue];
+
+            playerData.setGameMode(gameMode);
         }
+    }
+
+    private void handleJoinGame(PacketSendEvent event) {
+        WrapperPlayServerJoinGame joinGame = CastUtil.getSupplier(
+            () -> new WrapperPlayServerJoinGame(event),
+            playerData::exceptionDisconnect
+        );
+        playerData.setGameMode(joinGame.getGameMode());
+    }
+
+    private void handleRespawn(PacketSendEvent event) {
+        WrapperPlayServerRespawn respawn = CastUtil.getSupplier(
+            () -> new WrapperPlayServerRespawn(event),
+            playerData::exceptionDisconnect
+        );
+        playerData.setGameMode(respawn.getGameMode());
     }
 }

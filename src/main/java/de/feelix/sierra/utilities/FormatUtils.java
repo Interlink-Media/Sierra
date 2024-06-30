@@ -4,7 +4,9 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import de.feelix.sierra.check.violation.Debug;
 import lombok.experimental.UtilityClass;
 
-import java.text.SimpleDateFormat;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -15,44 +17,62 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class FormatUtils {
 
+    private static final int    INVALID_INT_DEFAULT  = 1;
+    private static final double NANOSECONDS_PER_TICK = 1000000000.0 / 20.0;
+
+    private static final String[] units = {
+        "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"
+    };
+
+    private static final String[] teens = {
+        "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"
+    };
+
+    private static final String[] tens = {
+        "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"
+    };
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd HH:mm:ss");
+
     /**
-     * Converts a string representation of an integer to an integer value.
+     * Converts a given string to an integer.
      *
-     * @param input The string representation of the integer.
-     * @return The integer value of the input string, or 1 if the input string is not a valid integer.
+     * @param input The string to be converted to an integer.
+     * @return The converted integer value, or INVALID_INT_DEFAULT if the input cannot be parsed.
      */
     public int toInt(String input) {
         int num;
         try {
             num = Integer.parseInt(input);
         } catch (NumberFormatException ignored) {
-            num = 1;
+            num = INVALID_INT_DEFAULT;
         }
         return num;
     }
 
-    public static String chainDebugs(boolean commaSeparated, List<Debug<?>> debugList) {
-
-        boolean isValid = debugList.stream()
-            .anyMatch(debug -> !debug.getName().isEmpty() && !String.valueOf(debug.getInfo()).isEmpty());
-
+    /**
+     * Chains together valid debug information from a list of Debug objects.
+     *
+     * @param debugList The list of Debug objects.
+     * @return A string containing the valid debug information, separated by commas.
+     */
+    public static String chainDebugs(List<Debug<?>> debugList) {
+        boolean isValid = debugList.stream().anyMatch(FormatUtils::isValidDebug);
         if (isValid) {
-            if (commaSeparated) {
-                return debugList.stream()
-                    .filter(debug -> !debug.getName().isEmpty() && !String.valueOf(debug.getInfo()).isEmpty())
-                    .map(debug -> debug.getName() + ": " + debug.getInfo())
-                    .collect(Collectors.joining(", "));
-            } else {
-                return "\n\n&4Info:\n" +
-                       debugList.stream()
-                           .filter(debug -> !debug.getName().isEmpty() && !String.valueOf(debug.getInfo()).isEmpty())
-                           .map(debug -> "&7" + debug.getName() + ": &f" + debug.getInfo() + "\n")
-                           .collect(Collectors.joining());
-            }
+            return debugList.stream()
+                .filter(FormatUtils::isValidDebug)
+                .map(debug -> debug.getName() + ": " + debug.getInfo())
+                .collect(Collectors.joining(", "));
         }
         return "";
     }
 
+    /**
+     * Calculates the sum of all the values in a given HashMap.
+     *
+     * @param map The HashMap containing the values to be summed.
+     * @return The sum of all the values in the HashMap.
+     */
     public static int sumValuesInHashMap(HashMap<PacketTypeCommon, Integer> map) {
         int sum = 0;
         for (Integer value : map.values()) {
@@ -61,9 +81,24 @@ public class FormatUtils {
         return sum;
     }
 
+    /**
+     * Checks if a Debug object is valid.
+     *
+     * @param debug The Debug object to be checked.
+     * @return True if the Debug object is valid, False otherwise.
+     */
+    private static boolean isValidDebug(Debug<?> debug) {
+        return !debug.getName().isEmpty() && !String.valueOf(debug.getInfo()).isEmpty();
+    }
+
+    /**
+     * Calculates the result by dividing the given number by NANOSECONDS_PER_TICK.
+     *
+     * @param x The number to be divided.
+     * @return The calculated result.
+     */
     public static double calculateResult(double x) {
-        double nanosPerTick = 1000000000.0 / 20.0;
-        return x / nanosPerTick;
+        return x / NANOSECONDS_PER_TICK;
     }
 
     /**
@@ -81,54 +116,45 @@ public class FormatUtils {
     }
 
     /**
-     * Checks if the precision of a double number is greater than 3 decimal places.
+     * Checks the precision of a given double number.
      *
-     * @param number The double number to check the precision of.
-     * @return True if the precision of the number is greater than 3 decimal places, False otherwise.
+     * @param number The number to be checked.
+     * @return True if the precision of the number is greater than 3, False otherwise.
      */
-    public boolean checkDoublePrecision(double number) {
-        String numberStr = Double.toString(number);
-        if (!numberStr.contains(".")) {
-            return false;
-        }
-        int decimalIndex = numberStr.indexOf(".");
-        int precision    = numberStr.length() - decimalIndex - 1;
+    public static boolean checkDoublePrecision(double number) {
+        BigDecimal bd        = BigDecimal.valueOf(number);
+        int        precision = bd.scale();
         return precision > 3;
     }
 
     /**
-     * Converts a Map object to its string representation.
+     * Converts a map to a string representation.
      *
-     * @param map The Map object to be converted.
-     * @param <K> The type of the keys in the Map.
-     * @param <V> The type of the values in the Map.
-     * @return The string representation of the Map.
+     * @param map The map to be converted.
+     * @return A string representation of the map, with key-value pairs separated by commas and enclosed in curly
+     * brackets.
      */
-    public <K, V> String mapToString(Map<K, V> map) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{");
+    public static <K, V> String mapToString(Map<K, V> map) {
+        StringJoiner sj = new StringJoiner(", ", "{", "}");
         for (Map.Entry<K, V> entry : map.entrySet()) {
-            sb.append(entry.getKey())
-                .append("=")
-                .append(entry.getValue())
-                .append(", ");
+            sj.add(entry.getKey() + "=" + entry.getValue());
         }
-        if (!map.isEmpty()) {
-            sb.setLength(sb.length() - 2);
-        }
-        sb.append("}");
-        return sb.toString();
+        return sj.toString();
     }
 
     /**
      * Counts the number of occurrences of a substring in a given input string.
      *
      * @param input     The input string to search for occurrences.
-     * @param subString The substring to count occurrences of.
+     * @param subString The substring to search for.
      * @return The number of occurrences of the substring in the input string.
+     * @throws NullPointerException if input or subString is null.
      */
-    public int countOccurrences(String input, String subString) {
-        if (input == null || subString == null || subString.isEmpty()) {
+    public static int countOccurrences(String input, String subString) {
+        Objects.requireNonNull(input, "Input string must not be null");
+        Objects.requireNonNull(subString, "Substring must not be null");
+
+        if (subString.isEmpty()) {
             return 0;
         }
 
@@ -144,18 +170,31 @@ public class FormatUtils {
     }
 
     /**
-     * Converts a given number to its textual representation.
+     * Converts a given number to its text representation.
      *
      * @param number The number to be converted.
-     * @return The textual representation of the given number.
+     * @return The text representation of the given number.
+     * Returns "Number out of range" if the number is less than 0 or greater than 100.
      */
     public static String numberToText(int number) {
-        if (number < 0 || number > 9) {
+        if (number < 0 || number > 100) {
             return "Number out of range";
         }
-
-        return new String[]{"zero", "one", "two", "three", "four", "five", "six", "seven",
-            "eight", "nine"}[number];
+        if (number < 10) {
+            return units[number];
+        }
+        if (number < 20) {
+            return teens[number - 10];
+        }
+        if (number == 100) {
+            return "one hundred";
+        }
+        int tenPlace  = number / 10;
+        int unitPlace = number % 10;
+        if (unitPlace == 0) {
+            return tens[tenPlace];
+        }
+        return tens[tenPlace] + "-" + units[unitPlace];
     }
 
     /**
@@ -169,14 +208,12 @@ public class FormatUtils {
     }
 
     /**
-     * Converts a given timestamp to a formatted string representation.
+     * Formats a timestamp to a formatted string representation.
      *
      * @param timestamp The timestamp to be formatted.
      * @return The formatted string representation of the timestamp.
      */
-    public String formatTimestamp(long timestamp) {
-        Date             date = new Date(timestamp);
-        SimpleDateFormat sdf  = new SimpleDateFormat("MM/dd HH:mm:ss");
-        return sdf.format(date);
+    public static String formatTimestamp(long timestamp) {
+        return DATE_TIME_FORMATTER.format(Instant.ofEpochMilli(timestamp));
     }
 }

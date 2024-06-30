@@ -243,6 +243,7 @@ public class PlayerData implements SierraUser {
      */
     public void exceptionDisconnect(Exception exception) {
 
+        // To prevent future console spam cause thread is not fast enough
         if (receivedPunishment) return;
 
         Sierra.getPlugin().getLogger().warning("We disconnect " + this.username() + " for security purpose");

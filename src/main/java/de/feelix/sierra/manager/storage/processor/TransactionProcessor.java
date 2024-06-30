@@ -25,14 +25,13 @@ public class TransactionProcessor {
         this.playerData = playerData;
     }
 
-
     public final  Queue<Pair<Short, Long>>            transactionsSent   = new ConcurrentLinkedQueue<>();
     private final LinkedList<Pair<Integer, Runnable>> transactionMap     = new LinkedList<>();
     public final  List<Short>                         didWeSendThatTrans = Collections.synchronizedList(
         new ArrayList<>());
 
-    private AtomicInteger transactionIDCounter    = new AtomicInteger(0);
-    public  AtomicInteger lastTransactionSent     = new AtomicInteger(0);
+    private final AtomicInteger transactionIDCounter = new AtomicInteger(0);
+    public        AtomicInteger lastTransactionSent  = new AtomicInteger(0);
     public  AtomicInteger lastTransactionReceived = new AtomicInteger(0);
 
     private int   lastRunnableId      = 1;

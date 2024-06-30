@@ -84,7 +84,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             }
         }
 
-        int transaction = playerData.getTransactionProcessor().lastTransactionSent.get() + 1;
+        int transaction = playerData.getTransactionProcessor().getLastTransactionSent().get() + 1;
 
         if (packetType.equals(PacketType.Play.Client.EDIT_BOOK)) {
             handleEditBook(event);

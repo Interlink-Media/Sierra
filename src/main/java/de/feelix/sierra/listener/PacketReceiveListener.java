@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.event.*;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPong;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientWindowConfirmation;
 import de.feelix.sierra.Sierra;
@@ -14,38 +15,17 @@ import de.feelix.sierraapi.check.impl.SierraCheck;
 import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
-/**
- * The PacketReceiveListener class is a subclass of PacketListenerAbstract and implements the PacketListener interface.
- * It listens for received packets and performs various checks and operations on them.
- */
 public class PacketReceiveListener extends PacketListenerAbstract {
 
-    /**
-     * The PacketReceiveListener class is a subclass of PacketListenerAbstract and implements
-     * the PacketListener interface. It represents a listener for packet receive events.
-     * <p>
-     * This listener is responsible for handling the packet receive events triggered
-     * by the PacketEvents API. It provides a callback method called onPacketReceive()
-     * which is called whenever a packet is received.
-     * <p>
-     * Example usage:
-     * PacketEvents.getAPI().getEventManager().registerListeners(new PacketReceiveListener(), new PacketSendListener());
-     * PacketEvents.getAPI().init();
-     */
+    private static final Logger LOGGER = Sierra.getPlugin().getLogger();
+
     public PacketReceiveListener() {
         super(PacketListenerPriority.MONITOR);
     }
 
-    /**
-     * Called when a packet is received.
-     *
-     * @param event the PacketReceiveEvent representing the packet receive event
-     */
     @Override
     public void onPacketReceive(PacketReceiveEvent event) {
-
         if (event.getConnectionState() != ConnectionState.PLAY) {
             return;
         }
@@ -57,7 +37,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
             return;
         }
 
-        if (weirdPacket(event, playerData)) return;
+        if (isWeirdPacket(event, playerData)) return;
 
         if (bypassPermission(playerData)) {
             event.setCancelled(false);
@@ -68,82 +48,49 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
         handleTransaction(event, playerData);
 
-        checkHandling(playerData, event);
-
         if (handleExemptOrBlockedPlayer(playerData, event)) return;
 
         playerData.getBrandProcessor().process(event);
-        playerData.getPingProcessor().handle(event);
+        playerData.getPingProcessor().handlePacketReceive(event);
 
         processAvailableChecksReceive(playerData, event);
         playerData.getTimingProcessor().getPacketReceiveTask().end();
     }
 
     private void handleTransaction(PacketReceiveEvent event, PlayerData playerData) {
-        if (event.getPacketType() == PacketType.Play.Client.WINDOW_CONFIRMATION) {
-
-            WrapperPlayClientWindowConfirmation wrapper = new WrapperPlayClientWindowConfirmation(event);
-
-            short id = wrapper.getActionId();
-
-            // Vanilla always uses an ID starting from 1
-            if (id <= 0) {
-                // Check if we sent this packet before cancelling it
-                if (playerData.getTransactionProcessor().addTransactionResponse(id)) {
-                    event.setCancelled(true);
-                }
-            }
-
-        }
-
-        if (event.getPacketType() == PacketType.Play.Client.PONG) {
-
-            WrapperPlayClientPong wrapper = new WrapperPlayClientPong(event);
-
-            int id = wrapper.getId();
-            // If it wasn't below 0, it wasn't us
-            // If it wasn't in short range, it wasn't us either
-            if (id == (short) id) {
-                if (playerData.getTransactionProcessor().addTransactionResponse((short) id)) {
-                    // Not needed for vanilla as vanilla ignores this packet, needed for packet limiters
-                    event.setCancelled(true);
-                }
-            }
+        PacketTypeCommon packetType = event.getPacketType();
+        if (packetType.equals(PacketType.Play.Client.WINDOW_CONFIRMATION)) {
+            handleWindowConfirmation(event, playerData);
+        } else if (packetType.equals(PacketType.Play.Client.PONG)) {
+            handlePong(event, playerData);
         }
     }
 
+    private void handleWindowConfirmation(PacketReceiveEvent event, PlayerData playerData) {
+        WrapperPlayClientWindowConfirmation wrapper = new WrapperPlayClientWindowConfirmation(event);
+        short id = wrapper.getActionId();
+        if (id <= 0 && playerData.getTransactionProcessor().addTransactionResponse(id)) {
+            event.setCancelled(true);
+        }
+    }
 
-    /**
-     * Checks if a received packet is considered weird based on certain conditions. If the packet is considered weird,
-     * it cancels the event, performs necessary actions such as kicking the player, and returns true. Otherwise, it
-     * returns false.
-     *
-     * @param event      the ProtocolPacketEvent representing the packet receive event
-     * @param playerData the PlayerData object associated with the player
-     * @return true if the packet is considered weird, false otherwise
-     */
-    private boolean weirdPacket(ProtocolPacketEvent<Object> event, PlayerData playerData) {
-        int    readableBytes = ByteBufHelper.readableBytes(event.getByteBuf());
-        Logger logger        = Sierra.getPlugin().getLogger();
+    private void handlePong(PacketReceiveEvent event, PlayerData playerData) {
+        WrapperPlayClientPong wrapper = new WrapperPlayClientPong(event);
+        int id = wrapper.getId();
+        if (id == (short) id && playerData.getTransactionProcessor().addTransactionResponse((short) id)) {
+            event.setCancelled(true);
+        }
+    }
 
-        int maxPacketSize = Sierra.getPlugin().getSierraConfigEngine().config().getInt(
-            "generic-packet-size-limit", 5000);
-
+    private boolean isWeirdPacket(ProtocolPacketEvent<Object> event, PlayerData playerData) {
+        int readableBytes = ByteBufHelper.readableBytes(event.getByteBuf());
+        int maxPacketSize = Sierra.getPlugin().getSierraConfigEngine().config().getInt("generic-packet-size-limit", 5000);
         int capacity = ByteBufHelper.capacity(event.getByteBuf());
 
-        if (maxPacketSize != -1 && (readableBytes > maxPacketSize || readableBytes > capacity)) {
-            logger.info("Disconnecting " + playerData.getUser().getName() + ", because packet is too big.");
-            logger.info("If this is a false kick, increase the generic-packet-size-limit");
-            logger.info("Bytes: " + readableBytes + ", capacity: " + capacity + " (Max: " + maxPacketSize + ")");
-            createHistory(playerData, readableBytes, capacity, maxPacketSize);
+        if ((maxPacketSize != -1 && (readableBytes > maxPacketSize || readableBytes > capacity)) ||
+            event.getPacketId() < 0 || event.getPacketId() > 1000) {
+            logAndDisconnect(playerData, readableBytes, capacity, maxPacketSize);
             event.cleanUp();
-            event.setCancelled(true);
-            playerData.punish(MitigationStrategy.KICK);
-            return true;
-        }
-
-        if (event.getPacketId() < 0 || event.getPacketId() > 1000) {
-            logger.info("Disconnecting " + playerData.getUser().getName() + ", because packet id is invalid");
             event.setCancelled(true);
             playerData.punish(MitigationStrategy.KICK);
             return true;
@@ -151,83 +98,36 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         return false;
     }
 
-    /**
-     * Creates a history entry for a player's packet reception.
-     *
-     * @param playerData    The PlayerData object associated with the player.
-     * @param readableBytes The number of readable bytes in the received packet.
-     * @param capacity      The capacity of the received packet.
-     * @param maxPacketSize The maximum packet size allowed.
-     */
+    private void logAndDisconnect(PlayerData playerData, int readableBytes, int capacity, int maxPacketSize) {
+        LOGGER.info(String.format("Disconnecting %s, packet too big. Bytes: %d, capacity: %d, max: %d",
+                                  playerData.getUser().getName(), readableBytes, capacity, maxPacketSize));
+        createHistory(playerData, readableBytes, capacity, maxPacketSize);
+    }
+
     private void createHistory(PlayerData playerData, int readableBytes, int capacity, int maxPacketSize) {
         Sierra.getPlugin().getSierraDataManager().createMitigateHistory(
             playerData.username(),
             playerData.version(),
             MitigationStrategy.KICK,
             playerData.ping(),
-            "Send: " + readableBytes + "/Max: "
-            + maxPacketSize + " (" + capacity + ")"
+            String.format("Sent: %d/Max: %d (%d)", readableBytes, maxPacketSize, capacity)
         );
     }
 
-    /**
-     * Determines whether to bypass permission based on the configuration setting and player data.
-     *
-     * @param playerData The PlayerData object associated with the player.
-     * @return true if permission bypass is enabled and the player has bypass permission, false otherwise.
-     */
     private boolean bypassPermission(PlayerData playerData) {
-        if (Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("enable-bypass-permission", false)) {
-            return playerData.isBypassPermission();
-        }
-        return false;
+        return Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("enable-bypass-permission", false)
+               && playerData.isBypassPermission();
     }
 
-    /**
-     * Checks if a username is valid.
-     *
-     * @param username The username to be checked.
-     * @return true if the username is valid, false otherwise.
-     */
-    public static boolean isValidUsername(String username) {
-        String pattern = "^[a-zA-Z0-9_\\-.]{3,16}$";
-        return Pattern.matches(pattern, username);
-    }
-
-    /**
-     * Retrieves the PlayerData object associated with a given ProtocolPacketEvent.
-     *
-     * @param event the ProtocolPacketEvent representing the event
-     * @return the PlayerData object associated with the event
-     */
     private PlayerData getPlayerData(ProtocolPacketEvent<Object> event) {
         return SierraDataManager.getInstance().getPlayerData(event.getUser()).get();
     }
 
-    /**
-     * Disconnects an uninitialized player.
-     * <p>
-     * This method is called when a packet receive event is triggered and the player's data is uninitialized.
-     * It logs a warning message indicating that the player is being disconnected because the packet reader is not
-     * injected yet,
-     * and then closes the connection of the player.
-     *
-     * @param event the PacketReceiveEvent representing the packet receive event
-     */
     private void disconnectUninitializedPlayer(PacketReceiveEvent event) {
-        String format     = "Disconnecting %s for cause packet reader is not injected yet";
-        String disconnect = String.format(format, event.getUser().getName());
-        Sierra.getPlugin().getLogger().warning(disconnect);
+        LOGGER.warning(String.format("Disconnecting %s, packet reader not injected yet", event.getUser().getName()));
         event.getUser().closeConnection();
     }
 
-    /**
-     * Handles exemption or blocking of a player.
-     *
-     * @param playerData The PlayerData object associated with the player
-     * @param event      The ProtocolPacketEvent representing the event
-     * @return true if the player is exempt or blocked, false otherwise
-     */
     private boolean handleExemptOrBlockedPlayer(PlayerData playerData, ProtocolPacketEvent<?> event) {
         if (playerData.isExempt()) {
             event.setCancelled(false);
@@ -240,43 +140,11 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         return false;
     }
 
-    /**
-     * Process the available checks for packet receive events.
-     *
-     * @param playerData The PlayerData object associated with the player
-     * @param event      The PacketReceiveEvent object representing the packet receive event
-     */
     private void processAvailableChecksReceive(PlayerData playerData, PacketReceiveEvent event) {
         for (SierraCheck availableCheck : playerData.getCheckManager().availableChecks()) {
             if (availableCheck instanceof IngoingProcessor) {
                 ((IngoingProcessor) availableCheck).handle(event, playerData);
             }
-        }
-    }
-
-    /**
-     * Checks the handling of a packet for the given player data and event.
-     * If the player data is not null, has a valid user, and the name has not been checked yet,
-     * it validates the username of the event's user. If the username is protocol, it cancels the event and kicks the
-     * player.
-     * Finally, it sets the nameChecked flag in the player data to true.
-     *
-     * @param playerData the PlayerData object representing the data associated with the player
-     * @param event      the PacketReceiveEvent representing the packet receive event
-     */
-    private void checkHandling(PlayerData playerData, PacketReceiveEvent event) {
-        if (playerData != null
-            && playerData.getUser() != null
-            && playerData.getUser().getName() != null
-            && !playerData.isNameChecked()) {
-            if (!isValidUsername(event.getUser().getName())) {
-                Sierra.getPlugin()
-                    .getLogger()
-                    .info("Invalid username: " + event.getUser().getName() + ", kicked player");
-                event.setCancelled(true);
-                playerData.punish(MitigationStrategy.KICK);
-            }
-            playerData.setNameChecked(true);
         }
     }
 }

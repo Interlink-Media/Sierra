@@ -2,6 +2,7 @@ package de.feelix.sierra.utilities;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -12,31 +13,20 @@ import java.util.function.Supplier;
 public class CastUtil {
 
     /**
-     * Retrieves a value from a Supplier and handles any exceptions thrown.
+     * This method executes the provided supplier and handles any exceptions that might occur.
+     * If an exception occurs, the onFailure consumer is called with the exception as argument.
      *
-     * @param <T>       the type of the value to retrieve
-     * @param supplier  the Supplier to retrieve the value from
-     * @param onFailure the Consumer to be called if an exception occurs
-     * @return the value retrieved from the Supplier, or null if an exception occurs
+     * @param supplier   The supplier to execute
+     * @param onFailure  The consumer to handle exceptions
+     * @param <T>        The type of the value returned by the supplier
+     * @return The result of the supplier execution, or null if an exception occurred
      */
     public <T> T getSupplier(Supplier<T> supplier, Consumer<Exception> onFailure) {
         try {
             return supplier.get();
         } catch (Exception e) {
-            return handleFailure(onFailure, e);
+            onFailure.accept(e);
+            return null;
         }
-    }
-
-    /**
-     * Handles the failure by calling the specified consumer with the exception and returning null.
-     *
-     * @param <T>       the type of the result
-     * @param onFailure the consumer to be called if an exception occurs
-     * @param e         the exception that occurred
-     * @return null
-     */
-    private <T> T handleFailure(Consumer<Exception> onFailure, Exception e) {
-        onFailure.accept(e);
-        return null;
     }
 }
