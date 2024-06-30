@@ -112,17 +112,21 @@ public class HistoryCommand implements ISierraCommand {
      */
     private void sendHistoryMessages(User user, List<History> historyDocumentList) {
         for (History historyDocument : historyDocumentList) {
+            System.out.println(historyDocument.toString());
+            String historyMessage = createHistoryMessage((HistoryDocument) historyDocument);
+            System.out.println(historyMessage);
+            String hoverMessage = new ConfigValue(
+                "commands.history.hover", "{prefix} &7Info: &b{description}",
+                true
+            ).replacePrefix()
+                .replace("{description}", historyDocument.description())
+                .colorize()
+                .message();
+            System.out.println(hoverMessage);
             user.sendMessage(
                 LegacyComponentSerializer.legacy('&')
-                    .deserialize(createHistoryMessage((HistoryDocument) historyDocument))
-                    .hoverEvent(HoverEvent.showText(Component.text(
-                        new ConfigValue(
-                            "commands.history.hover", "{prefix} &7Info: &b{description}",
-                            true
-                        ).replacePrefix()
-                            .replace("{description}", historyDocument.description())
-                            .colorize()
-                            .message()))));
+                    .deserialize(historyMessage)
+                    .hoverEvent(HoverEvent.showText(Component.text(hoverMessage))));
         }
     }
 
