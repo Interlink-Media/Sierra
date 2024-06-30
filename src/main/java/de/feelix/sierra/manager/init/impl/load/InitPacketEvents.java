@@ -41,7 +41,7 @@ public class InitPacketEvents implements Initable {
             .kickOnPacketException(
                 Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("kick-on-packet-exception", true))
             // .reEncodeByDefault(false)
-            .checkForUpdates(true)
+            .checkForUpdates(false)
             .debug(false);
         PacketEvents.getAPI().load();
     }
