@@ -152,6 +152,10 @@ replay_pid*
 
 # Sensitive or high-churn files
 
+# Sierra
+!depends/
+!depends/**
+
 # Gradle
 
 # Gradle and Maven with auto-import

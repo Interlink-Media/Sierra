@@ -25,8 +25,9 @@ repositories {
 }
 
 dependencies {
-    implementation('com.github.retrooper:packetevents-spigot:2.3.1-SNAPSHOT') { changing = true }
+    //implementation('com.github.retrooper:packetevents-spigot:2.3.1-SNAPSHOT') { changing = true }
     //implementation('com.github.retrooper.packetevents:spigot:2.3.0') { changing = true }
+    implementation(files("depends/packetevents.jar"))
     implementation(project(':api'))
     implementation 'com.github.cryptomorin:XSeries:11.1.0'
     implementation 'com.google.guava:guava:33.2.1-jre'

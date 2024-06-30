@@ -9,6 +9,8 @@ import de.feelix.sierra.command.api.SierraLabel;
 import de.feelix.sierra.command.impl.*;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.FormatUtils;
+import de.feelix.sierraapi.annotation.NotNull;
+import de.feelix.sierraapi.annotation.Nullable;
 import de.feelix.sierraapi.commands.ISierraCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -16,8 +18,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
