@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 group = 'de.feelix.sierra'
@@ -13,6 +14,27 @@ repositories {
     mavenCentral()
     maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url = 'https://repo.codemc.io/repository/maven-releases/' } // PacketEvents
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "squarecodeRepository"
+            url = "https://repo.squarecode.de/releases"
+            credentials(PasswordCredentials)
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            groupId = "de.feelix"
+            artifactId = "sierraapi"
+            version = "1.0.5"
+            from components.java
+        }
+    }
 }
 
 dependencies {
