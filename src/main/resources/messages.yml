@@ -110,7 +110,7 @@ commands:
     # {gameMode}: Player's game mode
     # {ticksExisted}: Number of ticks the player has existed
     # {n}: New line
-    information: "{prefix} &7Version: &b{clientVersion}{n}{prefix} &7Client: &b{brand}{n}{prefix} &7Ping: &b{ping}ms{n}{prefix} &7Game mode: &b{gameMode}{n}{prefix} &7Ticks existed: &b{ticksExisted}{n}{prefix} &b&lCheck information"
+    information: "{prefix} &7Version: &b{clientVersion}{n}{prefix} &7Client: &b{brand}&7/&b{locale}{n}{prefix} &7Ping: &b{ping}ms{n}{prefix} &7Game mode: &b{gameMode}{n}{prefix} &7Ticks existed: &b{ticksExisted}{n}{prefix} &b&lCheck information"
 
 layout:
 

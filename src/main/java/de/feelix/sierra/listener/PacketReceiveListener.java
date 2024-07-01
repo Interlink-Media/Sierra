@@ -5,7 +5,9 @@ import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClientStatus;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPong;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientSettings;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientWindowConfirmation;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
@@ -47,6 +49,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         playerData.getTimingProcessor().getPacketReceiveTask().prepare();
 
         handleTransaction(event, playerData);
+        handleLocale(event, playerData);
 
         if (handleExemptOrBlockedPlayer(playerData, event)) return;
 
@@ -55,6 +58,13 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
         processAvailableChecksReceive(playerData, event);
         playerData.getTimingProcessor().getPacketReceiveTask().end();
+    }
+
+    private void handleLocale(PacketReceiveEvent event, PlayerData playerData) {
+        if(event.getPacketType() == PacketType.Play.Client.CLIENT_SETTINGS) {
+            WrapperPlayClientSettings wrapper = new WrapperPlayClientSettings(event);
+            playerData.setLocale(wrapper.getLocale());
+        }
     }
 
     private void handleTransaction(PacketReceiveEvent event, PlayerData playerData) {

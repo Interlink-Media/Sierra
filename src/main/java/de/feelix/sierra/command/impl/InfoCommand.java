@@ -65,14 +65,14 @@ public class InfoCommand implements ISierraCommand {
 
         user.sendMessage(new ConfigValue(
             "commands.info.information",
-            "{prefix} &7Version: &b{clientVersion}{n}{prefix} &7Client: &b{brand}{n}{prefix} &7Ping: "
+            "{prefix} &7Version: &b{clientVersion}{n}{prefix} &7Client: &b{brand}&7/&b{locale}{n}{prefix} &7Ping: "
             + "&b{ping}ms{n}{prefix} &7Game mode: &b{gameMode}{n}{prefix} &7Ticks existed: "
             + "&b{ticksExisted}{n}{prefix} &b&lCheck information",
             true
-        )
-                             .replacePrefix()
+        ).replacePrefix()
                              .replace("{clientVersion}", sierraUser.version())
                              .replace("{brand}", sierraUser.brand())
+                             .replace("{locale}", sierraUser.locale())
                              .replace("{ping}", String.valueOf(sierraUser.ping()))
                              .replace("{gameMode}", sierraUser.gameMode().name())
                              .replace("{ticksExisted}", sierraUser.ticksExisted() + " ticks")

@@ -27,6 +27,13 @@ public interface SierraUser {
     String brand();
 
     /**
+     * Retrieves the locale of the user.
+     *
+     * @return The locale of the user as a String.
+     */
+    String locale();
+
+    /**
      * Gets the entity ID of the SierraUser.
      *
      * @return The entity ID of the SierraUser.

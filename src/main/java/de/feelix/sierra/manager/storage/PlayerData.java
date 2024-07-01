@@ -37,6 +37,7 @@ public class PlayerData implements SierraUser {
     private ClientVersion clientVersion;
 
     private       String      brand    = "vanilla";
+    private       String      locale   = "unset";
     private final Set<String> channels = new HashSet<>();
     private final long        joinTime = System.currentTimeMillis();
 
@@ -102,6 +103,11 @@ public class PlayerData implements SierraUser {
     @Override
     public String brand() {
         return brand;
+    }
+
+    @Override
+    public String locale() {
+        return locale;
     }
 
     /**

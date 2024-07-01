@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'de.feelix.sierra'
-version = '1.0.5'
+version = '1.0.6'
 description = 'api'
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8
@@ -31,7 +31,7 @@ publishing {
         maven(MavenPublication) {
             groupId = "de.feelix"
             artifactId = "sierraapi"
-            version = "1.0.5"
+            version = "1.0.6"
             from components.java
         }
     }
