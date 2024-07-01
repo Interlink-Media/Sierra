@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.netty.channel.ChannelHelper;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
+import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPing;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowConfirmation;
@@ -19,28 +20,31 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Getter
 public class TransactionProcessor {
 
-    private final PlayerData playerData;
-
-    public TransactionProcessor(PlayerData playerData) {
-        this.playerData = playerData;
-    }
+    private final PlayerData player;
 
     public final  Queue<Pair<Short, Long>>            transactionsSent   = new ConcurrentLinkedQueue<>();
+    public final  Queue<Pair<Long, Long>>             keepAlivesSent     = new ConcurrentLinkedQueue<>();
     private final LinkedList<Pair<Integer, Runnable>> transactionMap     = new LinkedList<>();
     public final  List<Short>                         didWeSendThatTrans = Collections.synchronizedList(
         new ArrayList<>());
 
-    private final AtomicInteger transactionIDCounter = new AtomicInteger(0);
-    public        AtomicInteger lastTransactionSent  = new AtomicInteger(0);
-    public  AtomicInteger lastTransactionReceived = new AtomicInteger(0);
+    private final AtomicInteger transactionIDCounter    = new AtomicInteger(0);
+    public        AtomicInteger lastTransactionSent     = new AtomicInteger(0);
+    public        AtomicInteger lastTransactionReceived = new AtomicInteger(0);
 
-    private int   lastRunnableId      = 1;
-    private long  transactionPing     = 0;
-    private long  lastTransactionPing = 0;
-    public  long  lastTransSent       = 0;
-    public  long  lastTransReceived   = 0;
-    private long  playerClockAtLeast  = System.nanoTime();
-    private short lastId              = 0;
+    private short lastId = 0;
+
+    private long transactionPing        = 0;
+    private long lastTransactionPing    = 0;
+    private int  lastRunnableId         = 1;
+    public  long lastTransSent          = 0;
+    public  long lastTransReceived      = 0;
+    private long playerClockAtLeast     = System.nanoTime();
+    private int  pendingSinceLastFlying = 0;
+
+    public TransactionProcessor(PlayerData playerData) {
+        this.player = playerData;
+    }
 
     // Players can get 0 ping by repeatedly sending invalid transaction packets, but that will only hurt them
     // The design is allowing players to miss transaction packets, which shouldn't be possible
@@ -77,21 +81,21 @@ public class TransactionProcessor {
         return data != null && data.getFirst() == id;
     }
 
+    public void sendTransaction() {
+        sendTransaction(false);
+    }
+
     public void sendTransaction(boolean async) {
 
-        if (playerData.getUser() == null) return;
-
+        // Sending in non-play corrupts the pipeline, don't waste bandwidth when anticheat disabled
         try {
-            // Sending in non-play corrupts the pipeline, don't waste bandwidth when anticheat disabled
-            if (playerData.getUser().getConnectionState() != ConnectionState.PLAY) return;
-
-        } catch (IllegalArgumentException exception) {
-
-            // In the early moments, the decoder might deviate from the EncoderState.
-            // However, this only happens for 1-2 ticks, which we can skip as it has no impact.
+            if (player.getUser().getConnectionState() != ConnectionState.PLAY) return;
+        } catch (Exception exception) {
             Sierra.getPlugin()
                 .getLogger()
-                .warning("Skip transaction for " + this.playerData.username() + ", cause state is out of sync");
+                .warning("Skip Transaction #" + this.lastTransactionSent.get() + " for " + player.username()
+                         + ", can be ignored");
+            return;
         }
 
         // Send a packet once every 15 seconds to avoid any memory leaks
@@ -114,10 +118,11 @@ public class TransactionProcessor {
             }
 
             if (async) {
-                ChannelHelper.runInEventLoop(
-                    playerData.getUser().getChannel(), () -> playerData.getUser().writePacket(packet));
+                ChannelHelper.runInEventLoop(player.getUser().getChannel(), () -> player.getUser().writePacket(packet));
+                pendingSinceLastFlying++;
             } else {
-                playerData.getUser().writePacket(packet);
+                player.getUser().writePacket(packet);
+                pendingSinceLastFlying++;
             }
 
         } catch (Exception ex) {
@@ -130,12 +135,18 @@ public class TransactionProcessor {
         this.lastRunnableId = transaction;
 
         if (lastTransactionReceived.get() >= transaction) { // If the player already responded to this transaction
-            ChannelHelper.runInEventLoop(playerData.getUser().getChannel(), runnable); // Run it sync to player channel
+            User user = PacketEvents.getAPI().getPlayerManager().getUser(this.player.getPlayer());
+
+            if (user == null) return;
+
+            ChannelHelper.runInEventLoop(user.getChannel(), runnable); // Run it sync to player channel
             return;
         }
+
         synchronized (this) {
             transactionMap.add(new Pair<>(transaction, runnable));
         }
+
     }
 
     public void handleNettySyncTransaction(int transaction) {
@@ -156,7 +167,7 @@ public class TransactionProcessor {
                     // Run the task
                     pair.getSecond().run();
                 } catch (Exception e) {
-                    String name = playerData.username();
+                    String name = player.username();
                     System.out.printf("An error has occurred when running transactions for player: %s%n", name);
                     e.printStackTrace();
                 }
@@ -168,9 +179,5 @@ public class TransactionProcessor {
 
     public void addTransactionSend(short id) {
         didWeSendThatTrans.add(id);
-    }
-
-    public void sendTransaction() {
-        sendTransaction(false);
     }
 }

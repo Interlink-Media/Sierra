@@ -57,22 +57,33 @@ public class PacketSendListener extends PacketListenerAbstract {
 
     private void handlePingTransaction(PacketSendEvent event, PlayerData playerData) {
         WrapperPlayServerPing wrapper = new WrapperPlayServerPing(event);
-        short                 id      = (short) wrapper.getId();
-        if (playerData.getTransactionProcessor().didWeSendThatTrans.contains(id)) {
-            playerData.getTransactionProcessor().didWeSendThatTrans.remove(id);
-            Pair<Short, Long> solarPair = new Pair<>(id, System.nanoTime());
-            playerData.getTransactionProcessor().transactionsSent.add(solarPair);
-            playerData.getTransactionProcessor().lastTransactionSent.getAndIncrement();
+
+        int id = wrapper.getId();
+        // Check if in the short range, we only use short range
+        if (id == (short) id) {
+            // Cast ID twice so we can use the list
+            Short shortID = ((short) id);
+            if (playerData.getTransactionProcessor().didWeSendThatTrans.remove(shortID)) {
+                Pair<Short, Long> solarPair = new Pair<>(shortID, System.nanoTime());
+                playerData.getTransactionProcessor().transactionsSent.add(solarPair);
+                playerData.getTransactionProcessor().lastTransactionSent.getAndIncrement();
+            }
         }
     }
 
     private void handleWindowConfirmationTransaction(PacketSendEvent event, PlayerData playerData) {
         WrapperPlayServerWindowConfirmation wrapper = new WrapperPlayServerWindowConfirmation(event);
-        short                               id      = wrapper.getActionId();
-        if (id <= 0 && playerData.getTransactionProcessor().didWeSendThatTrans.remove((Short) id)) {
-            Pair<Short, Long> transactionPair = new Pair<>(id, System.nanoTime());
-            playerData.getTransactionProcessor().transactionsSent.add(transactionPair);
-            playerData.getTransactionProcessor().lastTransactionSent.getAndIncrement();
+
+        short id = wrapper.getActionId();
+
+        // Vanilla always uses an ID starting from 1
+        if (id <= 0) {
+
+            if (playerData.getTransactionProcessor().didWeSendThatTrans.remove((Short) id)) {
+                Pair<Short, Long> solarPair = new Pair<>(id, System.nanoTime());
+                playerData.getTransactionProcessor().transactionsSent.add(solarPair);
+                playerData.getTransactionProcessor().lastTransactionSent.getAndIncrement();
+            }
         }
     }
 
