@@ -29,17 +29,17 @@ dependencies {
     //implementation('com.github.retrooper.packetevents:spigot:2.3.0') { changing = true }
     implementation(files("depends/packetevents.jar"))
     implementation(project(':api'))
-    implementation 'com.github.cryptomorin:XSeries:11.1.0'
+    implementation 'com.github.cryptomorin:XSeries:11.2.0'
     implementation 'com.google.guava:guava:33.2.1-jre'
     implementation 'com.google.code.gson:gson:2.11.0'
 
     compileOnly 'org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT'
 
-    compileOnly 'org.projectlombok:lombok:1.18.32'
-    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+    compileOnly 'org.projectlombok:lombok:1.18.34'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
 
-    testCompileOnly 'org.projectlombok:lombok:1.18.32'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.32'
+    testCompileOnly 'org.projectlombok:lombok:1.18.34'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
 }
 
 group = 'de.feelix.sierra'
