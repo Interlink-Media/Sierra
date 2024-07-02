@@ -125,7 +125,7 @@ generic-packet-frequency-default: 45
 # Limit packets per second
 # - PACKET_TYPE:Count ex. PLAYER_DIGGING:5
 generic-packet-frequency-limit:
-  - "CREATIVE_INVENTORY_ACTION:30"
+  - "CREATIVE_INVENTORY_ACTION:50"
   - "PLAYER_BLOCK_PLACEMENT:35"
   - "CRAFT_RECIPE_REQUEST:15"
   - "WINDOW_CONFIRMATION:15"

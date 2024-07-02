@@ -82,6 +82,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
 
         if (event.getConnectionState() != ConnectionState.PLAY) return;
+
         if (playerData.getClientVersion() == null) {
             playerData.setClientVersion(event.getUser().getClientVersion());
         }
