@@ -120,14 +120,14 @@ skip-negative-experience-check: false # Not recommended
 generic-packet-size-limit: 5000 # Set -1 to disable (Not recommended)
 
 # Default packet per second limit
-generic-packet-frequency-default: 45
+generic-packet-frequency-default: 50
 
 # Limit packets per second
 # - PACKET_TYPE:Count ex. PLAYER_DIGGING:5
 generic-packet-frequency-limit:
-  - "CREATIVE_INVENTORY_ACTION:50"
-  - "PLAYER_BLOCK_PLACEMENT:35"
-  - "CRAFT_RECIPE_REQUEST:15"
+  - "CREATIVE_INVENTORY_ACTION:60"
+  - "PLAYER_BLOCK_PLACEMENT:40"
+  - "CRAFT_RECIPE_REQUEST:20"
   - "WINDOW_CONFIRMATION:15"
   - "CLICK_WINDOW_BUTTON:25"
   - "HELD_ITEM_CHANGE:25"
