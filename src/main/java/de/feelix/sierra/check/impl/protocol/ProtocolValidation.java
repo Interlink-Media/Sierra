@@ -58,6 +58,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private              int           lecternId          = -1;
     private              int           lastSlot           = -1;
     private              long          lastBookUse        = 0L;
+    private              boolean       hasOpenAnvil       = false;
     private static final Pattern       EXPLOIT_PATTERN    = Pattern.compile("\\$\\{.+}");
     private              int           containerType      = -1;
     private              int           containerId        = -1;
@@ -110,7 +111,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 .build());
         }
 
-        handleAnvilInventory(event, playerData);
+        handleAnvilInventory(event);
         handleClientSettings(event, playerData);
         handleCreativeInventoryAction(event, playerData);
         handleEntityAction(event);
@@ -130,9 +131,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         handlePluginMessage(event, playerData);
     }
 
-    private boolean hasOpenAnvil = false;
-
-    private void handleAnvilInventory(PacketReceiveEvent event, PlayerData playerData) {
+    private void handleAnvilInventory(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
             WrapperPlayClientPluginMessage wrapper = new WrapperPlayClientPluginMessage(event);
 
@@ -1386,7 +1385,10 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkSetExperience(WrapperPlayServerSetExperience wrapper, PacketSendEvent event) {
-        if (wrapper.getLevel() < 0 || wrapper.getExperienceBar() < 0 || wrapper.getTotalExperience() < 0) {
+        if (wrapper.getLevel() < 0 || (wrapper.getExperienceBar() < 0 && !Sierra.getPlugin()
+            .getSierraConfigEngine()
+            .config()
+            .getBoolean("skip-negative-experience-check", false)) || wrapper.getTotalExperience() < 0) {
 
             dispatch(event, ViolationDocument.builder()
                 .description("send invalid experience request")

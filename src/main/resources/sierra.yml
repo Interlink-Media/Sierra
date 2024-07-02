@@ -115,6 +115,8 @@ log-violation-to-console: true
 # Should we block future connections after a player got punished? Recommended
 block-connections-after-ban: true
 
+skip-negative-experience-check: false # Not recommended
+
 generic-packet-size-limit: 5000 # Set -1 to disable (Not recommended)
 
 # Default packet per second limit
