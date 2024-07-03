@@ -89,8 +89,6 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             this.packetCounts.clear();
         }
 
-        // int transaction = playerData.getTransactionProcessor().getLastTransactionSent().get() + 1;
-
         if (packetType.equals(PacketType.Play.Client.EDIT_BOOK)) {
             handleEditBook(event);
         } else if (packetType.equals(PacketType.Play.Client.PLUGIN_MESSAGE)) {
@@ -102,10 +100,6 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
         } else if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) {
             handleFlyingDelay(event, playerData);
         }
-
-        // if (playerData.getTransactionProcessor().getLastRunnableId() != transaction) {
-        //     playerData.getTransactionProcessor().addRealTimeTask(transaction, packetCounts::clear);
-        // }
 
         playerData.getTimingProcessor().getFrequencyTask().end();
     }
