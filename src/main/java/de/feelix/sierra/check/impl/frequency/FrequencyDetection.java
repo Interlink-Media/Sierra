@@ -85,9 +85,11 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
                     .build());
                 return;
             }
+        } else {
+            this.packetCounts.clear();
         }
 
-        int transaction = playerData.getTransactionProcessor().getLastTransactionSent().get() + 1;
+        // int transaction = playerData.getTransactionProcessor().getLastTransactionSent().get() + 1;
 
         if (packetType.equals(PacketType.Play.Client.EDIT_BOOK)) {
             handleEditBook(event);
@@ -101,9 +103,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             handleFlyingDelay(event, playerData);
         }
 
-        if (playerData.getTransactionProcessor().getLastRunnableId() != transaction) {
-            playerData.getTransactionProcessor().addRealTimeTask(transaction, packetCounts::clear);
-        }
+        // if (playerData.getTransactionProcessor().getLastRunnableId() != transaction) {
+        //     playerData.getTransactionProcessor().addRealTimeTask(transaction, packetCounts::clear);
+        // }
 
         playerData.getTimingProcessor().getFrequencyTask().end();
     }
@@ -122,7 +124,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             if (balance > MAX_BAL) {
                 this.dispatch(event, ViolationDocument.builder()
                     .description("is moving too frequent")
-                    .mitigationStrategy(violations() > 100 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
+                    .mitigationStrategy(violations() > 75 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
                     .debugs(Arrays.asList(
                         new Debug<>("Balance", balance),
                         new Debug<>("Version", getPlayerData().getClientVersion().getReleaseName()),
@@ -137,7 +139,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     }
 
     private int retrieveLimitFromConfiguration(PacketTypeCommon packetType, YamlConfiguration config) {
-        int limit = config.getInt("generic-packet-frequency-default", 30);
+        int limit = config.getInt("generic-packet-frequency-default", 50);
         for (String string : config.getStringList("generic-packet-frequency-limit")) {
             String[] parts = string.split(":");
             if (parts[0].equals(packetType.getName())) {

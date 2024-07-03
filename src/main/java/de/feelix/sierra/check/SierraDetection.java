@@ -140,8 +140,7 @@ public class SierraDetection implements SierraCheck {
     private String createGeneralInformation(ViolationDocument violationDocument) {
         return String.format(
             "Debug information: %s", violationDocument.getDebugs().isEmpty()
-                ? "No debug available"
-                : FormatUtils.shortenString(violationDocument.debugInformation()));
+                ? "No debug available" : (violationDocument.debugInformation()));
     }
 
     private String createGeneralCheck() {

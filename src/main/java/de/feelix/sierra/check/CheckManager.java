@@ -41,7 +41,7 @@ public class CheckManager implements CheckRepository {
      * check.performCheck();
      * }
      */
-    private final List<SierraCheck> packetChecks;
+    private final List<SierraCheck> packetChecks = new ArrayList<>();
 
     /**
      * The playerData variable represents the data associated with a player.
@@ -54,8 +54,6 @@ public class CheckManager implements CheckRepository {
      */
     public CheckManager(PlayerData playerData) {
         this.playerData = playerData;
-
-        packetChecks = new ArrayList<>();
         packetChecks.add(new FrequencyDetection(playerData));
         packetChecks.add(new BookValidation(playerData));
         packetChecks.add(new ProtocolValidation(playerData));
