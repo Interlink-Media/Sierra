@@ -7,6 +7,7 @@ import com.github.retrooper.packetevents.protocol.world.Location;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.CheckManager;
 import de.feelix.sierra.manager.storage.alert.AbstractAlertSetting;
+import de.feelix.sierra.manager.storage.logger.SierraLogger;
 import de.feelix.sierra.manager.storage.processor.*;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierra.utilities.message.ConfigValue;
@@ -51,6 +52,7 @@ public class PlayerData implements SierraUser {
     private final AlertSettings alertSettings      = new AbstractAlertSetting();
     private final AlertSettings mitigationSettings = new AbstractAlertSetting();
 
+    private       SierraLogger         sierraLogger;
     private final CheckManager         checkManager         = new CheckManager(this);
     private final BrandProcessor       brandProcessor       = new BrandProcessor(this);
     private final GameModeProcessor    gameModeProcessor    = new GameModeProcessor(this);
@@ -76,6 +78,9 @@ public class PlayerData implements SierraUser {
     public void pollData(Player bukkitPlayer) {
         this.player = bukkitPlayer;
         bypassPermission = bukkitPlayer.hasPermission("sierra.bypass");
+        if (this.sierraLogger == null) {
+            sierraLogger = new SierraLogger(bukkitPlayer.getName());
+        }
     }
 
     /**

@@ -12,6 +12,7 @@ import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
+import de.feelix.sierra.manager.storage.logger.LogTag;
 import de.feelix.sierraapi.check.impl.SierraCheck;
 import de.feelix.sierraapi.violation.MitigationStrategy;
 
@@ -101,6 +102,12 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
         if ((maxPacketSize != -1 && (readableBytes > maxPacketSize || readableBytes > capacity)) ||
             event.getPacketId() < 0 || event.getPacketId() > 1000) {
+
+            playerData.getSierraLogger()
+                .log(
+                    LogTag.PRE, "Packet: " + event.getPacketType().getName() + ", Bytes: " + readableBytes + " (Max: "
+                                + maxPacketSize + ", Capacity: " + capacity + ") Packet-Id: " + event.getPacketId());
+
             logAndDisconnect(playerData, readableBytes, capacity, maxPacketSize);
             event.cleanUp();
             event.setCancelled(true);

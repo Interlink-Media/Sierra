@@ -87,7 +87,7 @@ public class SierraDataManager implements UserRepository {
 
                 PlayerData data = getPlayerData(user).get();
 
-                if(data != null) {
+                if (data != null) {
                     data.punish(MitigationStrategy.KICK);
                 }
             }
@@ -151,9 +151,10 @@ public class SierraDataManager implements UserRepository {
         user.sendMessage(
             LegacyComponentSerializer.legacy('&')
                 .deserialize(Sierra.PREFIX + " &c&nToo lazy? Stay always up-to-date with SierraLoader&c")
-                .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL,
-                                                  "https://sierra.squarecode"
-                                                  + ".de/sierra/sierra-documentation/sierra-loader"
+                .clickEvent(ClickEvent.clickEvent(
+                    ClickEvent.Action.OPEN_URL,
+                    "https://sierra.squarecode"
+                    + ".de/sierra/sierra-documentation/sierra-loader"
                 ))
                 .hoverEvent(HoverEvent.showText(Component.text("§7Click me to view the documentation")))
         );
@@ -174,8 +175,9 @@ public class SierraDataManager implements UserRepository {
         HistoryDocument document = new HistoryDocument(
             username, description, clientVersion, ping, mitigationStrategy, type);
         FoliaScheduler.getAsyncScheduler()
-            .runNow(Sierra.getPlugin(),
-                    o -> Sierra.getPlugin().getEventBus().publish(new AsyncHistoryCreateEvent(document))
+            .runNow(
+                Sierra.getPlugin(),
+                o -> Sierra.getPlugin().getEventBus().publish(new AsyncHistoryCreateEvent(document))
             );
         histories.add(document);
     }
@@ -196,6 +198,11 @@ public class SierraDataManager implements UserRepository {
     }
 
     public void removePlayerData(User user) {
+        PlayerData data = playerData.get(user);
+
+        if(data != null && data.getSierraLogger() != null) {
+            data.getSierraLogger().close();
+        }
         playerData.remove(user);
     }
 
