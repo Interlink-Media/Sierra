@@ -34,7 +34,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         PlayerData playerData = getPlayerData(event);
 
         if (playerData == null) {
-            disconnectUninitializedPlayer(event);
+            event.getUser().closeConnection();
             return;
         }
 
@@ -60,7 +60,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
     }
 
     private void handleLocale(PacketReceiveEvent event, PlayerData playerData) {
-        if(event.getPacketType() == PacketType.Play.Client.CLIENT_SETTINGS) {
+        if (event.getPacketType() == PacketType.Play.Client.CLIENT_SETTINGS) {
             WrapperPlayClientSettings wrapper = new WrapperPlayClientSettings(event);
             playerData.setLocale(wrapper.getLocale());
         }
@@ -68,16 +68,16 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
     private void handleTransaction(PacketReceiveEvent event, PlayerData playerData) {
         PacketTypeCommon packetType = event.getPacketType();
-        if (packetType.equals(PacketType.Play.Client.WINDOW_CONFIRMATION)) {
+        if (packetType == PacketType.Play.Client.WINDOW_CONFIRMATION) {
             handleWindowConfirmation(event, playerData);
-        } else if (packetType.equals(PacketType.Play.Client.PONG)) {
+        } else if (packetType == PacketType.Play.Client.PONG) {
             handlePong(event, playerData);
         }
     }
 
     private void handleWindowConfirmation(PacketReceiveEvent event, PlayerData playerData) {
         WrapperPlayClientWindowConfirmation wrapper = new WrapperPlayClientWindowConfirmation(event);
-        short id = wrapper.getActionId();
+        short                               id      = wrapper.getActionId();
         if (id <= 0 && playerData.getTransactionProcessor().addTransactionResponse(id)) {
             event.setCancelled(true);
         }
@@ -85,7 +85,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
     private void handlePong(PacketReceiveEvent event, PlayerData playerData) {
         WrapperPlayClientPong wrapper = new WrapperPlayClientPong(event);
-        int id = wrapper.getId();
+        int                   id      = wrapper.getId();
         if (id == (short) id && playerData.getTransactionProcessor().addTransactionResponse((short) id)) {
             event.setCancelled(true);
         }
@@ -93,7 +93,10 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
     private boolean isWeirdPacket(ProtocolPacketEvent<Object> event, PlayerData playerData) {
         int readableBytes = ByteBufHelper.readableBytes(event.getByteBuf());
-        int maxPacketSize = Sierra.getPlugin().getSierraConfigEngine().config().getInt("generic-packet-size-limit", 5000);
+        int maxPacketSize = Sierra.getPlugin()
+            .getSierraConfigEngine()
+            .config()
+            .getInt("generic-packet-size-limit", 5000);
         int capacity = ByteBufHelper.capacity(event.getByteBuf());
 
         if ((maxPacketSize != -1 && (readableBytes > maxPacketSize || readableBytes > capacity)) ||
@@ -109,7 +112,8 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
     private void logAndDisconnect(PlayerData playerData, int readableBytes, int capacity, int maxPacketSize) {
         LOGGER.info(String.format("Disconnecting %s, packet too big. Bytes: %d, capacity: %d, max: %d",
-                                  playerData.getUser().getName(), readableBytes, capacity, maxPacketSize));
+                                  playerData.getUser().getName(), readableBytes, capacity, maxPacketSize
+        ));
         createHistory(playerData, readableBytes, capacity, maxPacketSize);
     }
 
@@ -130,11 +134,6 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
     private PlayerData getPlayerData(ProtocolPacketEvent<Object> event) {
         return SierraDataManager.getInstance().getPlayerData(event.getUser()).get();
-    }
-
-    private void disconnectUninitializedPlayer(PacketReceiveEvent event) {
-        LOGGER.warning(String.format("Disconnecting %s, packet reader not injected yet", event.getUser().getName()));
-        event.getUser().closeConnection();
     }
 
     private boolean handleExemptOrBlockedPlayer(PlayerData playerData, ProtocolPacketEvent<?> event) {
