@@ -105,8 +105,10 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
             playerData.getSierraLogger()
                 .log(
-                    LogTag.PRE, "Packet: " + event.getPacketType().getName() + ", Bytes: " + readableBytes + " (Max: "
-                                + maxPacketSize + ", Capacity: " + capacity + ") Packet-Id: " + event.getPacketId());
+                    LogTag.PRE, String.format("Packet: %s, Bytes: %d (Max: %d, Capacity: %d) Packet-Id: %d",
+                                              event.getPacketType().getName(), readableBytes, maxPacketSize, capacity,
+                                              event.getPacketId()
+                    ));
 
             logAndDisconnect(playerData, readableBytes, capacity, maxPacketSize);
             event.cleanUp();

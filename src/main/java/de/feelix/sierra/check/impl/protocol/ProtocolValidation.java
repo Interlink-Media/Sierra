@@ -15,6 +15,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
+import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.wrapper.play.client.*;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenWindow;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetExperience;
@@ -512,6 +513,24 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkBlockPlacement(WrapperPlayClientPlayerBlockPlacement wrapper, PacketReceiveEvent event) {
 
+        double distanced = wrapper.getBlockPosition()
+            .toVector3d()
+            .distanceSquared(getPlayerData().getLastLocation().getPosition());
+
+        if (distanced > 50 && wrapper.getFace() != BlockFace.OTHER) {
+            dispatch(event, ViolationDocument.builder()
+                .description("placed a block out of distance")
+                .debugs(Arrays.asList(new Debug<>("Distance", distanced),
+                                      new Debug<>("Version", getPlayerData().getClientVersion().getReleaseName()),
+                                      new Debug<>("Alive", getPlayerData().getPingProcessor().getPing()),
+                                      new Debug<>("Transaction",
+                                                  getPlayerData().getTransactionProcessor().getTransactionPing()
+                                      )
+                ))
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .build());
+        }
+
         if (wrapper.getSequence() < 0 && isSupportedVersion(
             ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
             dispatch(event, ViolationDocument.builder()
@@ -778,7 +797,9 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         if (itemStack == null || itemStack.getNBT() == null) return;
 
         int length = FormatUtils.mapToString(itemStack.getNBT().getTags()).length();
-        int limit  = getPlayerData().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_16) ? 30000 : 25000;
+
+        int limit = getPlayerData().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_16) ? 30000 : 25000;
+
         if (length > limit) {
 
             dispatch(event, ViolationDocument.builder()
@@ -940,7 +961,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         int     button    = wrapper.getButton();
         boolean flag      = isInvalidButtonClick(clickType, button);
         if (flag) {
-
             dispatch(event, ViolationDocument.builder()
                 .description("send invalid button click position")
                 .mitigationStrategy(MitigationStrategy.MITIGATE)

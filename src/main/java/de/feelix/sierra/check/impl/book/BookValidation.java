@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.netty.buffer.UnpooledByteBufAllocationHelper;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
+import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.nbt.NBTList;
 import com.github.retrooper.packetevents.protocol.nbt.NBTString;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -202,7 +203,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
         if (checkForInvalidAuthor(event, blockBooks, itemStack)) return;
 
         if (invalidTitleOrAuthor(itemStack)) {
-            removeTags(itemStack);
+            replaceTags(itemStack);
             this.dispatch(event, ViolationDocument.builder()
                 .description("used invalid book")
                 .mitigationStrategy(MitigationStrategy.BAN)
@@ -254,7 +255,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
         }
 
         if (invalidTitleOrAuthor(itemStack)) {
-            removeTags(itemStack);
+            replaceTags(itemStack);
             this.dispatch(event, ViolationDocument.builder()
                 .description("used invalid book")
                 .mitigationStrategy(MitigationStrategy.BAN)
@@ -265,10 +266,10 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
         pageList.addAll(getPages(itemStack));
     }
 
-    private void removeTags(ItemStack carriedItemStack) {
-        Objects.requireNonNull(carriedItemStack.getNBT()).removeTag("pages");
-        Objects.requireNonNull(carriedItemStack.getNBT()).removeTag("author");
-        Objects.requireNonNull(carriedItemStack.getNBT()).removeTag("title");
+    private void replaceTags(ItemStack carriedItemStack) {
+        if (carriedItemStack != null) {
+            carriedItemStack.setNBT(new NBTCompound());
+        }
     }
 
     private Triple<String, MitigationStrategy, List<Debug<?>>> validatePages(List<String> pageList) {
