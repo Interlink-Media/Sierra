@@ -26,7 +26,7 @@ public class SierraLogger {
     }
 
     public synchronized void log(LogTag tag, String message) {
-
+        
         String timestamp  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         String logMessage = String.format("[%s] %s: %s", timestamp, tag.name(), message);
 

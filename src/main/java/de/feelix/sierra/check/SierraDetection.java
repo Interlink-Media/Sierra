@@ -6,6 +6,7 @@ import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
+import de.feelix.sierra.manager.storage.logger.LogTag;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierraapi.check.SierraCheckData;
@@ -73,6 +74,8 @@ public class SierraDetection implements SierraCheck {
     public void dispatch(ProtocolPacketEvent<Object> event, ViolationDocument violationDocument) {
         event.setCancelled(true);
         event.cleanUp();
+
+        playerData.getSierraLogger().log(LogTag.DETECTION, violationDocument.toString());
 
         if (playerData.isReceivedPunishment()) return;
 

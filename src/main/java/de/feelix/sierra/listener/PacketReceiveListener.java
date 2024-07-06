@@ -23,7 +23,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
     private static final Logger LOGGER = Sierra.getPlugin().getLogger();
 
     public PacketReceiveListener() {
-        super(PacketListenerPriority.MONITOR);
+        super(PacketListenerPriority.HIGHEST);
     }
 
     @Override

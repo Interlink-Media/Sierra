@@ -18,7 +18,7 @@ import de.feelix.sierraapi.check.impl.SierraCheck;
 public class PacketSendListener extends PacketListenerAbstract {
 
     public PacketSendListener() {
-        super(PacketListenerPriority.MONITOR);
+        super(PacketListenerPriority.HIGHEST);
     }
 
     @Override
