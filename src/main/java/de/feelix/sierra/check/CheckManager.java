@@ -23,6 +23,8 @@ public class CheckManager implements CheckRepository {
     private final List<SierraCheck> packetChecks = new ArrayList<>();
     private final PlayerData        playerData;
 
+    // Todo: Create anti-bot mechanism in next update
+
     public CheckManager(PlayerData playerData) {
         this.playerData = playerData;
         packetChecks.add(new FrequencyDetection(playerData));
