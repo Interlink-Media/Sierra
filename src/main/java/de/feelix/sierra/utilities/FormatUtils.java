@@ -118,6 +118,37 @@ public class FormatUtils {
     }
 
     /**
+     * Checks if a given input contains character spam.
+     *
+     * @param input     The input string to check for character spam.
+     * @param threshold The maximum number of consecutive characters to consider as spam.
+     * @return True if the input contains character spam, False otherwise.
+     */
+    public static boolean detectCharacterSpam(String input, int threshold) {
+        if (input == null || input.isEmpty()) {
+            return false;
+        }
+
+        int count = 1;
+        char previousChar = input.charAt(0);
+
+        for (int i = 1; i < input.length(); i++) {
+            char currentChar = input.charAt(i);
+
+            if (currentChar == previousChar) {
+                count++;
+                if (count > threshold) {
+                    return true;
+                }
+            } else {
+                count = 1;
+                previousChar = currentChar;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Checks the precision of a given double number.
      *
      * @param number The number to be checked.

@@ -1,11 +1,14 @@
 package de.feelix.sierra.manager.storage.logger;
 
+import de.feelix.sierra.Sierra;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
 
 public class SierraLogger {
 
@@ -26,8 +29,8 @@ public class SierraLogger {
     }
 
     public synchronized void log(LogTag tag, String message) {
-        
-        String timestamp  = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+
+        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         String logMessage = String.format("[%s] %s: %s", timestamp, tag.name(), message);
 
         try {
@@ -35,7 +38,7 @@ public class SierraLogger {
             writer.newLine();
             writer.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            Sierra.getPlugin().getLogger().log(Level.WARNING, "Unable to write log: " + e.getMessage());
         }
     }
 

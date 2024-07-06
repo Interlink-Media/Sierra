@@ -21,6 +21,7 @@ import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.FieldReader;
+import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierra.utilities.Triple;
 import de.feelix.sierraapi.annotation.Nullable;
 import de.feelix.sierraapi.check.SierraCheckData;
@@ -34,8 +35,8 @@ import java.util.*;
 @SierraCheckData(checkType = CheckType.BOOK_VALIDATION)
 public class BookValidation extends SierraDetection implements IngoingProcessor {
 
-    private              String   lastContent               = "";
-    private              int      lastContentCount          = 0;
+    private String lastContent = "";
+    private int lastContentCount = 0;
     private static final String[] MOJANG_CRASH_TRANSLATIONS = {"translation.test.invalid", "translation.test.invalid2"};
 
     public BookValidation(PlayerData playerData) {
@@ -273,7 +274,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
     }
 
     private Triple<String, MitigationStrategy, List<Debug<?>>> validatePages(List<String> pageList) {
-        long totalBytes   = 0;
+        long totalBytes = 0;
         long allowedBytes = 2560;
 
         if (pageList.size() > 50) return new Triple<>("interacted with an invalid item", MitigationStrategy.KICK,
@@ -298,6 +299,9 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
 
             Triple<String, MitigationStrategy, List<Debug<?>>> extraFrequency = isExtraFrequency(pageContent);
             if (extraFrequency != null) return extraFrequency;
+
+            Triple<String, MitigationStrategy, List<Debug<?>>> characterSpam = isCharacterSpam(pageContent);
+            if (characterSpam != null) return characterSpam;
 
             Triple<String, MitigationStrategy, List<Debug<?>>> fieldIsReadable = checkFieldReadable(pageContent);
             if (fieldIsReadable != null) return fieldIsReadable;
@@ -325,7 +329,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             if (invalidPageSize != null) return invalidPageSize;
 
             totalBytes += contentLength;
-            int length     = pageContent.length();
+            int length = pageContent.length();
             int multiBytes = 0;
             if (contentLength != length) {
                 for (char c : pageContent.toCharArray()) {
@@ -362,7 +366,8 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
         return null;
     }
 
-    private static @Nullable Triple<String, MitigationStrategy, List<Debug<?>>> tooManyInvalidChars(String pageContent) {
+    private static @Nullable Triple<String, MitigationStrategy, List<Debug<?>>> tooManyInvalidChars(
+        String pageContent) {
         int oversizedChars = 0;
         for (int charIndex = 0; charIndex < pageContent.length(); charIndex++) {
             char currentChar = pageContent.charAt(charIndex);
@@ -394,6 +399,20 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             return new Triple<>(
                 "interacted with an invalid item", MitigationStrategy.KICK,
                 Collections.singletonList(new Debug<>("Tag", "Extra frequency"))
+            );
+        }
+        return null;
+    }
+
+    private static @Nullable Triple<String, MitigationStrategy, List<Debug<?>>> isCharacterSpam(String pageContent) {
+
+        if (FormatUtils.detectCharacterSpam(pageContent, 10)) {
+            return new Triple<>(
+                "interacted with a invalid item", MitigationStrategy.MITIGATE,
+                Arrays.asList(
+                    new Debug<>("Tag", "Character spam"),
+                    new Debug<>("Max Chars", 10)
+                )
             );
         }
         return null;
