@@ -37,7 +37,7 @@ public class PacketLoggerListener extends PacketListenerAbstract {
             wrapper.getItemStack().ifPresent(itemStack -> {
                 if (itemStack.getNBT() != null) {
                     playerData.getSierraLogger()
-                        .log(LogTag.INTERACT, "BlockPlace: " + FormatUtils.mapToString(itemStack.getNBT().getTags()));
+                        .log(LogTag.BLOCK_PLACE, FormatUtils.mapToString(itemStack.getNBT().getTags()));
                 }
             });
 
@@ -61,12 +61,11 @@ public class PacketLoggerListener extends PacketListenerAbstract {
                         if (itemStack.getNBT() != null) {
                             playerData.getSierraLogger()
                                 .log(
-                                    LogTag.INTERACT,
-                                    "Payload: " + FormatUtils.mapToString(itemStack.getNBT().getTags())
+                                    LogTag.PAYLOAD, FormatUtils.mapToString(itemStack.getNBT().getTags())
                                 );
                         }
                     } catch (Exception exception) {
-                        playerData.getSierraLogger().log(LogTag.EXCEPTION, "Payload: " + exception.getMessage());
+                        playerData.getSierraLogger().log(LogTag.EXCEP_PAYLOAD, exception.getMessage());
                     }
                 } finally {
                     ByteBufHelper.release(buffer);
@@ -80,7 +79,7 @@ public class PacketLoggerListener extends PacketListenerAbstract {
             ItemStack itemStack = wrapper.getItemStack();
             if (itemStack != null && itemStack.getNBT() != null) {
                 playerData.getSierraLogger()
-                    .log(LogTag.INTERACT, "Creative: " + FormatUtils.mapToString(itemStack.getNBT().getTags()));
+                    .log(LogTag.CREATIVE, FormatUtils.mapToString(itemStack.getNBT().getTags()));
             }
 
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
@@ -90,7 +89,7 @@ public class PacketLoggerListener extends PacketListenerAbstract {
             ItemStack itemStack = wrapper.getCarriedItemStack();
             if (itemStack != null && itemStack.getNBT() != null) {
                 playerData.getSierraLogger()
-                    .log(LogTag.INTERACT, "Window: " + FormatUtils.mapToString(itemStack.getNBT().getTags()));
+                    .log(LogTag.WINDOW_CLICK, FormatUtils.mapToString(itemStack.getNBT().getTags()));
             }
         }
     }
