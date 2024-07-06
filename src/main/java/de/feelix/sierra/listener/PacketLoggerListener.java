@@ -28,6 +28,8 @@ public class PacketLoggerListener extends PacketListenerAbstract {
 
         if (playerData == null) return;
 
+        if (playerData.isReceivedPunishment() || event.isCancelled() || playerData.isExempt()) return;
+
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
 
             WrapperPlayClientPlayerBlockPlacement wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
