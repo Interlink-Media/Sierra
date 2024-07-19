@@ -48,6 +48,10 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
         playerData.getTimingProcessor().getPacketReceiveTask().prepare();
 
+        if (playerData.getClientVersion() == null) {
+            playerData.setClientVersion(event.getUser().getClientVersion());
+        }
+
         handleTransaction(event, playerData);
         handleLocale(event, playerData);
 

@@ -14,7 +14,6 @@ import com.github.retrooper.packetevents.protocol.nbt.*;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
-import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.wrapper.play.client.*;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenWindow;
@@ -55,22 +54,23 @@ import static com.github.retrooper.packetevents.protocol.nbt.NBTType.*;
 @SierraCheckData(checkType = CheckType.PROTOCOL_VALIDATION)
 public class ProtocolValidation extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
 
-    private              MenuType      type               = MenuType.UNKNOWN;
-    private              int           lecternId          = -1;
-    private              int           lastSlot           = -1;
-    private              long          lastBookUse        = 0L;
-    private              boolean       hasOpenAnvil       = false;
-    private static final Pattern       EXPLOIT_PATTERN    = Pattern.compile("\\$\\{.+}");
-    private              int           containerType      = -1;
-    private              int           containerId        = -1;
-    private static final int           MAX_BYTE_SIZE      = 262144;
-    private static final String        WURSTCLIENT_URL    = "www.wurstclient.net";
-    private static final int           MAX_BANNER_LAYERS  = 15;
-    private static final int           MAX_PATTERN_LENGTH = 50;
-    private static final int           MIN_VALID_COLOR    = 0;
-    private static final int           MAX_SIGN_LENGTH    = 45;
-    private final        AtomicInteger listContent        = new AtomicInteger(0);
-    private static final int           MAX_VALID_COLOR    = 255;
+    private MenuType type = MenuType.UNKNOWN;
+    private int lecternId = -1;
+    private int lastSlot = -1;
+    private long lastBookUse = 0L;
+    private boolean hasOpenAnvil = false;
+    private static final Pattern EXPLOIT_PATTERN = Pattern.compile("\\$\\{.+}");
+    private int containerType = -1;
+    private int containerId = -1;
+
+    private static final String WURSTCLIENT_URL = "www.wurstclient.net";
+    private static final int MAX_BYTE_SIZE = 262144;
+    private static final int MAX_BANNER_LAYERS = 15;
+    private static final int MAX_PATTERN_LENGTH = 50;
+    private static final int MIN_VALID_COLOR = 0;
+    private static final int MAX_SIGN_LENGTH = 45;
+    private static final int MAX_VALID_COLOR = 255;
+    private final AtomicInteger listContent = new AtomicInteger(0);
 
     public ProtocolValidation(PlayerData playerData) {
         super(playerData);
@@ -84,10 +84,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
         if (event.getConnectionState() != ConnectionState.PLAY) return;
 
-        if (playerData.getClientVersion() == null) {
-            playerData.setClientVersion(event.getUser().getClientVersion());
-        }
-
         int capacity = ByteBufHelper.capacity(event.getByteBuf());
         int maxBytes = 64000 * (playerData.getClientVersion().isOlderThan(ClientVersion.V_1_8) ? 2 : 1);
         if (capacity > maxBytes) {
@@ -98,7 +94,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 .build());
         }
 
-        int readableBytes     = ByteBufHelper.readableBytes(event.getByteBuf());
+        int readableBytes = ByteBufHelper.readableBytes(event.getByteBuf());
         int maxBytesPerSecond = 64000 * (playerData.getClientVersion().isOlderThan(ClientVersion.V_1_8) ? 2 : 1);
         playerData.setBytesSent(playerData.getBytesSent() + readableBytes);
 
@@ -318,8 +314,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 .debugs(Collections.singletonList(new Debug<>("Tag", "Null")))
                 .build());
         }
-        String text   = wrapper.getText();
-        int    length = text.length();
+        String text = wrapper.getText();
+        int length = text.length();
         if (CommandValidation.WORLDEDIT_PATTERN.matcher(text).matches()) {
             dispatch(event, ViolationDocument.builder()
                 .mitigationStrategy(MitigationStrategy.MITIGATE)
@@ -341,7 +337,10 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 .debugs(Arrays.asList(new Debug<>("Tag", "Length"), new Debug<>("Length", length)))
                 .build());
         }
-        if ((text.equals("/") || text.trim().isEmpty()) && isSupportedServerVersion(ServerVersion.V_1_13)) {
+        if ((text.equals("/") || text.trim().isEmpty()) && PacketEvents.getAPI()
+            .getServerManager()
+            .getVersion()
+            .isNewerThanOrEquals(ServerVersion.V_1_13)) {
             dispatch(event, ViolationDocument.builder()
                 .mitigationStrategy(MitigationStrategy.MITIGATE)
                 .description("send invalid tab-complete")
@@ -513,19 +512,21 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         if (distanced > 50 && wrapper.getFace() != BlockFace.OTHER) {
             dispatch(event, ViolationDocument.builder()
                 .description("placed a block out of distance")
-                .debugs(Arrays.asList(new Debug<>("Distance", distanced),
-                                      new Debug<>("Version", getPlayerData().getClientVersion().getReleaseName()),
-                                      new Debug<>("Alive", getPlayerData().getPingProcessor().getPing()),
-                                      new Debug<>("Transaction",
-                                                  getPlayerData().getTransactionProcessor().getTransactionPing()
-                                      )
+                .debugs(Arrays.asList(
+                    new Debug<>("Distance", distanced),
+                    new Debug<>("Version", getPlayerData().getClientVersion().getReleaseName()),
+                    new Debug<>("Alive", getPlayerData().getPingProcessor().getPing()),
+                    new Debug<>(
+                        "Transaction",
+                        getPlayerData().getTransactionProcessor().getTransactionPing()
+                    )
                 ))
                 .mitigationStrategy(MitigationStrategy.KICK)
                 .build());
         }
 
-        if (wrapper.getSequence() < 0 && isSupportedVersion(
-            ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
+        if (wrapper.getSequence() < 0 && event.getUser().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19)
+            && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_19)) {
             dispatch(event, ViolationDocument.builder()
                 .mitigationStrategy(MitigationStrategy.BAN)
                 .description("send invalid sequence in block place")
@@ -555,7 +556,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkSteerVehicle(WrapperPlayClientSteerVehicle wrapper, PacketReceiveEvent event) {
-        float forward  = wrapper.getForward();
+        float forward = wrapper.getForward();
         float sideways = wrapper.getSideways();
         if (forward > 0.98f || forward < -0.98f) {
             dispatch(event, ViolationDocument.builder()
@@ -630,8 +631,10 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void handlePlayerDigging(PacketReceiveEvent event, PlayerData playerData) {
-        if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING && isSupportedVersion(
-            ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
+        if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING && event.getUser()
+            .getClientVersion()
+            .isNewerThanOrEquals(ClientVersion.V_1_19)
+            && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_19)) {
             WrapperPlayClientPlayerDigging dig = CastUtil.getSupplier(
                 () -> new WrapperPlayClientPlayerDigging(event), playerData::exceptionDisconnect);
             checkPlayerDigging(dig, event);
@@ -639,7 +642,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkPlayerDigging(WrapperPlayClientPlayerDigging dig, PacketReceiveEvent event) {
-        if (dig.getSequence() < 0 && isSupportedVersion(ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
+        if (dig.getSequence() < 0 && event.getUser().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19)
+            && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_19)) {
             dispatch(event, ViolationDocument.builder()
                 .mitigationStrategy(MitigationStrategy.BAN)
                 .description("send invalid dig sequence")
@@ -649,8 +653,10 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void handleUseItem(PacketReceiveEvent event, PlayerData playerData) {
-        if (event.getPacketType() == PacketType.Play.Client.USE_ITEM && isSupportedVersion(
-            ServerVersion.V_1_19, event.getUser(), ClientVersion.V_1_19)) {
+        if (event.getPacketType() == PacketType.Play.Client.USE_ITEM && event.getUser()
+            .getClientVersion()
+            .isNewerThanOrEquals(ClientVersion.V_1_19)
+            && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_19)) {
             WrapperPlayClientUseItem use = CastUtil.getSupplier(
                 () -> new WrapperPlayClientUseItem(event), playerData::exceptionDisconnect);
             if (use.getSequence() < 0) {
@@ -675,10 +681,10 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkClickWindow(WrapperPlayClientClickWindow wrapper, PacketReceiveEvent event) {
-        if (isSupportedServerVersion(ServerVersion.V_1_14)) {
+        if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_14)) {
             int clickType = wrapper.getWindowClickType().ordinal();
-            int button    = wrapper.getButton();
-            int windowId  = wrapper.getWindowId();
+            int button = wrapper.getButton();
+            int windowId = wrapper.getWindowId();
             if (type == MenuType.LECTERN && windowId > 0 && windowId == lecternId) {
                 dispatch(event, ViolationDocument.builder()
                     .mitigationStrategy(MitigationStrategy.KICK)
@@ -758,8 +764,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkAttributes(ProtocolPacketEvent<Object> event, ItemStack itemStack) {
         if (!hasAttributeModifiers(itemStack)) return;
-        List<NBTCompound> tags           = getAttributeModifiers(itemStack);
-        boolean           vanillaMapping = useVanillaAttributeMapping();
+        List<NBTCompound> tags = getAttributeModifiers(itemStack);
+        boolean vanillaMapping = useVanillaAttributeMapping();
         for (NBTCompound tag : tags) {
             AttributeMapper attributeMapper = getAttributeMapper(tag);
             if (attributeMapper != null) {
@@ -851,7 +857,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkInvalidNbt(PacketReceiveEvent event, ItemStack itemStack) {
         if (itemStack == null || itemStack.getNBT() == null) return;
-        NBTCompound          nbt   = itemStack.getNBT();
+        NBTCompound nbt = itemStack.getNBT();
         NBTList<NBTCompound> items = nbt.getTagListOfTypeOrNull("Items", NBTCompound.class);
         if (items != null) {
             if (items.size() > 64) {
@@ -908,7 +914,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkCustomModelData(NBTCompound nbt, PacketReceiveEvent event) {
         NBTInt customModelData = nbt.getTagOfTypeOrNull("CustomModelData", NBTInt.class);
-        if (customModelData != null && isSupportedServerVersion(ServerVersion.V_1_14)) {
+        if (customModelData != null && PacketEvents.getAPI().getServerManager().getVersion()
+            .isNewerThanOrEquals(ServerVersion.V_1_14)) {
             int asInt = customModelData.getAsInt();
             //noinspection ConditionCoveredByFurtherCondition
             if (asInt == Integer.MIN_VALUE || asInt == Integer.MAX_VALUE || asInt < 0) {
@@ -927,7 +934,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
         int slot = wrapper.getSlot();
         // 89 - Biggest inv is the LARGE_CHEST: https://wiki.vg/Inventory
-        int     max     = 89;
+        int max = 89;
         boolean invalid = slot > max;
 
         if (slot < 0) {
@@ -950,9 +957,9 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkButtonClickPosition(PacketReceiveEvent event, WrapperPlayClientClickWindow wrapper) {
-        int     clickType = wrapper.getWindowClickType().ordinal();
-        int     button    = wrapper.getButton();
-        boolean flag      = isInvalidButtonClick(clickType, button);
+        int clickType = wrapper.getWindowClickType().ordinal();
+        int button = wrapper.getButton();
+        boolean flag = isInvalidButtonClick(clickType, button);
         if (flag) {
             dispatch(event, ViolationDocument.builder()
                 .description("send invalid button click position")
@@ -991,7 +998,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
         if (isShulkerBox(itemStack)) {
             String string = FormatUtils.mapToString(itemStack.getNBT().getTags());
-            int    length = string.getBytes(StandardCharsets.UTF_8).length;
+            int length = string.getBytes(StandardCharsets.UTF_8).length;
             if (length > 10000) {
 
                 dispatch(event, ViolationDocument.builder()
@@ -1435,7 +1442,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             }
         }
 
-        if (isSupportedServerVersion(ServerVersion.V_1_14)) {
+        if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_14)) {
             this.type = MenuType.getMenuType(window.getType());
             if (type == MenuType.LECTERN) lecternId = window.getContainerId();
         }
@@ -1443,20 +1450,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         this.containerId = window.getContainerId();
     }
 
-    private boolean isSupportedServerVersion(ServerVersion serverVersion) {
-        return PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(serverVersion);
-    }
-
-    private boolean isSupportedVersion(@SuppressWarnings("SameParameterValue") ServerVersion serverVersion, User user,
-                                       @SuppressWarnings("SameParameterValue") ClientVersion clientVersion) {
-        return user.getClientVersion().isNewerThanOrEquals(clientVersion) && isSupportedServerVersion(serverVersion);
-    }
-
     private void checkInvalidClick(WrapperPlayClientClickWindow wrapper, PacketReceiveEvent event) {
         int clickType = wrapper.getWindowClickType().ordinal();
-        int button    = wrapper.getButton();
-        int windowId  = wrapper.getWindowId();
-        int slot      = wrapper.getSlot();
+        int button = wrapper.getButton();
+        int windowId = wrapper.getWindowId();
+        int slot = wrapper.getSlot();
 
         if (button < 0 || windowId < 0) {
 
