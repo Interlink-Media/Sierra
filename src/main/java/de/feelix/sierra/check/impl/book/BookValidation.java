@@ -385,9 +385,12 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
     }
 
     private static @Nullable Triple<String, MitigationStrategy, List<Debug<?>>> checkFieldReadable(String pageContent) {
-        if (FieldReader.isReadable(pageContent) && !pageContent.isEmpty()) {
+        if (FieldReader.isReadable(pageContent) && !pageContent.isEmpty() && !Sierra.getPlugin()
+            .getSierraConfigEngine()
+            .config()
+            .getBoolean("skip-book-readable-check", false)) {
             return new Triple<>(
-                "interacted with an invalid item", MitigationStrategy.KICK,
+                "interacted with an invalid item", MitigationStrategy.MITIGATE,
                 Collections.singletonList(new Debug<>("Tag", "Not readable"))
             );
         }

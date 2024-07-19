@@ -32,11 +32,11 @@ import java.util.logging.Logger;
 public class SierraDetection implements SierraCheck {
 
     private final PlayerData playerData;
-    private final CheckType  rawCheckType;
+    private final CheckType rawCheckType;
 
     private String friendlyName;
-    private int    checkId;
-    private int    violations = 0;
+    private int checkId;
+    private int violations = 0;
 
     /**
      * Initializes a new SierraDetection instance with the provided player data.
@@ -87,7 +87,8 @@ public class SierraDetection implements SierraCheck {
         logViolation(user, violationDocument);
         alertStaff(user, violationDocument);
 
-        if (violationDocument.getMitigationStrategy() != MitigationStrategy.MITIGATE) {
+        if (violationDocument.getMitigationStrategy().mitigationOrdinal()
+            >= MitigationStrategy.KICK.mitigationOrdinal()) {
             handlePunishment(violationDocument);
         }
     }
@@ -228,7 +229,7 @@ public class SierraDetection implements SierraCheck {
     }
 
     private void handlePunishment(ViolationDocument violationDocument) {
-        Sierra            plugin            = Sierra.getPlugin();
+        Sierra plugin = Sierra.getPlugin();
         SierraDataManager sierraDataManager = plugin.getSierraDataManager();
 
         sierraDataManager.addKick(this.checkType());
