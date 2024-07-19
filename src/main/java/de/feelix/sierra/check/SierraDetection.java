@@ -34,7 +34,6 @@ public class SierraDetection implements SierraCheck {
 
     private final PlayerData playerData;
     private final CheckType rawCheckType;
-
     private String friendlyName;
     private int checkId;
     private int violations = 0;
@@ -112,10 +111,9 @@ public class SierraDetection implements SierraCheck {
      * @param violationDocument The ViolationDocument containing information about the violation.
      */
     private void throwDetectionEvent(ViolationDocument violationDocument) {
-        FoliaScheduler.getAsyncScheduler().runNow(Sierra.getPlugin(), o ->
-            Sierra.getPlugin()
-                .getEventBus()
-                .publish(new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))
+        FoliaScheduler.getAsyncScheduler().runNow(Sierra.getPlugin(), o -> Sierra.getPlugin()
+            .getEventBus()
+            .publish(new AsyncUserDetectionEvent(violationDocument, playerData, checkType(), this.violations))
         );
     }
 
@@ -145,7 +143,8 @@ public class SierraDetection implements SierraCheck {
     private String createGeneralInformation(ViolationDocument violationDocument) {
         return String.format(
             "Debug information: %s", violationDocument.getDebugs().isEmpty()
-                ? "No debug available" : (violationDocument.debugInformation()));
+                ? "No debug available"
+                : violationDocument.debugInformation());
     }
 
     private String createGeneralCheck() {
@@ -234,9 +233,10 @@ public class SierraDetection implements SierraCheck {
         SierraDataManager sierraDataManager = plugin.getSierraDataManager();
 
         sierraDataManager.addKick(this.checkType());
-        sierraDataManager.createPunishmentHistory(
-            playerData.username(), playerData.version(), violationDocument.getMitigationStrategy(),
-            playerData.getPingProcessor().getPing(), FormatUtils.chainDebugs(violationDocument.getDebugs())
+        sierraDataManager.createPunishmentHistory(playerData.username(), playerData.version(),
+                                                  violationDocument.getMitigationStrategy(),
+                                                  playerData.getPingProcessor().getPing(),
+                                                  FormatUtils.chainDebugs(violationDocument.getDebugs())
         );
 
         blockAddressIfEnabled(violationDocument);
@@ -246,10 +246,8 @@ public class SierraDetection implements SierraCheck {
     private void blockAddressIfEnabled(ViolationDocument violationDocument) {
         if (violationDocument.getMitigationStrategy() == MitigationStrategy.BAN && Sierra.getPlugin()
             .getPunishmentConfig()
-            .isBan() && Sierra.getPlugin()
-                .getSierraConfigEngine()
-                .config()
-                .getBoolean("block-connections-after-ban", true)) {
+            .isBan()
+            && Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("block-connections-after-ban", true)) {
             Sierra.getPlugin()
                 .getAddressStorage()
                 .addIPAddress(this.playerData.getUser().getAddress().getAddress().getHostAddress());

@@ -171,14 +171,21 @@ public class SierraDataManager implements UserRepository {
 
     private void createHistory(String username, String clientVersion, MitigationStrategy mitigationStrategy, long ping,
                                String description, HistoryType type) {
-        HistoryDocument document = new HistoryDocument(
-            username, description, clientVersion, ping, mitigationStrategy, type);
+
         FoliaScheduler.getAsyncScheduler()
-            .runNow(
-                Sierra.getPlugin(),
-                o -> Sierra.getPlugin().getEventBus().publish(new AsyncHistoryCreateEvent(document))
+            .runNow(Sierra.getPlugin(), o -> {
+
+                        HistoryDocument document = new HistoryDocument(
+                            username, description, clientVersion, ping, mitigationStrategy, type);
+
+                        AsyncHistoryCreateEvent event = new AsyncHistoryCreateEvent(document);
+                        Sierra.getPlugin().getEventBus().publish(event);
+
+                        if (!event.isCancelled()) {
+                            histories.add(document);
+                        }
+                    }
             );
-        histories.add(document);
     }
 
     public WeakReference<PlayerData> getPlayerData(User user) {
