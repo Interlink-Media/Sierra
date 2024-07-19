@@ -218,13 +218,6 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 .debugs(Collections.singletonList(new Debug<>("Id", wrapper.getEntityId())))
                 .build());
         }
-        if (wrapper.getJumpBoost() < 0 || wrapper.getJumpBoost() > 100) {
-            dispatch(event, ViolationDocument.builder()
-                .mitigationStrategy(MitigationStrategy.KICK)
-                .description("send invalid jump boost")
-                .debugs(Collections.singletonList(new Debug<>("Boost", wrapper.getJumpBoost())))
-                .build());
-        }
     }
 
     private void handleSpectate(PacketReceiveEvent event) {
