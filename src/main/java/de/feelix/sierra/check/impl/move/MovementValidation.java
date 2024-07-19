@@ -128,7 +128,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
                 this.dispatch(event, ViolationDocument.builder()
                     .description("is moving invalid")
-                    .mitigationStrategy(this.violations() > 30 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
+                    .mitigationStrategy(this.violations() > 45 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
                     .debugs(Collections.singletonList(
                         new Debug<>("Ticks", String.format("%.5f ticks ahead", Math.abs(calculated)))))
                     .build());
