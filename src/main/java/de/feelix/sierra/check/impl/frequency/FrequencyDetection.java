@@ -31,16 +31,16 @@ import java.util.HashMap;
 @SierraCheckData(checkType = CheckType.FREQUENCY)
 public class FrequencyDetection extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
 
-    private int lastBookEditTick     = 0;
-    private int lastDropItemTick     = 0;
+    private int lastBookEditTick = 0;
+    private int lastDropItemTick = 0;
     private int lastCraftRequestTick = 0;
-    private int dropCount            = 0;
+    private int dropCount = 0;
 
     private long lastFlyingTime = 0L;
-    private long balance        = 0L;
+    private long balance = 0L;
 
-    private static final long MAX_BAL       = 0;
-    private static final long BAL_RESET     = -50;
+    private static final long MAX_BAL = 0;
+    private static final long BAL_RESET = -50;
     private static final long BAL_SUB_ON_TP = 50;
 
     private final HashMap<PacketTypeCommon, Integer> packetCounts = new HashMap<>();
@@ -62,11 +62,17 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
         PacketTypeCommon packetType = event.getPacketType();
 
         if (!WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) {
+
+            if (Sierra.getPlugin()
+                .getSierraConfigEngine()
+                .config()
+                .getStringList("excluded-packets-from-limit").contains(packetType.getName())) return;
+
             long current = System.currentTimeMillis();
 
             packetCounts.merge(packetType, 1, Integer::sum);
 
-            int limit       = retrieveLimitFromConfiguration(packetType, config);
+            int limit = retrieveLimitFromConfiguration(packetType, config);
             int packetCount = packetCounts.getOrDefault(packetType, 0);
 
             if (packetCount > limit) {
@@ -211,8 +217,8 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     }
 
     private boolean isSpamming(int lastActionTick) {
-        int     currentTick = Ticker.getInstance().getCurrentTick();
-        boolean isSpamming  = lastActionTick + 20 > currentTick;
+        int currentTick = Ticker.getInstance().getCurrentTick();
+        boolean isSpamming = lastActionTick + 20 > currentTick;
         if (!isSpamming) {
             lastBookEditTick = currentTick;
         }

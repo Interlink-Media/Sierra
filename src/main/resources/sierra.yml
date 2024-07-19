@@ -145,6 +145,10 @@ generic-packet-frequency-limit:
   - "EDIT_BOOK:10"
   - "USE_ITEM:40"
 
+# All excluded packets for the frequency limit check
+excluded-packets-from-limit:
+  - ""
+
 # Blocking time in minutes
 connection-block-time: 15 # Time in minutes
 
