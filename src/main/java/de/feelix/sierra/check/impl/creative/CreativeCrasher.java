@@ -103,17 +103,21 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
 
     private void recursion(PacketReceiveEvent event, PlayerData data, ItemStack clickedItem,
                            NBTCompound blockEntityTag) {
+
         if (exceededRecursionMax() || !blockEntityTag.getTags().containsKey(ITEMS_KEY)) {
             return;
         }
 
         NBTList<NBTCompound> items = blockEntityTag.getCompoundListTagOrNull(ITEMS_KEY);
-        if (items == null || exceededMaxItems(items)) {
+
+        if(items == null) return;
+
+        if (exceededMaxItems(items)) {
             this.dispatch(event, ViolationDocument.builder()
                 .mitigationStrategy(MitigationStrategy.BAN)
                 .description("performed invalid item click")
                 .debugs(Arrays.asList(
-                    new Debug<>("Items", items != null ? items.size() : 0),
+                    new Debug<>("Items", items.size()),
                     new Debug<>("Recursion", recursionCount),
                     new Debug<>("Item", clickedItem.getType().getName())
                 ))
