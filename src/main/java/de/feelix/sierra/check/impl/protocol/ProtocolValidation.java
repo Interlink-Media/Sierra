@@ -78,7 +78,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
-        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-protocol-packet", true)) {
+        if (!configEngine().config().getBoolean("prevent-protocol-packet", true)) {
             return;
         }
 
@@ -783,7 +783,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     public void checkGenericNBTLimit(PacketReceiveEvent event, ItemStack itemStack) {
-        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("generic-nbt-limit", true)) {
+        if (!configEngine().config().getBoolean("generic-nbt-limit", true)) {
             return;
         }
 
@@ -838,7 +838,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private boolean useVanillaAttributeMapping() {
-        return Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("use-vanilla-attribute-mapping", true);
+        return configEngine().config().getBoolean("use-vanilla-attribute-mapping", true);
     }
 
     private boolean isAmountInvalid(boolean vanillaMapping, AttributeMapper attributeMapper, double amount) {
@@ -1379,7 +1379,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     @Override
     public void handle(PacketSendEvent event, PlayerData playerData) {
 
-        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-protocol-packet", true)) {
+        if (!configEngine().config().getBoolean("prevent-protocol-packet", true)) {
             return;
         }
 

@@ -37,23 +37,22 @@ import java.util.concurrent.TimeUnit;
 @Getter
 public class SierraDataManager implements UserRepository {
 
-    private static final String                             VERSION_START_TAG   = "\"tag_name\":\"";
-    private static final String                             GITHUB_API_BASE_URL = "https://api.github.com/repos/";
-    private static final String                             GITHUB_API_RELEASES = "/releases/latest";
-    private static final Map<org.bukkit.GameMode, GameMode> GAMEMODE_MAP        = createGameModeMap();
+    private static final String VERSION_START_TAG = "\"tag_name\":\"";
+    private static final String GITHUB_API_BASE_URL = "https://api.github.com/repos/";
+    private static final String GITHUB_API_RELEASES = "/releases/latest";
 
-    public static final String               UNKNOWN_VERSION    = "UNKNOWN";
-    public static final Map<String, Integer> violationCount     = new HashMap<>();
-    public static       int                  KICKS              = 0;
-    public static       int                  BANS               = 0;
-    public static       boolean              skipSkullUUIDCheck = false;
-    public static       boolean              skipModelCheck     = false;
-    public static       boolean              skipAnvilCheck     = false;
+    public static final String UNKNOWN_VERSION = "UNKNOWN";
+    public static final Map<String, Integer> violationCount = new HashMap<>();
+    public static int KICKS = 0;
+    public static int BANS = 0;
+    public static boolean skipSkullUUIDCheck = false;
+    public static boolean skipModelCheck = false;
+    public static boolean skipAnvilCheck = false;
 
     @Getter
-    private static SierraDataManager     instance;
-    private final  Map<User, PlayerData> playerData = new ConcurrentHashMap<>();
-    private final  List<History>         histories  = new ArrayList<>();
+    private static SierraDataManager instance;
+    private final Map<User, PlayerData> playerData = new ConcurrentHashMap<>();
+    private final List<History> histories = new ArrayList<>();
 
     public SierraDataManager() {
         instance = this;
@@ -120,7 +119,7 @@ public class SierraDataManager implements UserRepository {
     }
 
     private boolean isVersionOutdated() {
-        String localVersion         = Sierra.getPlugin().getDescription().getVersion();
+        String localVersion = Sierra.getPlugin().getDescription().getVersion();
         String latestReleaseVersion = Sierra.getPlugin().getUpdateChecker().getLatestReleaseVersion();
         return !latestReleaseVersion.equalsIgnoreCase(localVersion);
     }
@@ -143,7 +142,7 @@ public class SierraDataManager implements UserRepository {
     }
 
     private void sendMessage(User user) {
-        String localVersion         = Sierra.getPlugin().getDescription().getVersion();
+        String localVersion = Sierra.getPlugin().getDescription().getVersion();
         String latestReleaseVersion = Sierra.getPlugin().getUpdateChecker().getLatestReleaseVersion();
 
         user.sendMessage(Sierra.PREFIX + " §cServer is running an outdated version of Sierra");
@@ -191,28 +190,16 @@ public class SierraDataManager implements UserRepository {
     }
 
     public void setPlayerGameMode(PlayerData value, Player player) {
-        GameMode correspondingMode = GAMEMODE_MAP.get(player.getGameMode());
-        if (correspondingMode != null) {
-            value.setGameMode(correspondingMode);
-        }
+        value.setGameMode(GameMode.valueOf(player.getGameMode().name()));
     }
 
     public void removePlayerData(User user) {
         PlayerData data = playerData.get(user);
 
-        if(data != null && data.getSierraLogger() != null) {
+        if (data != null && data.getSierraLogger() != null) {
             data.getSierraLogger().close();
         }
         playerData.remove(user);
-    }
-
-    private static Map<org.bukkit.GameMode, GameMode> createGameModeMap() {
-        Map<org.bukkit.GameMode, GameMode> gameModeMap = new HashMap<>();
-        gameModeMap.put(org.bukkit.GameMode.SURVIVAL, GameMode.SURVIVAL);
-        gameModeMap.put(org.bukkit.GameMode.CREATIVE, GameMode.CREATIVE);
-        gameModeMap.put(org.bukkit.GameMode.ADVENTURE, GameMode.ADVENTURE);
-        gameModeMap.put(org.bukkit.GameMode.SPECTATOR, GameMode.SPECTATOR);
-        return gameModeMap;
     }
 
     @Override

@@ -9,7 +9,6 @@ import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientVehicleMove;
-import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.check.violation.ViolationDocument;
@@ -51,7 +50,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
     @Override
     public void handle(PacketReceiveEvent event, PlayerData data) {
-        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-protocol-move", true)) {
+        if (!configEngine().config().getBoolean("prevent-protocol-move", true)) {
             return;
         }
 
@@ -94,7 +93,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     private void handleLatencyAbuse(PacketReceiveEvent event, PlayerData data) {
-        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-timer-cheats", true)) {
+        if (!configEngine().config().getBoolean("prevent-timer-cheats", true)) {
             return;
         }
 

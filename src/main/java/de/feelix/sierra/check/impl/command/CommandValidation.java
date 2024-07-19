@@ -42,7 +42,7 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
 
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
-        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("block-disallowed-commands", true)) {
+        if (!configEngine().config().getBoolean("block-disallowed-commands", true)) {
             return;
         }
 
@@ -249,7 +249,7 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
      * @see PlayerData#hasBypassPermission()
      */
     private boolean playerHasNoPermission() {
-        return !Sierra.getPlugin().getSierraConfigEngine().config()
+        return !configEngine().config()
             .getBoolean("enable-bypass-permission", false) || !getPlayerData().hasBypassPermission();
     }
 

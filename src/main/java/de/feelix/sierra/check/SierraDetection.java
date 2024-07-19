@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.event.ProtocolPacketEvent;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.violation.ViolationDocument;
+import de.feelix.sierra.manager.config.SierraConfigEngine;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.logger.LogTag;
@@ -253,6 +254,15 @@ public class SierraDetection implements SierraCheck {
                 .getAddressStorage()
                 .addIPAddress(this.playerData.getUser().getAddress().getAddress().getHostAddress());
         }
+    }
+
+    /**
+     * Retrieves the SierraConfigEngine instance from the Sierra plugin.
+     *
+     * @return The SierraConfigEngine instance.
+     */
+    public SierraConfigEngine configEngine() {
+        return Sierra.getPlugin().getSierraConfigEngine();
     }
 
     @Override

@@ -10,7 +10,6 @@ import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientClickWindow;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCreativeInventoryAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerBlockPlacement;
-import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.impl.creative.impl.*;
 import de.feelix.sierra.check.violation.Debug;
@@ -55,7 +54,7 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
             new InvalidPlainNbt()
         );
 
-        if (Sierra.getPlugin().getSierraConfigEngine().config().getInt("max-enchantment-level", 5) != -1) {
+        if (configEngine().config().getInt("max-enchantment-level", 5) != -1) {
             addCreativeChecks(new EnchantLimit());
         }
 
@@ -64,7 +63,7 @@ public class CreativeCrasher extends SierraDetection implements IngoingProcessor
 
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
-        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-creative-crasher", true)
+        if (!configEngine().config().getBoolean("prevent-creative-crasher", true)
             || playerData == null) {
             return;
         }

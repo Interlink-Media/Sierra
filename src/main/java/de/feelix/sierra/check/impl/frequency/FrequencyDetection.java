@@ -9,6 +9,8 @@ import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPluginMessage;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCloseWindow;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenWindow;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.Debug;
@@ -21,8 +23,6 @@ import de.feelix.sierra.manager.init.impl.start.Ticker;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.MitigationStrategy;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,6 +35,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     private int lastDropItemTick = 0;
     private int lastCraftRequestTick = 0;
     private int dropCount = 0;
+    private int containerId = -1;
 
     private long lastFlyingTime = 0L;
     private long balance = 0L;
@@ -52,9 +53,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     @Override
     public void handle(PacketReceiveEvent event, PlayerData playerData) {
 
-        YamlConfiguration config = Sierra.getPlugin().getSierraConfigEngine().config();
-
-        if (!config.getBoolean("prevent-packet-frequency", true)) {
+        if (!configEngine().config().getBoolean("prevent-packet-frequency", true)) {
             return;
         }
 
@@ -72,7 +71,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
 
             packetCounts.merge(packetType, 1, Integer::sum);
 
-            int limit = retrieveLimitFromConfiguration(packetType, config);
+            int limit = retrieveLimitFromConfiguration(packetType);
             int packetCount = packetCounts.getOrDefault(packetType, 0);
 
             if (packetCount > limit) {
@@ -111,7 +110,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     }
 
     private void handleFlyingDelay(PacketReceiveEvent event, PlayerData data) {
-        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-timer-cheats", true)) {
+        if (!configEngine().config().getBoolean("prevent-timer-cheats", true)) {
             return;
         }
 
@@ -138,9 +137,11 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
         lastFlyingTime = System.currentTimeMillis();
     }
 
-    private int retrieveLimitFromConfiguration(PacketTypeCommon packetType, YamlConfiguration config) {
-        int limit = config.getInt("generic-packet-frequency-default", 50);
-        for (String string : config.getStringList("generic-packet-frequency-limit")) {
+    private int retrieveLimitFromConfiguration(PacketTypeCommon packetType) {
+        int limit = configEngine().config().getInt(
+            "generic-packet-frequency-default", 50);
+        for (String string : configEngine().config()
+            .getStringList("generic-packet-frequency-limit")) {
             String[] parts = string.split(":");
             if (parts[0].equals(packetType.getName())) {
                 limit = Integer.parseInt(parts[1]);
@@ -184,8 +185,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
                 .mitigationStrategy(MitigationStrategy.MITIGATE)
                 .debugs(Collections.singletonList(new Debug<>("Tag", "RecipeRequest")))
                 .build());
-            //noinspection UnstableApiUsage
-            ((Player) getPlayerData().getPlayer()).updateInventory();
+            event.getUser().sendPacket(new WrapperPlayServerCloseWindow(this.containerId));
         } else {
             lastCraftRequestTick = currentTick;
         }
@@ -230,6 +230,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
         if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
             || event.getPacketType() == PacketType.Play.Server.ENTITY_VELOCITY) {
             balance -= BAL_SUB_ON_TP;
+        } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
+            WrapperPlayServerOpenWindow window = new WrapperPlayServerOpenWindow(event);
+            this.containerId = window.getContainerId();
         }
     }
 }

@@ -2,6 +2,7 @@ package de.feelix.sierra.utilities;
 
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import de.feelix.sierra.check.violation.Debug;
+import de.feelix.sierraapi.annotation.Nullable;
 import lombok.experimental.UtilityClass;
 
 import java.math.BigDecimal;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -34,7 +36,14 @@ public class FormatUtils {
         "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"
     };
 
+    private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)" + '§' + "[0-9A-FK-ORX]");
+
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM/dd HH:mm:ss");
+
+    @Nullable
+    public static String stripColor(@Nullable String input) {
+        return input == null ? null : STRIP_COLOR_PATTERN.matcher(input).replaceAll("");
+    }
 
     /**
      * Converts a given string to an integer.

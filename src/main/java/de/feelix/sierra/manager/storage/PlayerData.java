@@ -110,6 +110,11 @@ public class PlayerData implements SierraUser {
         return brand;
     }
 
+    /**
+     * Retrieves the locale of the user.
+     *
+     * @return The locale of the user as a String.
+     */
     @Override
     public String locale() {
         return locale;

@@ -27,7 +27,6 @@ import de.feelix.sierraapi.annotation.Nullable;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.MitigationStrategy;
-import org.bukkit.ChatColor;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -45,26 +44,25 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
 
     @Override
     public void handle(PacketReceiveEvent event, PlayerData data) {
-        if (!Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("prevent-book-crasher", true)) {
+        if (!configEngine().config().getBoolean("prevent-book-crasher", true)) {
             return;
         }
 
-        boolean blockBooks = Sierra.getPlugin().getSierraConfigEngine().config().getBoolean(
-            "disable-books-completely", false);
+        boolean blockBooks = configEngine().config().getBoolean("disable-books-completely", false);
         List<String> pageList = new ArrayList<>();
 
         PacketTypeCommon packetType = event.getPacketType();
-        if (packetType.equals(PacketType.Play.Client.EDIT_BOOK)) {
+        if (packetType == PacketType.Play.Client.EDIT_BOOK) {
             handleEditBook(event, data, blockBooks, pageList);
-        } else if (packetType.equals(PacketType.Play.Client.PLUGIN_MESSAGE)) {
+        } else if (packetType == PacketType.Play.Client.PLUGIN_MESSAGE) {
             handlePluginMessage(event, data, blockBooks, pageList);
-        } else if (packetType.equals(PacketType.Play.Client.PICK_ITEM)) {
+        } else if (packetType == PacketType.Play.Client.PICK_ITEM) {
             handlePickItem(event, data, blockBooks, pageList);
-        } else if (packetType.equals(PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT)) {
+        } else if (packetType == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
             handleBlockPlacement(event, data, blockBooks, pageList);
-        } else if (packetType.equals(PacketType.Play.Client.CREATIVE_INVENTORY_ACTION)) {
+        } else if (packetType == PacketType.Play.Client.CREATIVE_INVENTORY_ACTION) {
             handleCreativeInventoryAction(event, data, blockBooks, pageList);
-        } else if (packetType.equals(PacketType.Play.Client.CLICK_WINDOW)) {
+        } else if (packetType == PacketType.Play.Client.CLICK_WINDOW) {
             handleClickWindow(event, data, blockBooks, pageList);
         }
 
@@ -89,9 +87,8 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             return;
         }
 
-        WrapperPlayClientEditBook wrapper = CastUtil.getSupplier(
-            () -> new WrapperPlayClientEditBook(event), data::exceptionDisconnect);
-        pageList.addAll(wrapper.getPages());
+        pageList.addAll(CastUtil.getSupplier(
+            () -> new WrapperPlayClientEditBook(event), data::exceptionDisconnect).getPages());
     }
 
     private void handlePluginMessage(PacketReceiveEvent event, PlayerData data, boolean blockBooks,
@@ -285,8 +282,7 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             Triple<String, MitigationStrategy, List<Debug<?>>> duplicatedContent = isDuplicatedContent(pageContent);
             if (duplicatedContent != null) return duplicatedContent;
 
-            String strippedContent = ChatColor.stripColor(pageContent.replaceAll("\\+", ""));
-            //noinspection ConstantValue
+            String strippedContent = FormatUtils.stripColor(pageContent.replaceAll("\\+", ""));
             if (strippedContent == null || strippedContent.equals("null")) {
                 return new Triple<>(
                     "interacted with an invalid item", MitigationStrategy.KICK,
