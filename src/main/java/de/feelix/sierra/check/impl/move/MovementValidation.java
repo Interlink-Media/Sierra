@@ -28,21 +28,21 @@ import java.util.Collections;
 @SierraCheckData(checkType = CheckType.MOVEMENT_VALIDATION)
 public class MovementValidation extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
 
-    private double   lastChunkId      = -1;
-    private long     lastTick         = -1;
-    private int      buffer           = 0;
+    private double lastChunkId = -1;
+    private long lastTick = -1;
+    private int buffer = 0;
     private Location lastLocation;
-    private long     lastTeleportTime = 0;
-    private int      deltaBuffer      = 0;
+    private long lastTeleportTime = 0;
+    private int deltaBuffer = 0;
 
     private static final double HARD_CODED_BORDER = 2.9999999E7D;
-    private static final double SPECIAL_VALUE     = 9.223372E18d;
+    private static final double SPECIAL_VALUE = 9.223372E18d;
 
-    long    timerBalanceRealTime              = 0;
-    long    knownPlayerClockTime              = (long) (System.nanoTime() - 6e10);
-    long    lastMovementPlayerClock           = (long) (System.nanoTime() - 6e10);
-    long    clockDrift                        = (long) 120e6;
-    long    limitAbuseOverPing                = 1000;
+    long timerBalanceRealTime = 0;
+    long knownPlayerClockTime = (long) (System.nanoTime() - 6e10);
+    long lastMovementPlayerClock = (long) (System.nanoTime() - 6e10);
+    long clockDrift = (long) 120e6;
+    long limitAbuseOverPing = 1000;
     boolean hasGottenMovementAfterTransaction = false;
 
     public MovementValidation(PlayerData playerData) {
@@ -80,7 +80,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         Location location = wrapper.getLocation();
         playerData.setLastLocation(location);
         Vector3d position = location.getPosition();
-        double   chunkId  = computeChunkId(position);
+        double chunkId = computeChunkId(position);
 
         if (lastLocation != null) checkDelta(position, event);
 
@@ -123,7 +123,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         if (wouldFailNormal || failsAdjusted) {
             if (wouldFailNormal) {
 
-                long   delay      = System.nanoTime() - timerBalanceRealTime;
+                long delay = System.nanoTime() - timerBalanceRealTime;
                 double calculated = FormatUtils.calculateResult(delay);
 
                 this.dispatch(event, ViolationDocument.builder()
@@ -190,7 +190,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
     private void checkInvalidRotation(WrapperPlayClientPlayerFlying wrapper, PacketReceiveEvent event) {
         float pitch = wrapper.getLocation().getPitch();
-        float yaw   = wrapper.getLocation().getYaw();
+        float yaw = wrapper.getLocation().getYaw();
 
         if (Math.abs(pitch) > 90.01 || isOutOfRange(yaw) || isOutOfRange(pitch) || yaw == SPECIAL_VALUE
             || pitch == SPECIAL_VALUE) {
@@ -207,12 +207,14 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkDelta(Vector3d position, PacketReceiveEvent event) {
-        double deltaX  = Math.abs(position.getX() - lastLocation.getX());
-        double deltaY  = Math.abs(position.getY() - lastLocation.getY());
-        double deltaZ  = Math.abs(position.getZ() - lastLocation.getZ());
+        double deltaX = Math.abs(position.getX() - lastLocation.getX());
+        double deltaY = Math.abs(position.getY() - lastLocation.getY());
+        double deltaZ = Math.abs(position.getZ() - lastLocation.getZ());
         double deltaXZ = Math.hypot(deltaX, deltaZ);
 
-        if (System.currentTimeMillis() - lastTeleportTime <= 1000) return;
+        // Skip a second after server teleportation or after server join
+        if (System.currentTimeMillis() - lastTeleportTime <= 1000
+            || System.currentTimeMillis() - getPlayerData().getJoinTime() <= 1000) return;
 
         if (deltaXZ > 7 && getPlayerData().getGameMode() == GameMode.SURVIVAL) {
             if (++deltaBuffer > 10) {
