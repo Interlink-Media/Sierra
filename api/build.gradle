@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'de.feelix.sierra'
-version = '1.0.6'
+version = '1.0.7'
 description = 'api'
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8
@@ -31,7 +31,7 @@ publishing {
         maven(MavenPublication) {
             groupId = "de.feelix"
             artifactId = "sierraapi"
-            version = "1.0.6"
+            version = "1.0.7"
             from components.java
         }
     }
@@ -39,9 +39,8 @@ publishing {
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT'
-    compileOnly ('com.github.retrooper.packetevents:spigot:2.3.0') {
-        changing = true
-    }
+    compileOnly(files("depends/packetevents-518.jar"))
+
 
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
