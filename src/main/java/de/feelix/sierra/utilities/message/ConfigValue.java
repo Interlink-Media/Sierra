@@ -3,15 +3,8 @@ package de.feelix.sierra.utilities.message;
 import de.feelix.sierra.Sierra;
 import org.bukkit.ChatColor;
 
-/**
- * The ConfigValue class represents a configurable message in the plugin.
- * It is used to retrieve and manipulate message values from the plugin configuration.
- */
 public class ConfigValue {
 
-    /**
-     * Represents a configurable message value.
-     */
     private String message;
 
     /**

@@ -152,8 +152,7 @@ public class SierraDataManager implements UserRepository {
                 .deserialize(Sierra.PREFIX + " &c&nToo lazy? Stay always up-to-date with SierraLoader&c")
                 .clickEvent(ClickEvent.clickEvent(
                     ClickEvent.Action.OPEN_URL,
-                    "https://sierra.squarecode"
-                    + ".de/sierra/sierra-documentation/sierra-loader"
+                    "https://sierra.squarecode.de/sierra/sierra-documentation/sierra-loader"
                 ))
                 .hoverEvent(HoverEvent.showText(Component.text("§7Click me to view the documentation")))
         );

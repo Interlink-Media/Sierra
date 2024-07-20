@@ -26,7 +26,7 @@ public class AbstractEventBus implements EventBus {
      * @param event     the consumer to handle the event
      */
     public <T extends SierraAbstractEvent> void subscribe(Class<T> eventType, Consumer<T> event) {
-        this.subscribe(eventType, event, ListenerPriority.NORMAL);
+        this.subscribe(eventType, event, ListenerPriority.DEFAULT);
     }
 
     /**

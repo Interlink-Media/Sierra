@@ -31,34 +31,34 @@ import java.util.UUID;
 @Data
 public class PlayerData implements SierraUser {
 
-    private Object        player;
-    private User          user;
-    private GameMode      gameMode;
-    private Location      lastLocation;
+    private Object player;
+    private User user;
+    private GameMode gameMode;
+    private Location lastLocation;
     private ClientVersion clientVersion;
 
-    private       String      brand    = "vanilla";
-    private       String      locale   = "unset";
+    private String brand = "vanilla";
+    private String locale = "unset";
     private final Set<String> channels = new HashSet<>();
-    private final long        joinTime = System.currentTimeMillis();
+    private final long joinTime = System.currentTimeMillis();
 
     private boolean receivedPunishment = false;
-    private boolean exempt             = false;
-    private boolean nameChecked        = false;
-    private boolean bypassPermission   = false;
+    private boolean exempt = false;
+    private boolean nameChecked = false;
+    private boolean bypassPermission = false;
 
     private double bytesSent = 0;
 
-    private final AlertSettings alertSettings      = new AbstractAlertSetting();
+    private final AlertSettings alertSettings = new AbstractAlertSetting();
     private final AlertSettings mitigationSettings = new AbstractAlertSetting();
 
-    private       SierraLogger         sierraLogger;
-    private final CheckManager         checkManager         = new CheckManager(this);
-    private final BrandProcessor       brandProcessor       = new BrandProcessor(this);
-    private final GameModeProcessor    gameModeProcessor    = new GameModeProcessor(this);
-    private final PingProcessor        pingProcessor        = new PingProcessor(this);
+    private SierraLogger sierraLogger;
+    private final CheckManager checkManager = new CheckManager(this);
+    private final BrandProcessor brandProcessor = new BrandProcessor(this);
+    private final GameModeProcessor gameModeProcessor = new GameModeProcessor(this);
+    private final PingProcessor pingProcessor = new PingProcessor(this);
     private final TransactionProcessor transactionProcessor = new TransactionProcessor(this);
-    private final TimingHandler        timingProcessor      = new TimingProcessor(this);
+    private final TimingHandler timingProcessor = new TimingProcessor(this);
 
     /**
      * The PlayerData function is a constructor that takes in a User object and sets the user variable to it.

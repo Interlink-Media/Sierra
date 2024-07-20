@@ -2,10 +2,6 @@ package de.feelix.sierra.utilities.attributes;
 
 import lombok.Getter;
 
-/**
- * AttributeMapper is an enumeration class that represents mappings between attribute keys and their maximum and minimum values.
- * It provides a way to retrieve an AttributeMapper object based on a given key.
- */
 @Getter
 public enum AttributeMapper {
 
@@ -33,35 +29,8 @@ public enum AttributeMapper {
     MovementSpeed("generic.movementSpeed", 1.024, 0),
     SpawnReinforcements("zombie.spawnReinforcements", 1, 0);
 
-    /**
-     * This variable represents the key of an AttributeMapper object. The key is used to identify the attribute mapping in the AttributeMapper enum class.
-     * It is a private final String variable.
-     * <p>
-     * Example usage:
-     * <p>
-     * AttributeMapper attribute = AttributeMapper.getAttributeMapper(key);
-     * if (attribute != null) {
-     *     String attributeKey = attribute.getKey();
-     *     // Use attributeKey for further processing
-     * }
-     *
-     * @see AttributeMapper
-     */
     private final String key;
-
-    /**
-     * This variable represents the maximum value of an attribute.
-     */
     private final double max;
-
-    /**
-     * The minimum value.
-     *
-     * <p>
-     * This variable represents the minimum value that can be assigned. It is of type double, and is declared as final.
-     * The {@code min} variable should be initialized during object creation and cannot be modified afterwards.
-     * </p>
-     */
     private final double min;
 
     /**

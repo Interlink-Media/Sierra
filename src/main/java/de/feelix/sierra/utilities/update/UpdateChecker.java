@@ -16,10 +16,10 @@ import java.net.URL;
 @Getter
 public class UpdateChecker {
 
-    private static final String VERSION_START_TAG   = "\"tag_name\":\"";
+    private static final String VERSION_START_TAG = "\"tag_name\":\"";
     private static final String GITHUB_API_BASE_URL = "https://api.github.com/repos/";
     private static final String GITHUB_API_RELEASES = "/releases/latest";
-    public static final  String UNKNOWN_VERSION     = "UNKNOWN";
+    public static final String UNKNOWN_VERSION = "UNKNOWN";
 
     private String latestReleaseVersion = UNKNOWN_VERSION;
 
@@ -29,20 +29,19 @@ public class UpdateChecker {
      */
     public void refreshNewVersion() {
         try {
-            URL               url        = new URL(
-                GITHUB_API_BASE_URL + "Interlink-Media/Sierra" + GITHUB_API_RELEASES);
+            URL url = new URL(GITHUB_API_BASE_URL + "Interlink-Media/Sierra" + GITHUB_API_RELEASES);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Accept", "application/vnd.github.v3+json");
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                 StringBuilder responseBuilder = new StringBuilder();
-                String        line;
+                String line;
                 while ((line = reader.readLine()) != null) {
                     responseBuilder.append(line);
                 }
                 String jsonResponse = responseBuilder.toString();
-                int    startIndex   = jsonResponse.indexOf(VERSION_START_TAG);
+                int startIndex = jsonResponse.indexOf(VERSION_START_TAG);
                 if (startIndex != -1) {
                     startIndex += VERSION_START_TAG.length();
                     int endIndex = jsonResponse.indexOf("\"", startIndex);
@@ -62,6 +61,7 @@ public class UpdateChecker {
      * ticks (55 seconds).
      */
     public void startScheduler() {
-        FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(), o -> refreshNewVersion(), 30100, 30100);
+        FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(), o -> refreshNewVersion(),
+                                                          30100, 30100);
     }
 }

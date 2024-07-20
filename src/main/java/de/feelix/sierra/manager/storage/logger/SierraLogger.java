@@ -8,7 +8,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Level;
 
 public class SierraLogger {
 
@@ -38,7 +37,7 @@ public class SierraLogger {
             writer.newLine();
             writer.flush();
         } catch (IOException e) {
-            Sierra.getPlugin().getLogger().log(Level.WARNING, "Unable to write log: " + e.getMessage());
+            Sierra.getPlugin().getLogger().warning("Unable to write log: " + e.getMessage());
         }
     }
 

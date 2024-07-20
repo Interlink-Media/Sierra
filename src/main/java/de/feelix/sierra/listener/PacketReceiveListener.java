@@ -4,16 +4,11 @@ import com.github.retrooper.packetevents.event.*;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPong;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientSettings;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientWindowConfirmation;
 import de.feelix.sierra.Sierra;
-import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.logger.LogTag;
-import de.feelix.sierraapi.check.impl.SierraCheck;
 import de.feelix.sierraapi.violation.MitigationStrategy;
 
 import java.util.logging.Logger;
@@ -52,15 +47,15 @@ public class PacketReceiveListener extends PacketListenerAbstract {
             playerData.setClientVersion(event.getUser().getClientVersion());
         }
 
-        handleTransaction(event, playerData);
+        playerData.getTransactionProcessor().handleTransactionClient(event);
         handleLocale(event, playerData);
 
         if (handleExemptOrBlockedPlayer(playerData, event)) return;
 
         playerData.getBrandProcessor().process(event);
         playerData.getPingProcessor().handlePacketReceive(event);
+        playerData.getCheckManager().processAvailableChecksReceive(event);
 
-        processAvailableChecksReceive(playerData, event);
         playerData.getTimingProcessor().getPacketReceiveTask().end();
     }
 
@@ -71,41 +66,27 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         }
     }
 
-    private void handleTransaction(PacketReceiveEvent event, PlayerData playerData) {
-        PacketTypeCommon packetType = event.getPacketType();
-        if (packetType == PacketType.Play.Client.WINDOW_CONFIRMATION) {
-            handleWindowConfirmation(event, playerData);
-        } else if (packetType == PacketType.Play.Client.PONG) {
-            handlePong(event, playerData);
-        }
-    }
-
-    private void handleWindowConfirmation(PacketReceiveEvent event, PlayerData playerData) {
-        WrapperPlayClientWindowConfirmation wrapper = new WrapperPlayClientWindowConfirmation(event);
-        short                               id      = wrapper.getActionId();
-        if (id <= 0 && playerData.getTransactionProcessor().addTransactionResponse(id)) {
-            event.setCancelled(true);
-        }
-    }
-
-    private void handlePong(PacketReceiveEvent event, PlayerData playerData) {
-        WrapperPlayClientPong wrapper = new WrapperPlayClientPong(event);
-        int                   id      = wrapper.getId();
-        if (id == (short) id && playerData.getTransactionProcessor().addTransactionResponse((short) id)) {
-            event.setCancelled(true);
-        }
-    }
-
     private boolean isWeirdPacket(ProtocolPacketEvent<Object> event, PlayerData playerData) {
+
         int readableBytes = ByteBufHelper.readableBytes(event.getByteBuf());
+
         int maxPacketSize = Sierra.getPlugin()
             .getSierraConfigEngine()
             .config()
-            .getInt("generic-packet-size-limit", 5000);
+            .getInt("generic-packet-size-limit", 6000);
+
         int capacity = ByteBufHelper.capacity(event.getByteBuf());
 
-        if ((maxPacketSize != -1 && (readableBytes > maxPacketSize || readableBytes > capacity)) ||
-            event.getPacketId() < 0 || event.getPacketId() > 1000) {
+        boolean shouldCheck = maxPacketSize != -1;
+
+        boolean isPacketTooLarge = readableBytes > maxPacketSize;
+        boolean isReadableBytesGreaterThanCapacity = readableBytes > capacity;
+
+        boolean isNegativePacketId = event.getPacketId() < 0;
+        boolean isPacketIdWeird = event.getPacketId() > 1000;
+
+        if ((shouldCheck && (isPacketTooLarge || isReadableBytesGreaterThanCapacity))
+            || isNegativePacketId || isPacketIdWeird) {
 
             playerData.getSierraLogger()
                 .log(
@@ -159,13 +140,5 @@ public class PacketReceiveListener extends PacketListenerAbstract {
             return true;
         }
         return false;
-    }
-
-    private void processAvailableChecksReceive(PlayerData playerData, PacketReceiveEvent event) {
-        for (SierraCheck availableCheck : playerData.getCheckManager().availableChecks()) {
-            if (availableCheck instanceof IngoingProcessor) {
-                ((IngoingProcessor) availableCheck).handle(event, playerData);
-            }
-        }
     }
 }

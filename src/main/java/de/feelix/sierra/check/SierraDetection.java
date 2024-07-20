@@ -203,10 +203,9 @@ public class SierraDetection implements SierraCheck {
             true
         )
             .replace("{username}", user.getName())
-            .replace(
-                "{clientVersion}",
-                playerData.getUser().getClientVersion().getReleaseName().replace("V_", "").replace("_", ".")
-            )
+            .replace("{clientVersion}", playerData.getUser().getClientVersion().getReleaseName()
+                .replace("V_", "")
+                .replace("_", "."))
             .replace("{brand}", playerData.brand())
             .replace("{ticksExisted}", playerData.ticksExisted() + " ticks")
             .replace("{gameMode}", playerData.gameMode().name())
@@ -243,13 +242,13 @@ public class SierraDetection implements SierraCheck {
         playerData.punish(violationDocument.getMitigationStrategy());
     }
 
-    private void blockAddressIfEnabled(ViolationDocument violationDocument) {
-        if (violationDocument.getMitigationStrategy() == MitigationStrategy.BAN && Sierra.getPlugin()
-            .getPunishmentConfig()
-            .isBan()
-            && Sierra.getPlugin().getSierraConfigEngine().config().getBoolean("block-connections-after-ban", true)) {
-            Sierra.getPlugin()
-                .getAddressStorage()
+    private void blockAddressIfEnabled(ViolationDocument violation) {
+        boolean punishmentSetting = Sierra.getPlugin().getPunishmentConfig().isBan();
+        boolean blockConnections = Sierra.getPlugin().getSierraConfigEngine().config()
+            .getBoolean("block-connections-after-ban", true);
+
+        if (violation.getMitigationStrategy() == MitigationStrategy.BAN && punishmentSetting && blockConnections) {
+            Sierra.getPlugin().getAddressStorage()
                 .addIPAddress(this.playerData.getUser().getAddress().getAddress().getHostAddress());
         }
     }

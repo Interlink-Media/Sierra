@@ -79,7 +79,7 @@ public class HistoryCommand implements ISierraCommand {
                 true
             ).replacePrefix().replace("{current}", String.valueOf(currentPage))
                              .replace("{total}", String.valueOf(pagination.totalPages()))
-                             .replace("{entries}", String.valueOf(pagination.getItems().size()))
+                             .replace("{entries}", String.valueOf(pagination.getEntries().size()))
                              .colorize()
                              .message())
             .append(Component.text(" "))
