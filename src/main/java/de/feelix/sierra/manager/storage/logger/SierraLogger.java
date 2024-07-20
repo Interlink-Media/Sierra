@@ -1,6 +1,7 @@
 package de.feelix.sierra.manager.storage.logger;
 
 import de.feelix.sierra.Sierra;
+import de.feelix.sierraapi.exceptions.SierraException;
 import lombok.Data;
 
 import java.io.BufferedWriter;
@@ -18,6 +19,15 @@ public class SierraLogger {
 
     public SierraLogger(String playerName) {
         this.playerName = playerName;
+
+        File sierraLogs = new File("plugins/Sierra/logs/");
+
+        if (!sierraLogs.exists()) {
+            if (!sierraLogs.mkdirs()) {
+                throw new SierraException("Failed to create directory " + sierraLogs.getAbsolutePath());
+            }
+        }
+
         File pluginDir = new File("plugins/Sierra/logs/" + playerName);
         if (!pluginDir.exists()) {
             if (!pluginDir.mkdirs()) {

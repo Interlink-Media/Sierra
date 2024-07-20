@@ -80,6 +80,7 @@ public class PlayerData implements SierraUser {
         this.player = bukkitPlayer;
         bypassPermission = bukkitPlayer.hasPermission("sierra.bypass");
         if (this.sierraLogger.getPlayerName().equalsIgnoreCase("INVALID")) {
+            this.sierraLogger.close();
             sierraLogger = new SierraLogger(bukkitPlayer.getName());
         }
     }
