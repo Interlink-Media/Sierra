@@ -38,6 +38,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     private int containerId = -1;
 
     private long lastFlyingTime = 0L;
+    private long lastTeleportTime = 0;
     private long balance = 0L;
 
     private static final long MAX_BAL = 0;
@@ -114,7 +115,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             return;
         }
 
-        boolean noExempt = System.currentTimeMillis() - data.getJoinTime() > 1000;
+        boolean noExempt =
+            System.currentTimeMillis() - data.getJoinTime() > 1000
+            && System.currentTimeMillis() - this.lastTeleportTime > 1000;
 
         if (lastFlyingTime != 0L && noExempt) {
             long now = System.currentTimeMillis();
@@ -230,6 +233,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
         if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
             || event.getPacketType() == PacketType.Play.Server.ENTITY_VELOCITY) {
             balance -= BAL_SUB_ON_TP;
+            this.lastTeleportTime = System.currentTimeMillis();
         } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
             WrapperPlayServerOpenWindow window = new WrapperPlayServerOpenWindow(event);
             this.containerId = window.getContainerId();

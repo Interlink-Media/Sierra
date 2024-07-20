@@ -1,6 +1,7 @@
 package de.feelix.sierra.manager.storage.logger;
 
 import de.feelix.sierra.Sierra;
+import lombok.Data;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,11 +10,14 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+@Data
 public class SierraLogger {
 
     private BufferedWriter writer;
+    private String playerName;
 
     public SierraLogger(String playerName) {
+        this.playerName = playerName;
         File pluginDir = new File("plugins/Sierra/logs/" + playerName);
         if (!pluginDir.exists()) {
             if (!pluginDir.mkdirs()) {

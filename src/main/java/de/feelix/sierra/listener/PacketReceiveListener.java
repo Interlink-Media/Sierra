@@ -48,6 +48,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         }
 
         playerData.getTransactionProcessor().handleTransactionClient(event);
+
         handleLocale(event, playerData);
 
         if (handleExemptOrBlockedPlayer(playerData, event)) return;

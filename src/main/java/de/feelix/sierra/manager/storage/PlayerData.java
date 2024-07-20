@@ -68,6 +68,7 @@ public class PlayerData implements SierraUser {
     public PlayerData(User user) {
         this.user = user;
         this.clientVersion = user.getClientVersion();
+        this.sierraLogger = new SierraLogger("INVALID");
     }
 
     /**
@@ -78,7 +79,7 @@ public class PlayerData implements SierraUser {
     public void pollData(Player bukkitPlayer) {
         this.player = bukkitPlayer;
         bypassPermission = bukkitPlayer.hasPermission("sierra.bypass");
-        if (this.sierraLogger == null) {
+        if (this.sierraLogger.getPlayerName().equalsIgnoreCase("INVALID")) {
             sierraLogger = new SierraLogger(bukkitPlayer.getName());
         }
     }
