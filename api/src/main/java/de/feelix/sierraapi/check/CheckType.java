@@ -13,7 +13,8 @@ public enum CheckType {
     BOOK_VALIDATION(3, "Book Validation"),
     COMMAND_VALIDATION(4, "Command Validation"),
     CREATIVE(5, "Creative Crasher"),
-    MOVEMENT_VALIDATION(6, "Movement Validation");
+    MOVEMENT_VALIDATION(6, "Movement Validation"),
+    POST(7, "Post Protocol");
 
     /**
      * Represents the unique identifier for a check type.

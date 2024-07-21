@@ -6,6 +6,7 @@ import de.feelix.sierra.check.impl.book.BookValidation;
 import de.feelix.sierra.check.impl.command.CommandValidation;
 import de.feelix.sierra.check.impl.creative.CreativeCrasher;
 import de.feelix.sierra.check.impl.move.MovementValidation;
+import de.feelix.sierra.check.impl.post.PostCheck;
 import de.feelix.sierra.check.impl.protocol.ProtocolValidation;
 import de.feelix.sierra.check.impl.frequency.FrequencyDetection;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
@@ -36,6 +37,7 @@ public class CheckManager implements CheckRepository {
         packetChecks.add(new ProtocolValidation(playerData));
         packetChecks.add(new MovementValidation(playerData));
         packetChecks.add(new CreativeCrasher(playerData));
+        packetChecks.add(new PostCheck(playerData));
         packetChecks.add(new CommandValidation(playerData));
     }
 

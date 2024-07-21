@@ -132,8 +132,6 @@ public class MovementValidation extends SierraDetection implements IngoingProces
                         new Debug<>("Ticks", String.format("%.5f ticks ahead", Math.abs(calculated)))))
                     .build());
             }
-            event.setCancelled(true);
-            event.cleanUp();
             // Reset the violation by 1 movement
             timerBalanceRealTime -= (long) 50e6;
         }

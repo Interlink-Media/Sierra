@@ -115,11 +115,10 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             return;
         }
 
-        boolean noExempt =
-            System.currentTimeMillis() - data.getJoinTime() > 1000
-            && System.currentTimeMillis() - this.lastTeleportTime > 1000;
+        boolean hasFlyingDelayPassedThreshold = System.currentTimeMillis() - data.getJoinTime() > 1000
+                           && System.currentTimeMillis() - this.lastTeleportTime > 1000;
 
-        if (lastFlyingTime != 0L && noExempt) {
+        if (lastFlyingTime != 0L && hasFlyingDelayPassedThreshold) {
             long now = System.currentTimeMillis();
             balance += 50L;
             balance -= now - lastFlyingTime;
