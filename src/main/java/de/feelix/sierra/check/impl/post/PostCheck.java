@@ -48,7 +48,7 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
             if (System.currentTimeMillis() - this.lastTeleportTime > 1000) {
                 for (String flag : flags) {
                     dispatch(event, ViolationDocument.builder()
-                        .mitigationStrategy(MitigationStrategy.MITIGATE)
+                        .mitigationStrategy(violations() > 50 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
                         .description("send packet post")
                         .debugs(Collections.singletonList(new Debug<>("Packet", flag)))
                         .build());
