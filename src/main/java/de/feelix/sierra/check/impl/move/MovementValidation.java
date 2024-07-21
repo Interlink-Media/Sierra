@@ -172,6 +172,18 @@ public class MovementValidation extends SierraDetection implements IngoingProces
                 .build());
         }
 
+        Location position = new Location(x, y, z, yaw, pitch);
+        if (isInvalidLocation(position)) {
+            this.dispatch(event, ViolationDocument.builder()
+                .description("is sending weird values")
+                .mitigationStrategy(MitigationStrategy.KICK)
+                .debugs(Arrays.asList(
+                    new Debug<>("Location", position.toString()),
+                    new Debug<>("Tag", "Position")
+                ))
+                .build());
+        }
+
         if (invalidValue(yaw, pitch)) {
             this.dispatch(event, ViolationDocument.builder()
                 .description("is rotating invalid")
@@ -183,6 +195,13 @@ public class MovementValidation extends SierraDetection implements IngoingProces
                 ))
                 .build());
         }
+    }
+
+    private boolean isInvalidLocation(Location pos) {
+        return Double.isNaN(pos.getX()) || Double.isNaN(pos.getY()) || Double.isNaN(pos.getZ())
+               || Double.isInfinite(pos.getX()) || Double.isInfinite(pos.getY()) || Double.isInfinite(pos.getZ())
+               || Float.isNaN(pos.getYaw()) || Float.isNaN(pos.getPitch())
+               || Float.isInfinite(pos.getYaw()) || Float.isInfinite(pos.getPitch());
     }
 
     private void checkInvalidRotation(WrapperPlayClientPlayerFlying wrapper, PacketReceiveEvent event) {
