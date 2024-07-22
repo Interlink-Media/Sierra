@@ -52,10 +52,9 @@ block-disallowed-commands: true
 # have this check enabled and encounter issues, please report them to us immediately on Discord
 prevent-invalid-move: true
 
-# This is a way to additionally prevent movement-based cheats. This check should be disabled if there's a reliable
-# anti-cheat system like Polar or Intave on the server. This check can only kick in as a last resort, so it can be
-# activated. If too many players are being kicked, please report it and disable the check
-prevent-timer-cheats: true
+# Since many crashers are very poorly developed and exhibit these structural errors, this check is perfectly
+# designed to exploit and fix the stupidity of some people.
+prevent-post-packets: true
 
 # This is a simple NBT length check that simply verifies that the NBT tag does not exceed a certain limit.
 # This check will eliminate many cheap crashers and already stop a large number of people.

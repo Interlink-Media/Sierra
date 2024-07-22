@@ -40,7 +40,7 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
     private int exemptFromSwingingCheck = Integer.MIN_VALUE;
 
     private void handleFlyingPacket(PacketReceiveEvent event) {
-        if (!flags.isEmpty()) {
+        if (!flags.isEmpty() && configEngine().config().getBoolean("prevent-post-packets", true)) {
             // Okay, the user might be cheating, let's double check
             // 1.8 clients have the idle packet, and this shouldn't false on 1.8 clients
             // 1.9+ clients have predictions, which will determine if hidden tick skipping occurred
