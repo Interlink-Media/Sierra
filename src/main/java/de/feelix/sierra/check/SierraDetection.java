@@ -35,6 +35,7 @@ public class SierraDetection implements SierraCheck {
     private final PlayerData playerData;
     private final CheckType rawCheckType;
     private String friendlyName;
+    private long lastDetectionTime = 0;
     private int checkId;
     private int violations = 0;
 
@@ -74,6 +75,7 @@ public class SierraDetection implements SierraCheck {
     public void dispatch(ProtocolPacketEvent<Object> event, ViolationDocument violationDocument) {
         event.setCancelled(true);
         event.cleanUp();
+        this.lastDetectionTime = System.currentTimeMillis();
 
         playerData.getSierraLogger().log(LogTag.DETECTION, violationDocument.toString());
 
@@ -265,6 +267,11 @@ public class SierraDetection implements SierraCheck {
     @Override
     public double violations() {
         return this.violations;
+    }
+
+    @Override
+    public long lastDetection() {
+        return this.lastDetectionTime;
     }
 
     @Override

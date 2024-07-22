@@ -25,9 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * PlayerData is a class representing the data associated with a player.
- */
+
 @Data
 public class PlayerData implements SierraUser {
 

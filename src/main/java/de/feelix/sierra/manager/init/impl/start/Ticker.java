@@ -63,7 +63,9 @@ public class Ticker implements Initable {
                 }
 
                 for (SierraCheck sierraCheck : value.getCheckManager().availableChecks()) {
-                    if (sierraCheck.violations() > 0) {
+                    if (sierraCheck.violations() > 0
+                        && System.currentTimeMillis() - sierraCheck.lastDetection() > 2000) {
+
                         sierraCheck.setViolations(sierraCheck.violations() - 1);
                     }
                 }

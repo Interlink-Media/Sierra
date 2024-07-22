@@ -15,6 +15,13 @@ public interface SierraCheck {
     double violations();
 
     /**
+     * Retrieves the timestamp of the last detection made by this check.
+     *
+     * @return the timestamp of the last detection
+     */
+    long lastDetection();
+
+    /**
      * Sets the number of violations found by this check.
      *
      * @since 1.0
