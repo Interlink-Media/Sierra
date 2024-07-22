@@ -38,14 +38,19 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
     private final List<String> flags = new EvictingQueue<>(10);
     private boolean hasSentFlyingPacket = false;
     private int exemptFromSwingingCheck = Integer.MIN_VALUE;
-    private long lastTeleportTime = 0;
 
     private void handleFlyingPacket(PacketReceiveEvent event) {
         if (!flags.isEmpty()) {
             // Okay, the user might be cheating, let's double check
             // 1.8 clients have the idle packet, and this shouldn't false on 1.8 clients
             // 1.9+ clients have predictions, which will determine if hidden tick skipping occurred
-            if (System.currentTimeMillis() - this.lastTeleportTime > 1000) {
+
+            long timeMillis = System.currentTimeMillis();
+
+            boolean hasTeleported = timeMillis - getPlayerData().getTeleportProcessor().getLastTeleportTime() < 1000;
+            boolean passedThreshold = timeMillis - getPlayerData().getJoinTime() > 1000 && !hasTeleported;
+
+            if (passedThreshold) {
                 for (String flag : flags) {
                     dispatch(event, ViolationDocument.builder()
                         .mitigationStrategy(violations() > 50 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
@@ -63,8 +68,7 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
 
     private void handleTransactionPacket() {
         if (hasSentFlyingPacket && !postQueue.isEmpty()) {
-            String flag = formatFlag(postQueue.getFirst());
-            flags.add(flag);
+            flags.add(formatFlag(postQueue.getFirst()));
         }
         postQueue.clear();
         hasSentFlyingPacket = false;
@@ -148,8 +152,6 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
                     exemptFromSwingingCheck = getPlayerData().getTransactionProcessor().lastTransactionSent.get();
                 }
             }
-        } else if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK) {
-            lastTeleportTime = System.currentTimeMillis();
         }
     }
 }

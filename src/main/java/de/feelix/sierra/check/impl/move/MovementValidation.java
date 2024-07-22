@@ -1,7 +1,6 @@
 package de.feelix.sierra.check.impl.move;
 
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
-import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
@@ -13,7 +12,6 @@ import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
-import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.FormatUtils;
@@ -25,13 +23,12 @@ import java.util.Arrays;
 import java.util.Collections;
 
 @SierraCheckData(checkType = CheckType.MOVEMENT_VALIDATION)
-public class MovementValidation extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
+public class MovementValidation extends SierraDetection implements IngoingProcessor {
 
     private double lastChunkId = -1;
     private long lastTick = -1;
     private int buffer = 0;
     private Location lastLocation;
-    private long lastTeleportTime = 0;
     private int deltaBuffer = 0;
 
     private static final double HARD_CODED_BORDER = 2.9999999E7D;
@@ -228,11 +225,12 @@ public class MovementValidation extends SierraDetection implements IngoingProces
         double deltaZ = Math.abs(position.getZ() - lastLocation.getZ());
         double deltaXZ = Math.hypot(deltaX, deltaZ);
 
-        // Skip a second after server teleportation or after server join
-        if (System.currentTimeMillis() - lastTeleportTime <= 1000
-            || System.currentTimeMillis() - getPlayerData().getJoinTime() <= 1000) return;
+        long timeMillis = System.currentTimeMillis();
 
-        if (deltaXZ > 7 && getPlayerData().getGameMode() == GameMode.SURVIVAL) {
+        boolean hasTeleported = timeMillis - getPlayerData().getTeleportProcessor().getLastTeleportTime() < 1000;
+        boolean passedThreshold = timeMillis - getPlayerData().getJoinTime() > 1000 && !hasTeleported;
+
+        if (passedThreshold && deltaXZ > 7 && getPlayerData().getGameMode() == GameMode.SURVIVAL) {
             if (++deltaBuffer > 10) {
                 this.dispatch(event, ViolationDocument.builder()
                     .description("is moving invalid")
@@ -336,12 +334,5 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
     private double computeChunkId(Vector3d position) {
         return Math.floor(position.getX() / 32) + Math.floor(position.getZ() / 32);
-    }
-
-    @Override
-    public void handle(PacketSendEvent event, PlayerData playerData) {
-        if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK) {
-            lastTeleportTime = System.currentTimeMillis();
-        }
     }
 }

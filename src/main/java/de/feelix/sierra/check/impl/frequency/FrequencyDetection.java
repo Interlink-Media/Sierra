@@ -38,7 +38,6 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     private int containerId = -1;
 
     private long lastFlyingTime = 0L;
-    private long lastTeleportTime = 0;
     private long balance = 0L;
 
     private static final long MAX_BAL = 0;
@@ -115,10 +114,12 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             return;
         }
 
-        boolean hasFlyingDelayPassedThreshold = System.currentTimeMillis() - data.getJoinTime() > 1000
-                           && System.currentTimeMillis() - this.lastTeleportTime > 1000;
+        long timeMillis = System.currentTimeMillis();
 
-        if (lastFlyingTime != 0L && hasFlyingDelayPassedThreshold) {
+        boolean hasTeleported = timeMillis - getPlayerData().getTeleportProcessor().getLastTeleportTime() < 1000;
+        boolean passedThreshold = timeMillis - data.getJoinTime() > 1000 && !hasTeleported;
+
+        if (lastFlyingTime != 0L && passedThreshold) {
             long now = System.currentTimeMillis();
             balance += 50L;
             balance -= now - lastFlyingTime;
@@ -136,7 +137,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
                 balance = BAL_RESET;
             }
         }
-        lastFlyingTime = System.currentTimeMillis();
+        lastFlyingTime = timeMillis;
     }
 
     private int retrieveLimitFromConfiguration(PacketTypeCommon packetType) {
@@ -232,7 +233,6 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
         if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
             || event.getPacketType() == PacketType.Play.Server.ENTITY_VELOCITY) {
             balance -= BAL_SUB_ON_TP;
-            this.lastTeleportTime = System.currentTimeMillis();
         } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
             WrapperPlayServerOpenWindow window = new WrapperPlayServerOpenWindow(event);
             this.containerId = window.getContainerId();

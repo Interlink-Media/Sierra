@@ -32,10 +32,11 @@ public class PacketSendListener extends PacketListenerAbstract {
 
         playerData.getTimingProcessor().getPacketSendTask().prepare();
 
+        playerData.getTeleportProcessor().handle(event);
         playerData.getTransactionProcessor().handleTransactionSend(event);
-
         playerData.getGameModeProcessor().process(event);
         playerData.getPingProcessor().handlePacketSend(event);
+
         playerData.getCheckManager().processAvailableChecksSend(event);
 
         playerData.getTimingProcessor().getPacketSendTask().end();

@@ -428,6 +428,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private boolean isBookChannel(String channelName) {
         return channelName.equalsIgnoreCase("MC|BEdit")
                || channelName.equalsIgnoreCase("MC|BSign")
+               || channelName.equalsIgnoreCase("MC|BOpen")
                || channelName.equalsIgnoreCase("minecraft:bedit")
                || channelName.equalsIgnoreCase("minecraft:bsign");
     }

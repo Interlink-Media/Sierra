@@ -57,6 +57,7 @@ public class PlayerData implements SierraUser {
     private final BrandProcessor brandProcessor = new BrandProcessor(this);
     private final GameModeProcessor gameModeProcessor = new GameModeProcessor(this);
     private final PingProcessor pingProcessor = new PingProcessor(this);
+    private final TeleportProcessor teleportProcessor = new TeleportProcessor(this);
     private final TransactionProcessor transactionProcessor = new TransactionProcessor(this);
     private final TimingHandler timingProcessor = new TimingProcessor(this);
 
