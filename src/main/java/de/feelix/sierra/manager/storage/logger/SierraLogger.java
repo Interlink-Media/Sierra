@@ -43,6 +43,11 @@ public class SierraLogger {
 
     public synchronized void log(LogTag tag, String message) {
 
+        // Don't log empty ItemStack NBT Tags
+        if (message.equalsIgnoreCase("{}")) {
+            return;
+        }
+
         String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         String logMessage = String.format("[%s] %s: %s", timestamp, tag.name(), message);
 
