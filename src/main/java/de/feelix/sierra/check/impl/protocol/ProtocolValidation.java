@@ -15,6 +15,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
+import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.client.*;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenWindow;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetExperience;
@@ -506,9 +507,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkBlockPlacement(WrapperPlayClientPlayerBlockPlacement wrapper, PacketReceiveEvent event) {
 
-        double distanced = wrapper.getBlockPosition()
-            .toVector3d()
-            .distanceSquared(getPlayerData().getLastLocation().getPosition());
+        Vector3d blockPosition = wrapper.getBlockPosition().toVector3d();
+        double distanced = blockPosition.distanceSquared(getPlayerData().getLastLocation().getPosition());
 
         if (distanced > 50 && wrapper.getFace() != BlockFace.OTHER) {
             dispatch(event, ViolationDocument.builder()
