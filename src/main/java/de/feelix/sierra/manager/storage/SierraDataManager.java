@@ -4,7 +4,6 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerCommon;
 import com.github.retrooper.packetevents.event.UserConnectEvent;
 import com.github.retrooper.packetevents.event.UserDisconnectEvent;
-import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.User;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.history.HistoryDocument;
@@ -193,10 +192,6 @@ public class SierraDataManager implements UserRepository {
 
     public void addPlayerData(User user) {
         playerData.put(user, new PlayerData(user));
-    }
-
-    public void setPlayerGameMode(PlayerData value, Player player) {
-        value.setGameMode(GameMode.valueOf(player.getGameMode().name()));
     }
 
     public void removePlayerData(User user) {
