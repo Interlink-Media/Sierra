@@ -16,12 +16,16 @@ import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.utilities.EvictingQueue;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.violation.MitigationStrategy;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
 @SierraCheckData(checkType = CheckType.POST)
 public class PostCheck extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
@@ -30,58 +34,65 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
         super(playerData);
     }
 
-    private boolean sent = false;
-    public long lastFlying, lastPacket;
-    public double buffer = 0.0;
-
+    private final ArrayDeque<PacketTypeCommon> postQueue = new ArrayDeque<>();
+    private final List<String> flags = new EvictingQueue<>(10);
+    private boolean hasSentFlyingPacket = false;
     private int exemptFromSwingingCheck = Integer.MIN_VALUE;
 
-    @Override
-    public void handle(PacketReceiveEvent event, PlayerData playerData) {
-        PacketTypeCommon packetType = event.getPacketType();
+    private void handleFlyingPacket(PacketReceiveEvent event) {
+        if (!flags.isEmpty() && configEngine().config().getBoolean("prevent-post-packets", true)) {
 
-        if (WrapperPlayClientPlayerFlying.isFlying(packetType)) {
-            final long now = System.currentTimeMillis();
-            final long delay = now - this.lastPacket;
+            // Okay, the user might be cheating, let's double check
+            // 1.8 clients have the idle packet, and this shouldn't false on 1.8 clients
+            // 1.9+ clients have predictions, which will determine if hidden tick skipping occurred
 
-            if (this.sent) {
-                if (delay > 40L && delay < 100L) {
-                    this.buffer += 0.25;
+            long timeMillis = System.currentTimeMillis();
 
-                    if (this.buffer > 0.5) {
-                        dispatch(event, ViolationDocument.builder()
-                            .mitigationStrategy(
-                                violations() > 50 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
-                            .description("send packet post")
-                            .debugs(Collections.singletonList(new Debug<>("Buffer", buffer)))
-                            .build());
-                    }
-                } else {
-                    this.buffer = Math.max(this.buffer - 0.025, 0);
+            boolean hasTeleported = timeMillis - getPlayerData().getTeleportProcessor().getLastTeleportTime() < 1000;
+            boolean passedThreshold = timeMillis - getPlayerData().getJoinTime() > 1000 && !hasTeleported;
+
+            if (passedThreshold) {
+                for (String flag : flags) {
+                    dispatch(event, ViolationDocument.builder()
+                        .mitigationStrategy(violations() > 50 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
+                        .description("send packet post")
+                        .debugs(Collections.singletonList(new Debug<>("Packet", flag)))
+                        .build());
                 }
-                this.sent = false;
             }
-
-            this.lastFlying = now;
-        } else if (packetType.equals(PacketType.Play.Client.PLAYER_ABILITIES)
-                   || packetType.equals(PacketType.Play.Client.INTERACT_ENTITY)
-                   || packetType.equals(PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT)
-                   || packetType.equals(PacketType.Play.Client.USE_ITEM)
-                   || packetType.equals(PacketType.Play.Client.PLAYER_DIGGING)
-                   || (packetType.equals(PacketType.Play.Client.CLICK_WINDOW) &&
-                       getPlayerData().getClientVersion().isOlderThan(ClientVersion.V_1_13))
-                   || (packetType.equals(PacketType.Play.Client.ANIMATION) && shouldHandleAnimation())
-                   || (packetType.equals(PacketType.Play.Client.ENTITY_ACTION) && shouldHandleEntityAction(event))) {
-            final long now = System.currentTimeMillis();
-            final long delay = now - this.lastFlying;
-
-            if (delay < 10L) {
-                this.lastPacket = now;
-                this.sent = true;
-            } else {
-                this.buffer = Math.max(this.buffer - 0.025, 0.0);
-            }
+            flags.clear();
         }
+
+        postQueue.clear();
+        hasSentFlyingPacket = true;
+    }
+
+    private void handleTransactionPacket() {
+        if (hasSentFlyingPacket && !postQueue.isEmpty()) {
+            flags.add(formatFlag(postQueue.getFirst()));
+        }
+        postQueue.clear();
+        hasSentFlyingPacket = false;
+    }
+
+    private void handleOtherPackets(PacketTypeCommon packetType, PacketReceiveEvent event) {
+        if (shouldQueuePostCheck(packetType, event)) {
+            postQueue.add(packetType);
+        }
+    }
+
+    private boolean shouldQueuePostCheck(PacketTypeCommon packetType, PacketReceiveEvent event) {
+        return hasSentFlyingPacket && (
+            (packetType.equals(PacketType.Play.Client.PLAYER_ABILITIES)
+             || packetType.equals(PacketType.Play.Client.INTERACT_ENTITY)
+             || packetType.equals(PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT)
+             || packetType.equals(PacketType.Play.Client.USE_ITEM)
+             || packetType.equals(PacketType.Play.Client.PLAYER_DIGGING))
+            || (packetType.equals(PacketType.Play.Client.CLICK_WINDOW) && getPlayerData().getClientVersion()
+                .isOlderThan(ClientVersion.V_1_13))
+            || (packetType.equals(PacketType.Play.Client.ANIMATION) && shouldHandleAnimation())
+            || (packetType.equals(PacketType.Play.Client.ENTITY_ACTION) && shouldHandleEntityAction(event))
+        );
     }
 
     private boolean shouldHandleAnimation() {
@@ -97,18 +108,40 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
                   && !isRidingEntityInNewVersion();
     }
 
-    private boolean isOlderServerVersion() {
-        return PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_8_8);
-    }
-
     private boolean isSwingAnimation(WrapperPlayServerEntityAnimation animation) {
         return animation.getType() == WrapperPlayServerEntityAnimation.EntityAnimationType.SWING_MAIN_ARM
                || animation.getType() == WrapperPlayServerEntityAnimation.EntityAnimationType.SWING_OFF_HAND;
     }
 
+    private boolean isOlderServerVersion() {
+        return PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_8_8);
+    }
+
     private boolean isRidingEntityInNewVersion() {
         return getPlayerData().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19_3)
                && ((Player) getPlayerData().getPlayer()).getVehicle() != null;
+    }
+
+    private String formatFlag(PacketTypeCommon packetType) {
+        return packetType.toString().toLowerCase(Locale.ROOT).replace("_", " ");
+    }
+
+    @Override
+    public void handle(PacketReceiveEvent event, PlayerData playerData) {
+        PacketTypeCommon packetType = event.getPacketType();
+
+        if (WrapperPlayClientPlayerFlying.isFlying(packetType)) {
+            handleFlyingPacket(event);
+        } else if (isTransaction(packetType)) {
+            handleTransactionPacket();
+        } else {
+            handleOtherPackets(packetType, event);
+        }
+    }
+
+    public boolean isTransaction(PacketTypeCommon packetType) {
+        return packetType == PacketType.Play.Client.PONG ||
+               packetType == PacketType.Play.Client.WINDOW_CONFIRMATION;
     }
 
     @Override
