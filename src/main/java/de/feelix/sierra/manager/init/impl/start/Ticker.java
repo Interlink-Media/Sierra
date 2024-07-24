@@ -1,5 +1,6 @@
 package de.feelix.sierra.manager.init.impl.start;
 
+import com.github.retrooper.packetevents.protocol.player.GameMode;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.init.Initable;
 import de.feelix.sierra.manager.storage.SierraDataManager;
@@ -47,31 +48,41 @@ public class Ticker implements Initable {
     @Override
     public void start() {
         instance = this;
-        FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(), o -> currentTick++, 1, 1);
 
+        // Ticker task
+        FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(), o -> currentTick++,
+                                                          1, 1
+        );
+
+        // Each second reset player bytes
         FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(), o -> {
             for (PlayerData value : SierraDataManager.getInstance().getPlayerData().values()) {
                 value.setBytesSent(0);
-                value.sendTransaction();
+            }
+        }, 0, 20);
 
-                if (value.getUser().getName() != null) {
+        // Poll data thread and violation reset thread
+        FoliaScheduler.getAsyncScheduler().runAtFixedRate(Sierra.getPlugin(), o -> {
+            for (PlayerData value : SierraDataManager.getInstance().getPlayerData().values()) {
+
+                boolean isUserValid = value.getUser() != null && value.getUser().getName() != null;
+
+                if (isUserValid) {
                     Player player = Bukkit.getPlayer(value.getUser().getName());
                     if (player != null) {
-                        Sierra.getPlugin().getSierraDataManager().setPlayerGameMode(value, player);
+                        value.setGameMode(GameMode.valueOf(player.getGameMode().name()));
                         value.pollData(player);
                     }
                 }
 
                 for (SierraCheck sierraCheck : value.getCheckManager().availableChecks()) {
-
                     boolean timeSinceLastDetection = System.currentTimeMillis() - sierraCheck.lastDetection() > 4000;
 
                     if (sierraCheck.violations() > 0 && timeSinceLastDetection) {
-
                         sierraCheck.setViolations(sierraCheck.violations() - 1);
                     }
                 }
             }
-        }, 0, 20);
+        }, 0, 2);
     }
 }
