@@ -82,13 +82,14 @@ public class PlayerData implements SierraUser {
             this.sierraLogger.close();
             sierraLogger = new SierraLogger(bukkitPlayer.getName());
         }
+        sendTransaction();
     }
 
     /**
      * Sends a transaction for the user.
      */
     public void sendTransaction() {
-        this.transactionProcessor.sendTransaction();
+        this.transactionProcessor.sendTransaction(true);
     }
 
     /**
