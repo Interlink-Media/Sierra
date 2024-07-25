@@ -526,8 +526,12 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 .build());
         }
 
-        if (wrapper.getSequence() < 0 && event.getUser().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19)
-            && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_19)) {
+        boolean isSequenceNegative = wrapper.getSequence() < 0;
+        boolean isNewerThanV119 = event.getUser().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19);
+        ServerVersion currentVersion = PacketEvents.getAPI().getServerManager().getVersion();
+        boolean isVersionV119OrNewer = currentVersion.isNewerThanOrEquals(ServerVersion.V_1_19);
+
+        if (isSequenceNegative && isNewerThanV119 && isVersionV119OrNewer) {
             dispatch(event, ViolationDocument.builder()
                 .mitigationStrategy(MitigationStrategy.BAN)
                 .description("send invalid sequence in block place")
@@ -632,10 +636,16 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void handlePlayerDigging(PacketReceiveEvent event, PlayerData playerData) {
-        if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING && event.getUser()
-            .getClientVersion()
-            .isNewerThanOrEquals(ClientVersion.V_1_19)
-            && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_19)) {
+
+        ClientVersion playerVersion = event.getUser().getClientVersion();
+        boolean isClientVersion19OrNewer = playerVersion.isNewerThanOrEquals(ClientVersion.V_1_19);
+
+        ServerVersion currentVersion = PacketEvents.getAPI().getServerManager().getVersion();
+        boolean isVersion19OrNewer = currentVersion.isNewerThanOrEquals(ServerVersion.V_1_19);
+
+        if (event.getPacketType() == PacketType.Play.Client.PLAYER_DIGGING
+            && isClientVersion19OrNewer && isVersion19OrNewer) {
+
             WrapperPlayClientPlayerDigging dig = CastUtil.getSupplier(
                 () -> new WrapperPlayClientPlayerDigging(event), playerData::exceptionDisconnect);
             checkPlayerDigging(dig, event);
@@ -643,8 +653,12 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkPlayerDigging(WrapperPlayClientPlayerDigging dig, PacketReceiveEvent event) {
-        if (dig.getSequence() < 0 && event.getUser().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19)
-            && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_19)) {
+        boolean isSequenceNegative = dig.getSequence() < 0;
+        boolean isNewerVersion = event.getUser().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19);
+        ServerVersion currentVersion = PacketEvents.getAPI().getServerManager().getVersion();
+        boolean isVersion19OrNewer = currentVersion.isNewerThanOrEquals(ServerVersion.V_1_19);
+
+        if (isSequenceNegative && isNewerVersion && isVersion19OrNewer) {
             dispatch(event, ViolationDocument.builder()
                 .mitigationStrategy(MitigationStrategy.BAN)
                 .description("send invalid dig sequence")
@@ -654,12 +668,18 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void handleUseItem(PacketReceiveEvent event, PlayerData playerData) {
-        if (event.getPacketType() == PacketType.Play.Client.USE_ITEM && event.getUser()
-            .getClientVersion()
-            .isNewerThanOrEquals(ClientVersion.V_1_19)
-            && PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_19)) {
+        ClientVersion playerVersion = event.getUser().getClientVersion();
+        boolean isClientVersionAtLeastV1_19 = playerVersion.isNewerThanOrEquals(ClientVersion.V_1_19);
+
+        ServerVersion currentVersion = PacketEvents.getAPI().getServerManager().getVersion();
+        boolean isVersionAtLeastV1_19 = currentVersion.isNewerThanOrEquals(ServerVersion.V_1_19);
+
+        if (event.getPacketType() == PacketType.Play.Client.USE_ITEM && isClientVersionAtLeastV1_19
+            && isVersionAtLeastV1_19) {
+
             WrapperPlayClientUseItem use = CastUtil.getSupplier(
                 () -> new WrapperPlayClientUseItem(event), playerData::exceptionDisconnect);
+
             if (use.getSequence() < 0) {
                 dispatch(event, ViolationDocument.builder()
                     .mitigationStrategy(MitigationStrategy.BAN)
@@ -672,6 +692,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleClickWindow(PacketReceiveEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
+
             WrapperPlayClientClickWindow wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayClientClickWindow(event), playerData::exceptionDisconnect);
 
@@ -683,9 +704,11 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkClickWindow(WrapperPlayClientClickWindow wrapper, PacketReceiveEvent event) {
         if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_14)) {
+
             int clickType = wrapper.getWindowClickType().ordinal();
             int button = wrapper.getButton();
             int windowId = wrapper.getWindowId();
+
             if (type == MenuType.LECTERN && windowId > 0 && windowId == lecternId) {
                 dispatch(event, ViolationDocument.builder()
                     .mitigationStrategy(MitigationStrategy.KICK)
@@ -731,7 +754,9 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 .debugs(Collections.singletonList(new Debug<>("Pages", pages.getTags().size())))
                 .build());
         }
-        int totalLength = pages.getTags().stream().mapToInt(tag -> tag.getValue().length()).sum();
+
+        int totalLength = calculateTotalLength(pages);
+
         if (totalLength > 12800) {
             dispatch(event, ViolationDocument.builder()
                 .mitigationStrategy(MitigationStrategy.KICK)
@@ -739,6 +764,15 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
                 .debugs(Arrays.asList(new Debug<>("Length", totalLength), new Debug<>("Max", 12800)))
                 .build());
         }
+    }
+
+    private static int calculateTotalLength(NBTList<NBTString> pages) {
+        int totalLength = 0;
+
+        for (NBTString tag : pages.getTags()) {
+            totalLength += tag.getValue().length();
+        }
+        return totalLength;
     }
 
     private void checkLanguageExploit(PacketReceiveEvent event, ItemStack itemStack) {
@@ -914,9 +948,13 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkCustomModelData(NBTCompound nbt, PacketReceiveEvent event) {
+
         NBTInt customModelData = nbt.getTagOfTypeOrNull("CustomModelData", NBTInt.class);
-        if (customModelData != null && PacketEvents.getAPI().getServerManager().getVersion()
-            .isNewerThanOrEquals(ServerVersion.V_1_14)) {
+
+        ServerVersion currentVersion = PacketEvents.getAPI().getServerManager().getVersion();
+        boolean isVersion1_14OrNewer = currentVersion.isNewerThanOrEquals(ServerVersion.V_1_14);
+
+        if (customModelData != null && isVersion1_14OrNewer) {
             int asInt = customModelData.getAsInt();
             //noinspection ConditionCoveredByFurtherCondition
             if (asInt == Integer.MIN_VALUE || asInt == Integer.MAX_VALUE || asInt < 0) {
@@ -938,7 +976,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         int max = 89;
         boolean invalid = slot > max;
 
-        if (slot < 0) {
+        boolean isSlotNegative = slot < 0;
+        if (isSlotNegative) {
             if (slot != -999 && slot != -1) { // Minecraft used -id's
                 invalid = true;
             }
