@@ -1,26 +1,19 @@
 package de.feelix.sierra.check.impl.post;
 
-import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketReceiveEvent;
-import com.github.retrooper.packetevents.event.PacketSendEvent;
-import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientEntityAction;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerFlying;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityAnimation;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
-import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.EvictingQueue;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.violation.MitigationStrategy;
-import org.bukkit.entity.Player;
 
 import java.util.ArrayDeque;
 import java.util.Collections;
@@ -28,7 +21,7 @@ import java.util.List;
 import java.util.Locale;
 
 @SierraCheckData(checkType = CheckType.POST)
-public class PostCheck extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
+public class PostCheck extends SierraDetection implements IngoingProcessor {
 
     public PostCheck(PlayerData playerData) {
         super(playerData);
@@ -37,7 +30,6 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
     private final ArrayDeque<PacketTypeCommon> postQueue = new ArrayDeque<>();
     private final List<String> flags = new EvictingQueue<>(10);
     private boolean hasSentFlyingPacket = false;
-    private int exemptFromSwingingCheck = Integer.MIN_VALUE;
 
     private void handleFlyingPacket(PacketReceiveEvent event) {
         if (!flags.isEmpty() && configEngine().config().getBoolean("prevent-post-packets", true)) {
@@ -75,51 +67,20 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
         hasSentFlyingPacket = false;
     }
 
-    private void handleOtherPackets(PacketTypeCommon packetType, PacketReceiveEvent event) {
-        if (shouldQueuePostCheck(packetType, event)) {
+    private void handleOtherPackets(PacketTypeCommon packetType) {
+        if (shouldQueuePostCheck(packetType)) {
             postQueue.add(packetType);
+            getPlayerData().sendTransaction();
         }
     }
 
-    private boolean shouldQueuePostCheck(PacketTypeCommon packetType, PacketReceiveEvent event) {
+    private boolean shouldQueuePostCheck(PacketTypeCommon packetType) {
         return hasSentFlyingPacket && (
-            (packetType.equals(PacketType.Play.Client.PLAYER_ABILITIES)
-             || packetType.equals(PacketType.Play.Client.INTERACT_ENTITY)
-             || packetType.equals(PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT)
-             || packetType.equals(PacketType.Play.Client.USE_ITEM)
-             || packetType.equals(PacketType.Play.Client.PLAYER_DIGGING))
+            packetType.equals(PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT)
+            || packetType.equals(PacketType.Play.Client.USE_ITEM)
             || (packetType.equals(PacketType.Play.Client.CLICK_WINDOW) && getPlayerData().getClientVersion()
                 .isOlderThan(ClientVersion.V_1_13))
-            || (packetType.equals(PacketType.Play.Client.ANIMATION) && shouldHandleAnimation())
-            || (packetType.equals(PacketType.Play.Client.ENTITY_ACTION) && shouldHandleEntityAction(event))
         );
-    }
-
-    private boolean shouldHandleAnimation() {
-        return (getPlayerData().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9) || isOlderServerVersion())
-               && getPlayerData().getClientVersion().isOlderThan(ClientVersion.V_1_13)
-               && exemptFromSwingingCheck < getPlayerData().getTransactionProcessor().lastTransactionReceived.get();
-    }
-
-    private boolean shouldHandleEntityAction(PacketReceiveEvent event) {
-        WrapperPlayClientEntityAction entityAction = new WrapperPlayClientEntityAction(event);
-        return getPlayerData().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9)
-               || entityAction.getAction() != WrapperPlayClientEntityAction.Action.START_FLYING_WITH_ELYTRA
-                  && !isRidingEntityInNewVersion();
-    }
-
-    private boolean isSwingAnimation(WrapperPlayServerEntityAnimation animation) {
-        return animation.getType() == WrapperPlayServerEntityAnimation.EntityAnimationType.SWING_MAIN_ARM
-               || animation.getType() == WrapperPlayServerEntityAnimation.EntityAnimationType.SWING_OFF_HAND;
-    }
-
-    private boolean isOlderServerVersion() {
-        return PacketEvents.getAPI().getServerManager().getVersion().isOlderThanOrEquals(ServerVersion.V_1_8_8);
-    }
-
-    private boolean isRidingEntityInNewVersion() {
-        return getPlayerData().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19_3)
-               && ((Player) getPlayerData().getPlayer()).getVehicle() != null;
     }
 
     private String formatFlag(PacketTypeCommon packetType) {
@@ -135,24 +96,12 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
         } else if (isTransaction(packetType)) {
             handleTransactionPacket();
         } else {
-            handleOtherPackets(packetType, event);
+            handleOtherPackets(packetType);
         }
     }
 
     public boolean isTransaction(PacketTypeCommon packetType) {
         return packetType == PacketType.Play.Client.PONG ||
                packetType == PacketType.Play.Client.WINDOW_CONFIRMATION;
-    }
-
-    @Override
-    public void handle(PacketSendEvent event, PlayerData playerData) {
-        if (event.getPacketType() == PacketType.Play.Server.ENTITY_ANIMATION) {
-            WrapperPlayServerEntityAnimation animation = new WrapperPlayServerEntityAnimation(event);
-            if (animation.getEntityId() == playerData.entityId()) {
-                if (isSwingAnimation(animation)) {
-                    exemptFromSwingingCheck = getPlayerData().getTransactionProcessor().lastTransactionSent.get();
-                }
-            }
-        }
     }
 }
