@@ -17,6 +17,7 @@ import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.world.BlockFace;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.client.*;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCloseWindow;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenWindow;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetExperience;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowItems;
@@ -73,6 +74,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private static final int MAX_SIGN_LENGTH = 45;
     private static final int MAX_VALID_COLOR = 255;
     private final AtomicInteger listContent = new AtomicInteger(0);
+    private int windowId = -1;
 
     public ProtocolValidation(PlayerData playerData) {
         super(playerData);
@@ -133,7 +135,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleAnvilInventory(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
-            WrapperPlayClientPluginMessage wrapper = new WrapperPlayClientPluginMessage(event);
+            WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplier(
+                () -> new WrapperPlayClientPluginMessage(event), getPlayerData()::exceptionDisconnect);
 
             String channelName = wrapper.getChannelName();
 
@@ -1432,16 +1435,40 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
 
         if (event.getPacketType() == PacketType.Play.Server.SET_EXPERIENCE) {
+
             WrapperPlayServerSetExperience wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayServerSetExperience(event), playerData::exceptionDisconnect);
             checkSetExperience(wrapper, event);
+
         } else if (event.getPacketType() == PacketType.Play.Server.WINDOW_ITEMS) {
+
             WrapperPlayServerWindowItems wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayServerWindowItems(event), playerData::exceptionDisconnect);
+
+            this.getPlayerData()
+                .addRealTimeTask(
+                    this.getPlayerData().getTransactionProcessor().lastTransactionSent.get() + 1,
+                    () -> this.windowId = wrapper.getWindowId()
+                );
             checkWindowItems(wrapper, event);
+
+        } else if (event.getPacketType() == PacketType.Play.Server.CLOSE_WINDOW) {
+
+            this.getPlayerData()
+                .addRealTimeTask(
+                    this.getPlayerData().getTransactionProcessor().lastTransactionSent.get() + 1,
+                    () -> this.windowId = 0
+                );
+
         } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
             WrapperPlayServerOpenWindow window = CastUtil.getSupplier(
                 () -> new WrapperPlayServerOpenWindow(event), playerData::exceptionDisconnect);
+
+            this.getPlayerData()
+                .addRealTimeTask(
+                    this.getPlayerData().getTransactionProcessor().lastTransactionSent.get() + 1,
+                    () -> this.windowId = window.getContainerId()
+                );
             checkOpenWindow(window);
         }
     }

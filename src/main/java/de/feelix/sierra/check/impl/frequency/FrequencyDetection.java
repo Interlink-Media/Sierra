@@ -23,6 +23,7 @@ import de.feelix.sierra.manager.init.impl.start.Ticker;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.violation.MitigationStrategy;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,10 +63,8 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
 
         if (!WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) {
 
-            if (Sierra.getPlugin()
-                .getSierraConfigEngine()
-                .config()
-                .getStringList("excluded-packets-from-limit").contains(packetType.getName())) return;
+            YamlConfiguration configuration = Sierra.getPlugin().getSierraConfigEngine().config();
+            if (configuration.getStringList("excluded-packets-from-limit").contains(packetType.getName())) return;
 
             long current = System.currentTimeMillis();
 
@@ -141,10 +140,10 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     }
 
     private int retrieveLimitFromConfiguration(PacketTypeCommon packetType) {
-        int limit = configEngine().config().getInt(
-            "generic-packet-frequency-default", 50);
-        for (String string : configEngine().config()
-            .getStringList("generic-packet-frequency-limit")) {
+
+        int limit = configEngine().config().getInt("generic-packet-frequency-default", 50);
+        for (String string : configEngine().config().getStringList("generic-packet-frequency-limit")) {
+
             String[] parts = string.split(":");
             if (parts[0].equals(packetType.getName())) {
                 limit = Integer.parseInt(parts[1]);
@@ -234,7 +233,8 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             || event.getPacketType() == PacketType.Play.Server.ENTITY_VELOCITY) {
             balance -= BAL_SUB_ON_TP;
         } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
-            WrapperPlayServerOpenWindow window = new WrapperPlayServerOpenWindow(event);
+            WrapperPlayServerOpenWindow window = CastUtil.getSupplier(
+                () -> new WrapperPlayServerOpenWindow(event), playerData::exceptionDisconnect);
             this.containerId = window.getContainerId();
         }
     }

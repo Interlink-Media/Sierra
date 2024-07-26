@@ -16,6 +16,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWi
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.logger.LogTag;
+import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.Pair;
 import lombok.Getter;
 
@@ -106,9 +107,13 @@ public class TransactionProcessor {
 
             PacketWrapper<?> packet;
             if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_17)) {
-                packet = new WrapperPlayServerPing(transactionID);
+                packet = CastUtil.getSupplier(
+                    () -> new WrapperPlayServerPing(transactionID), player::exceptionDisconnect);
             } else {
-                packet = new WrapperPlayServerWindowConfirmation((byte) 0, transactionID, false);
+                packet = CastUtil.getSupplier(
+                    () -> new WrapperPlayServerWindowConfirmation((byte) 0, transactionID, false),
+                    player::exceptionDisconnect
+                );
             }
 
             if (async) {
@@ -135,7 +140,8 @@ public class TransactionProcessor {
     }
 
     private void handleWindowConfirmation(PacketReceiveEvent event) {
-        WrapperPlayClientWindowConfirmation wrapper = new WrapperPlayClientWindowConfirmation(event);
+        WrapperPlayClientWindowConfirmation wrapper = CastUtil.getSupplier(
+            () -> new WrapperPlayClientWindowConfirmation(event), player::exceptionDisconnect);
         short id = wrapper.getActionId();
         if (id <= 0 && addTransactionResponse(id)) {
             event.setCancelled(true);
@@ -143,7 +149,8 @@ public class TransactionProcessor {
     }
 
     private void handlePong(PacketReceiveEvent event) {
-        WrapperPlayClientPong wrapper = new WrapperPlayClientPong(event);
+        WrapperPlayClientPong wrapper = CastUtil.getSupplier(
+            () -> new WrapperPlayClientPong(event), player::exceptionDisconnect);
         int id = wrapper.getId();
         if (id == (short) id && addTransactionResponse((short) id)) {
             event.setCancelled(true);
@@ -159,7 +166,8 @@ public class TransactionProcessor {
     }
 
     private void handlePingTransaction(PacketSendEvent event) {
-        WrapperPlayServerPing wrapper = new WrapperPlayServerPing(event);
+        WrapperPlayServerPing wrapper = CastUtil.getSupplier(
+            () -> new WrapperPlayServerPing(event), player::exceptionDisconnect);
 
         int id = wrapper.getId();
         // Check if in the short range, we only use short range
@@ -175,7 +183,8 @@ public class TransactionProcessor {
     }
 
     private void handleWindowConfirmationTransaction(PacketSendEvent event) {
-        WrapperPlayServerWindowConfirmation wrapper = new WrapperPlayServerWindowConfirmation(event);
+        WrapperPlayServerWindowConfirmation wrapper = CastUtil.getSupplier(
+            () -> new WrapperPlayServerWindowConfirmation(event), player::exceptionDisconnect);
 
         short id = wrapper.getActionId();
 
@@ -187,14 +196,6 @@ public class TransactionProcessor {
                 lastTransactionSent.getAndIncrement();
             }
         }
-    }
-
-    public void addRealTimeTask(int transaction, Runnable runnable) {
-        addRealTimeTask(transaction, false, runnable);
-    }
-
-    public void addRealTimeTaskAsync(int transaction, Runnable runnable) {
-        addRealTimeTask(transaction, true, runnable);
     }
 
     public void addRealTimeTask(int transaction, boolean async, Runnable runnable) {

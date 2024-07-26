@@ -13,6 +13,7 @@ import com.github.retrooper.packetevents.wrapper.play.client.*;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.logger.LogTag;
+import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.FormatUtils;
 
 public class PacketLoggerListener extends PacketListenerAbstract {
@@ -32,7 +33,8 @@ public class PacketLoggerListener extends PacketListenerAbstract {
 
         if (event.getPacketType() == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
 
-            WrapperPlayClientPlayerBlockPlacement wrapper = new WrapperPlayClientPlayerBlockPlacement(event);
+            WrapperPlayClientPlayerBlockPlacement wrapper = CastUtil.getSupplier(
+                () -> new WrapperPlayClientPlayerBlockPlacement(event), playerData::exceptionDisconnect);
 
             wrapper.getItemStack().ifPresent(itemStack -> {
                 if (itemStack.getNBT() != null) {
@@ -43,7 +45,8 @@ public class PacketLoggerListener extends PacketListenerAbstract {
 
         } else if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
 
-            WrapperPlayClientPluginMessage wrapper = new WrapperPlayClientPluginMessage(event);
+            WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplier(
+                () -> new WrapperPlayClientPluginMessage(event), playerData::exceptionDisconnect);
 
             String payload = wrapper.getChannelName();
 
@@ -74,7 +77,8 @@ public class PacketLoggerListener extends PacketListenerAbstract {
 
         } else if (event.getPacketType() == PacketType.Play.Client.CREATIVE_INVENTORY_ACTION) {
 
-            WrapperPlayClientCreativeInventoryAction wrapper = new WrapperPlayClientCreativeInventoryAction(event);
+            WrapperPlayClientCreativeInventoryAction wrapper = CastUtil.getSupplier(
+                () -> new WrapperPlayClientCreativeInventoryAction(event), playerData::exceptionDisconnect);
 
             ItemStack itemStack = wrapper.getItemStack();
             if (itemStack != null && itemStack.getNBT() != null) {
@@ -84,7 +88,8 @@ public class PacketLoggerListener extends PacketListenerAbstract {
 
         } else if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW) {
 
-            WrapperPlayClientClickWindow wrapper = new WrapperPlayClientClickWindow(event);
+            WrapperPlayClientClickWindow wrapper = CastUtil.getSupplier(
+                () -> new WrapperPlayClientClickWindow(event), playerData::exceptionDisconnect);
 
             ItemStack itemStack = wrapper.getCarriedItemStack();
             if (itemStack != null && itemStack.getNBT() != null) {

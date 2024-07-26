@@ -5,6 +5,7 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerPositionAndLook;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.Teleport;
 import lombok.Getter;
 
@@ -21,7 +22,8 @@ public class TeleportProcessor {
     public void handle(PacketSendEvent event) {
         if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK) {
 
-            WrapperPlayServerPlayerPositionAndLook wrapper = new WrapperPlayServerPlayerPositionAndLook(event);
+            WrapperPlayServerPlayerPositionAndLook wrapper = CastUtil.getSupplier(
+                () -> new WrapperPlayServerPlayerPositionAndLook(event), playerData::exceptionDisconnect);
 
             this.teleport = new Teleport(
                 wrapper.getTeleportId(),
