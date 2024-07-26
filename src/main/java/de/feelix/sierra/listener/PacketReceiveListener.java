@@ -75,7 +75,6 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
     private boolean isWeirdPacket(ProtocolPacketEvent<Object> event, PlayerData playerData) {
 
-
         YamlConfiguration sierraConfig = Sierra.getPlugin().getSierraConfigEngine().config();
 
         int readableBytes = ByteBufHelper.readableBytes(event.getByteBuf());
