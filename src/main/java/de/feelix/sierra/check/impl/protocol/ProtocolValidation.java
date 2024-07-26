@@ -39,6 +39,7 @@ import de.feelix.sierra.utilities.types.ShulkerBoxType;
 import de.feelix.sierraapi.check.CheckType;
 import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.violation.MitigationStrategy;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.nio.charset.StandardCharsets;
@@ -1446,10 +1447,18 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void checkSetExperience(WrapperPlayServerSetExperience wrapper, PacketSendEvent event) {
-        if (wrapper.getLevel() < 0 || (wrapper.getExperienceBar() < 0 && !Sierra.getPlugin()
-            .getSierraConfigEngine()
-            .config()
-            .getBoolean("skip-negative-experience-check", false)) || wrapper.getTotalExperience() < 0) {
+
+        boolean isLevelNegative = wrapper.getLevel() < 0;
+        boolean totalExperienceNegative = wrapper.getTotalExperience() < 0;
+
+        YamlConfiguration configEngine = Sierra.getPlugin().getSierraConfigEngine().config();
+        boolean skipNegativeExperienceCheck = configEngine.getBoolean(
+            "skip-negative-experience-check",
+            false
+        );
+        boolean skipNegativeCheck = wrapper.getExperienceBar() < 0 && !skipNegativeExperienceCheck;
+
+        if (isLevelNegative || skipNegativeCheck || totalExperienceNegative) {
 
             dispatch(event, ViolationDocument.builder()
                 .description("send invalid experience request")
