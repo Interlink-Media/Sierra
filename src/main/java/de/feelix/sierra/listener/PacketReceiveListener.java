@@ -6,11 +6,15 @@ import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientSettings;
 import de.feelix.sierra.Sierra;
+import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.logger.LogTag;
+import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.violation.MitigationStrategy;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 public class PacketReceiveListener extends PacketListenerAbstract {
@@ -69,13 +73,11 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
     private boolean isWeirdPacket(ProtocolPacketEvent<Object> event, PlayerData playerData) {
 
+
+        YamlConfiguration sierraConfig = Sierra.getPlugin().getSierraConfigEngine().config();
+
         int readableBytes = ByteBufHelper.readableBytes(event.getByteBuf());
-
-        int maxPacketSize = Sierra.getPlugin()
-            .getSierraConfigEngine()
-            .config()
-            .getInt("generic-packet-size-limit", 6000);
-
+        int maxPacketSize = sierraConfig.getInt("generic-packet-size-limit", 6000);
         int capacity = ByteBufHelper.capacity(event.getByteBuf());
 
         boolean shouldCheck = maxPacketSize != -1;
@@ -85,20 +87,20 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
         boolean isNegativePacketId = event.getPacketId() < 0;
         boolean isPacketIdWeird = event.getPacketId() > 1000;
+        boolean isPacketSizeOrBytesWeird = shouldCheck && (isPacketTooLarge || isReadableBytesGreaterThanCapacity);
 
-        if ((shouldCheck && (isPacketTooLarge || isReadableBytesGreaterThanCapacity))
-            || isNegativePacketId || isPacketIdWeird) {
+        if (isPacketSizeOrBytesWeird || isNegativePacketId || isPacketIdWeird) {
 
-            playerData.getSierraLogger()
-                .log(
-                    LogTag.PRE, String.format("Packet: %s, Bytes: %d (Max: %d, Capacity: %d) Packet-Id: %d",
-                                              event.getPacketType().getName(), readableBytes, maxPacketSize, capacity,
-                                              event.getPacketId()
-                    ));
+            playerData.getSierraLogger().log(LogTag.PRE, FormatUtils.chainDebugs(Arrays.asList(
+                new Debug<>("Packet", event.getPacketType().getName()),
+                new Debug<>("Bytes", readableBytes),
+                new Debug<>("Max", maxPacketSize),
+                new Debug<>("Capacity", capacity),
+                new Debug<>("Packet-ID", event.getPacketId())
+            )));
 
             logAndDisconnect(playerData, readableBytes, capacity, maxPacketSize);
-            event.cleanUp();
-            event.setCancelled(true);
+            playerData.cancelEvent(event);
             playerData.punish(MitigationStrategy.KICK);
             return true;
         }

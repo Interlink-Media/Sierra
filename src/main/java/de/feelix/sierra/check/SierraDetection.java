@@ -73,8 +73,7 @@ public class SierraDetection implements SierraCheck {
      * @param violationDocument The ViolationDocument containing information about the violation.
      */
     public void dispatch(ProtocolPacketEvent<Object> event, ViolationDocument violationDocument) {
-        event.setCancelled(true);
-        event.cleanUp();
+        playerData.cancelEvent(event);
         this.lastDetectionTime = System.currentTimeMillis();
 
         playerData.getSierraLogger().log(LogTag.DETECTION, violationDocument.toString());

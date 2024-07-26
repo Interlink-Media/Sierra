@@ -203,6 +203,14 @@ public class SierraDataManager implements UserRepository {
         playerData.remove(user);
     }
 
+    public static void increaseKickValue() {
+        SierraDataManager.KICKS++;
+    }
+
+    public static void increaseBanValue() {
+        SierraDataManager.BANS++;
+    }
+
     @Override
     public Optional<SierraUser> queryUserByUuid(UUID uuid) {
         return playerData.keySet().stream()
