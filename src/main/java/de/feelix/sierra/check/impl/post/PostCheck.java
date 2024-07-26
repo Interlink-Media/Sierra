@@ -70,7 +70,7 @@ public class PostCheck extends SierraDetection implements IngoingProcessor {
     private void handleOtherPackets(PacketTypeCommon packetType) {
         if (shouldQueuePostCheck(packetType)) {
             postQueue.add(packetType);
-            getPlayerData().sendTransaction();
+            // getPlayerData().sendTransaction();
         }
     }
 
