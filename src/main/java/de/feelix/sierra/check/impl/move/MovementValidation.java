@@ -109,7 +109,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
     }
 
     public void doCheck(final PacketReceiveEvent event) {
-        final double transactionPing = getPlayerData().getTransactionProcessor().getTransactionPing();
+        final double transactionPing = playerData.getTransactionProcessor().getTransactionPing();
         // Limit using transaction ping if over 1000ms (default)
         final boolean needsAdjustment = limitAbuseOverPing != -1 && transactionPing >= limitAbuseOverPing;
         final boolean wouldFailNormal = timerBalanceRealTime > System.nanoTime();
@@ -227,10 +227,10 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
         long timeMillis = System.currentTimeMillis();
 
-        boolean hasTeleported = timeMillis - getPlayerData().getTeleportProcessor().getLastTeleportTime() < 1000;
-        boolean passedThreshold = timeMillis - getPlayerData().getJoinTime() > 1000 && !hasTeleported;
+        boolean hasTeleported = timeMillis - playerData.getTeleportProcessor().getLastTeleportTime() < 1000;
+        boolean passedThreshold = timeMillis - playerData.getJoinTime() > 1000 && !hasTeleported;
 
-        if (passedThreshold && deltaXZ > 7 && getPlayerData().getGameMode() == GameMode.SURVIVAL) {
+        if (passedThreshold && deltaXZ > 7 && playerData.getGameMode() == GameMode.SURVIVAL) {
             if (++deltaBuffer > 10) {
                 this.dispatch(event, ViolationDocument.builder()
                     .description("is moving invalid")
@@ -238,7 +238,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
                     .debugs(Arrays.asList(
                         new Debug<>("DeltaXZ", deltaXZ),
                         new Debug<>("Buffer", deltaBuffer),
-                        new Debug<>("GameMode", getPlayerData().getGameMode().name())
+                        new Debug<>("GameMode", playerData.getGameMode().name())
                     ))
                     .build());
             }
@@ -254,7 +254,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
                     new Debug<>("DeltaX", deltaX),
                     new Debug<>("DeltaY", deltaY),
                     new Debug<>("DeltaZ", deltaZ),
-                    new Debug<>("GameMode", getPlayerData().getGameMode().name())
+                    new Debug<>("GameMode", playerData.getGameMode().name())
                 ))
                 .build());
         }
@@ -280,7 +280,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
                     .debugs(Arrays.asList(
                         new Debug<>("Chunks", buffer),
                         new Debug<>("Time", (travelTime / buffer)),
-                        new Debug<>("GameMode", getPlayerData().getGameMode().name())
+                        new Debug<>("GameMode", playerData.getGameMode().name())
                     ))
                     .build());
             }
