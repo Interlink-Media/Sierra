@@ -250,7 +250,7 @@ public class CommandValidation extends SierraDetection implements IngoingProcess
      */
     private boolean playerHasNoPermission() {
         return !configEngine().config()
-            .getBoolean("enable-bypass-permission", false) || !getPlayerData().hasBypassPermission();
+            .getBoolean("enable-bypass-permission", false) || !playerData.hasBypassPermission();
     }
 
     private boolean isInvalidMultiverseCommand(String testString) {
