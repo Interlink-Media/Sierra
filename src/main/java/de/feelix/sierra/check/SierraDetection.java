@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 @Getter
 public class SierraDetection implements SierraCheck {
 
-    private final PlayerData playerData;
+    public final PlayerData playerData;
     private final CheckType rawCheckType;
     private String friendlyName;
     private long lastDetectionTime = 0;
