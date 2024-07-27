@@ -81,9 +81,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
                         new Debug<>("Packet", packetType.getName()),
                         new Debug<>("Limit", limit),
                         new Debug<>("Count", packetCount),
-                        new Debug<>("Alive", getPlayerData().getPingProcessor().getPing()),
-                        new Debug<>("Transaction", getPlayerData().getTransactionProcessor().getTransactionPing()),
-                        new Debug<>("Version", getPlayerData().getClientVersion().getReleaseName()),
+                        new Debug<>("Alive", playerData.getPingProcessor().getPing()),
+                        new Debug<>("Transaction", playerData.getTransactionProcessor().getTransactionPing()),
+                        new Debug<>("Version", playerData.getClientVersion().getReleaseName()),
                         new Debug<>("Delay", (System.currentTimeMillis() - current) + "ms")
                     ))
                     .build());
@@ -115,7 +115,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
 
         long timeMillis = System.currentTimeMillis();
 
-        boolean hasTeleported = timeMillis - getPlayerData().getTeleportProcessor().getLastTeleportTime() < 1000;
+        boolean hasTeleported = timeMillis - playerData.getTeleportProcessor().getLastTeleportTime() < 1000;
         boolean passedThreshold = timeMillis - data.getJoinTime() > 1000 && !hasTeleported;
 
         if (lastFlyingTime != 0L && passedThreshold) {
@@ -128,9 +128,9 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
                     .mitigationStrategy(violations() > 75 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
                     .debugs(Arrays.asList(
                         new Debug<>("Balance", balance),
-                        new Debug<>("Version", getPlayerData().getClientVersion().getReleaseName()),
-                        new Debug<>("Ping", getPlayerData().getPingProcessor().getPing()),
-                        new Debug<>("Transaction", getPlayerData().getTransactionProcessor().getTransactionPing())
+                        new Debug<>("Version", playerData.getClientVersion().getReleaseName()),
+                        new Debug<>("Ping", playerData.getPingProcessor().getPing()),
+                        new Debug<>("Transaction", playerData.getTransactionProcessor().getTransactionPing())
                     ))
                     .build());
                 balance = BAL_RESET;
