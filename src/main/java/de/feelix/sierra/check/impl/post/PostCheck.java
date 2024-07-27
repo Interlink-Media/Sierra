@@ -51,8 +51,8 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
 
             long timeMillis = System.currentTimeMillis();
 
-            boolean hasTeleported = timeMillis - getPlayerData().getTeleportProcessor().getLastTeleportTime() < 1000;
-            boolean passedThreshold = timeMillis - getPlayerData().getJoinTime() > 1000 && !hasTeleported;
+            boolean hasTeleported = timeMillis - playerData.getTeleportProcessor().getLastTeleportTime() < 1000;
+            boolean passedThreshold = timeMillis - playerData.getJoinTime() > 1000 && !hasTeleported;
 
             if (passedThreshold) {
                 for (String flag : flags) {
@@ -91,7 +91,7 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
              || packetType.equals(PLAYER_BLOCK_PLACEMENT)
              || packetType.equals(USE_ITEM)
              || packetType.equals(PLAYER_DIGGING))
-            || (packetType.equals(CLICK_WINDOW) && getPlayerData().getClientVersion().isOlderThan(ClientVersion.V_1_13))
+            || (packetType.equals(CLICK_WINDOW) && playerData.getClientVersion().isOlderThan(ClientVersion.V_1_13))
             || (packetType.equals(ANIMATION) && shouldHandleAnimation())
             || (packetType.equals(ENTITY_ACTION) && shouldHandleEntityAction(event))
         );
@@ -99,14 +99,14 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
 
     private boolean shouldHandleEntityAction(PacketReceiveEvent event) {
         WrapperPlayClientEntityAction entityAction = new WrapperPlayClientEntityAction(event);
-        return getPlayerData().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9)
+        return playerData.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9)
                || entityAction.getAction() != WrapperPlayClientEntityAction.Action.START_FLYING_WITH_ELYTRA
                   && !isRidingEntityInNewVersion();
     }
 
     private boolean isRidingEntityInNewVersion() {
-        return getPlayerData().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19_3)
-               && ((Player) getPlayerData().getBukkitPlayer()).getVehicle() != null;
+        return playerData.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19_3)
+               && ((Player) playerData.getBukkitPlayer()).getVehicle() != null;
     }
 
     private boolean isOlderServerVersion() {
@@ -114,9 +114,9 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
     }
 
     private boolean shouldHandleAnimation() {
-        return (getPlayerData().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9) || isOlderServerVersion())
-               && getPlayerData().getClientVersion().isOlderThan(ClientVersion.V_1_13)
-               && exemptFromSwingingCheck < getPlayerData().getTransactionProcessor().lastTransactionReceived.get();
+        return (playerData.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_9) || isOlderServerVersion())
+               && playerData.getClientVersion().isOlderThan(ClientVersion.V_1_13)
+               && exemptFromSwingingCheck < playerData.getTransactionProcessor().lastTransactionReceived.get();
     }
 
     private String formatFlag(PacketTypeCommon packetType) {
@@ -150,9 +150,9 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
     public void handle(PacketSendEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Server.ENTITY_ANIMATION) {
             WrapperPlayServerEntityAnimation animation = new WrapperPlayServerEntityAnimation(event);
-            if (animation.getEntityId() == getPlayerData().entityId()) {
+            if (animation.getEntityId() == playerData.entityId()) {
                 if (isSwingAnimation(animation)) {
-                    exemptFromSwingingCheck = getPlayerData().getTransactionProcessor().lastTransactionSent.get();
+                    exemptFromSwingingCheck = playerData.getTransactionProcessor().lastTransactionSent.get();
                 }
             }
         }

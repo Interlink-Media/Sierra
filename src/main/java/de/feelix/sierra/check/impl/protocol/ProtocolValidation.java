@@ -9,6 +9,7 @@ import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.netty.buffer.ByteBufHelper;
 import com.github.retrooper.packetevents.protocol.ConnectionState;
 import com.github.retrooper.packetevents.protocol.item.ItemStack;
+import com.github.retrooper.packetevents.protocol.item.type.ItemType;
 import com.github.retrooper.packetevents.protocol.item.type.ItemTypes;
 import com.github.retrooper.packetevents.protocol.nbt.*;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -134,7 +135,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void handleAnvilInventory(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
             WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplier(
-                () -> new WrapperPlayClientPluginMessage(event), getPlayerData()::exceptionDisconnect);
+                () -> new WrapperPlayClientPluginMessage(event), playerData::exceptionDisconnect);
 
             String channelName = wrapper.getChannelName();
 
@@ -203,7 +204,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void handleEntityAction(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.ENTITY_ACTION) {
             WrapperPlayClientEntityAction wrapper = CastUtil.getSupplier(
-                () -> new WrapperPlayClientEntityAction(event), getPlayerData()::exceptionDisconnect);
+                () -> new WrapperPlayClientEntityAction(event), playerData::exceptionDisconnect);
             checkEntityAction(wrapper, event);
         }
     }
@@ -221,7 +222,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleSpectate(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.SPECTATE
-            && getPlayerData().getGameMode() != GameMode.SPECTATOR) {
+            && playerData.getGameMode() != GameMode.SPECTATOR) {
             dispatch(event, ViolationDocument.builder()
                 .mitigationStrategy(MitigationStrategy.BAN)
                 .description("spoofed his game-mode")
@@ -233,7 +234,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void handleClickWindowButton(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.CLICK_WINDOW_BUTTON) {
             WrapperPlayClientClickWindowButton wrapper = CastUtil.getSupplier(
-                () -> new WrapperPlayClientClickWindowButton(event), getPlayerData()::exceptionDisconnect);
+                () -> new WrapperPlayClientClickWindowButton(event), playerData::exceptionDisconnect);
             if (wrapper.getButtonId() < 0 || wrapper.getWindowId() < 0) {
 
                 dispatch(event, ViolationDocument.builder()
@@ -251,7 +252,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void handleChatMessage(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.CHAT_MESSAGE) {
             WrapperPlayClientChatMessage wrapper = CastUtil.getSupplier(
-                () -> new WrapperPlayClientChatMessage(event), getPlayerData()::exceptionDisconnect);
+                () -> new WrapperPlayClientChatMessage(event), playerData::exceptionDisconnect);
             if (wrapper.getMessage().contains("${")) {
 
                 dispatch(event, ViolationDocument.builder()
@@ -266,7 +267,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void handleHeldItemChange(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.HELD_ITEM_CHANGE) {
             WrapperPlayClientHeldItemChange wrapper = CastUtil.getSupplier(
-                () -> new WrapperPlayClientHeldItemChange(event), getPlayerData()::exceptionDisconnect);
+                () -> new WrapperPlayClientHeldItemChange(event), playerData::exceptionDisconnect);
             checkHeldItemChange(wrapper, event);
         }
     }
@@ -510,18 +511,18 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void checkBlockPlacement(WrapperPlayClientPlayerBlockPlacement wrapper, PacketReceiveEvent event) {
 
         Vector3d blockPosition = wrapper.getBlockPosition().toVector3d();
-        double distanced = blockPosition.distanceSquared(getPlayerData().getLastLocation().getPosition());
+        double distanced = blockPosition.distanceSquared(playerData.getLastLocation().getPosition());
 
         if (distanced > 50 && wrapper.getFace() != BlockFace.OTHER) {
             dispatch(event, ViolationDocument.builder()
                 .description("placed a block out of distance")
                 .debugs(Arrays.asList(
                     new Debug<>("Distance", distanced),
-                    new Debug<>("Version", getPlayerData().getClientVersion().getReleaseName()),
-                    new Debug<>("Alive", getPlayerData().getPingProcessor().getPing()),
+                    new Debug<>("Version", playerData.getClientVersion().getReleaseName()),
+                    new Debug<>("Alive", playerData.getPingProcessor().getPing()),
                     new Debug<>(
                         "Transaction",
-                        getPlayerData().getTransactionProcessor().getTransactionPing()
+                        playerData.getTransactionProcessor().getTransactionPing()
                     )
                 ))
                 .mitigationStrategy(MitigationStrategy.KICK)
@@ -557,7 +558,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void handleSteerVehicle(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.STEER_VEHICLE) {
             WrapperPlayClientSteerVehicle wrapper = CastUtil.getSupplier(
-                () -> new WrapperPlayClientSteerVehicle(event), getPlayerData()::exceptionDisconnect);
+                () -> new WrapperPlayClientSteerVehicle(event), playerData::exceptionDisconnect);
             checkSteerVehicle(wrapper, event);
         }
     }
@@ -584,7 +585,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void handleInteractEntity(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.INTERACT_ENTITY) {
             WrapperPlayClientInteractEntity wrapper = CastUtil.getSupplier(
-                () -> new WrapperPlayClientInteractEntity(event), getPlayerData()::exceptionDisconnect);
+                () -> new WrapperPlayClientInteractEntity(event), playerData::exceptionDisconnect);
             checkInteractEntity(wrapper, event);
         }
     }
@@ -607,7 +608,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     private void handleNameItem(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.NAME_ITEM) {
             WrapperPlayClientNameItem wrapper = CastUtil.getSupplier(
-                () -> new WrapperPlayClientNameItem(event), getPlayerData()::exceptionDisconnect);
+                () -> new WrapperPlayClientNameItem(event), playerData::exceptionDisconnect);
             checkNameItem(wrapper, event);
         }
     }
@@ -720,8 +721,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
             }
         }
 
-        checkButtonClickPosition(event, wrapper);
         ItemStack carriedItemStack = wrapper.getCarriedItemStack();
+        checkButtonClickPosition(event, wrapper);
         checkItemStack(event, carriedItemStack);
         checkForInvalidSlot(event, wrapper);
         checkInvalidClick(wrapper, event);
@@ -729,6 +730,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkItemStack(PacketReceiveEvent event, ItemStack itemStack) {
         if (itemStack == null || itemStack.getNBT() == null) return;
+        checkItemStackTag(event, itemStack);
         checkGenericBookPages(event, itemStack);
         checkGenericNBTLimit(event, itemStack);
         checkLanguageExploit(event, itemStack);
@@ -834,7 +836,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
         int length = FormatUtils.mapToString(itemStack.getNBT().getTags()).length();
 
-        int limit = getPlayerData().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_16) ? 30000 : 25000;
+        int limit = playerData.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_16) ? 30000 : 25000;
 
         if (length > limit) {
 
@@ -1504,6 +1506,154 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
         this.containerType = window.getType();
         this.containerId = window.getContainerId();
+    }
+
+    private void checkItemStackTag(PacketReceiveEvent event, ItemStack itemStack) {
+
+        // Check if references are null
+        if (itemStack == null || itemStack.getNBT() == null) return;
+
+        ItemType itemStackType = itemStack.getType();
+        NBTCompound compound = itemStack.getNBT();
+        String formattedTags = FormatUtils.mapToString(compound.getTags());
+
+        if (itemStackType == ItemTypes.WRITTEN_BOOK || itemStackType == ItemTypes.WRITABLE_BOOK) {
+
+            if (compound.getStringTagOrNull("author") != null) {
+                String author = compound.getStringTagOrNull("author").getValue();
+
+                if (author.length() > 20) {
+                    dispatch(event, ViolationDocument.builder()
+                        .mitigationStrategy(MitigationStrategy.KICK)
+                        .description("send tag with invalid author")
+                        .debugs(Arrays.asList(
+                            new Debug<>("Author", author),
+                            new Debug<>("Length", author.length())
+                        ))
+                        .build());
+                }
+            }
+            if (compound.getStringTagOrNull("title") != null) {
+                String title = compound.getStringTagOrNull("title").getValue();
+                if (title.length() > 32) {
+                    dispatch(event, ViolationDocument.builder()
+                        .mitigationStrategy(MitigationStrategy.MITIGATE)
+                        .description("send tag with invalid title")
+                        .debugs(Arrays.asList(
+                            new Debug<>("Title", title),
+                            new Debug<>("Length", title.length())
+                        ))
+                        .build());
+                }
+            }
+            if (formattedTags.contains(":[{extra:[{")) {
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.MITIGATE)
+                    .description("send tag with invalid extra")
+                    .debugs(Arrays.asList(
+                        new Debug<>("Tag", "Extra"),
+                        new Debug<>("Extra", "Array")
+                    ))
+                    .build());
+            }
+        }
+
+        if (itemStackType == ItemTypes.FIREWORK_ROCKET) {
+            if (formattedTags.length() > 300) {
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.MITIGATE)
+                    .description("send firework-tag with invalid length")
+                    .debugs(Collections.singletonList(new Debug<>("Length", formattedTags.length())))
+                    .build());
+            }
+        }
+
+        if (itemStackType == ItemTypes.FIREWORK_STAR) {
+            if (formattedTags.length() > 800) {
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.MITIGATE)
+                    .description("send firework-tag with invalid length")
+                    .debugs(Arrays.asList(
+                        new Debug<>("Length", formattedTags.length()),
+                        new Debug<>("Tag", "Star")
+                    ))
+                    .build());
+            }
+        }
+
+        if (itemStackType != ItemTypes.CHEST && itemStackType != ItemTypes.HOPPER && !isShulkerBox(itemStack)) {
+            int encodedLength = formattedTags.getBytes(StandardCharsets.UTF_8).length;
+            if (encodedLength > 10000) {
+                dispatch(event, ViolationDocument.builder()
+                    .mitigationStrategy(MitigationStrategy.MITIGATE)
+                    .description("send tag with invalid encoded-length")
+                    .debugs(Collections.singletonList(new Debug<>("Length", encodedLength)))
+                    .build());
+            }
+        }
+
+        AtomicInteger listAmount = new AtomicInteger(0);
+        compound.getTags().forEach((s, nbt) -> {
+            if (compound.getTagListOfTypeOrNull(s, nbt.getType().getNBTClass()) != null) {
+                NBTList<?> list = compound.getTagListOfTypeOrNull(s, nbt.getType().getNBTClass());
+
+                listAmount.set(listAmount.get() + 1);
+
+                if (listAmount.get() > 10) {
+                    dispatch(event, ViolationDocument.builder()
+                        .mitigationStrategy(MitigationStrategy.MITIGATE)
+                        .description("send tag with too many lists")
+                        .debugs(Collections.singletonList(new Debug<>("Lists", listAmount.get())))
+                        .build());
+                }
+
+                final int size = list.size();
+                if (size > 20) {
+                    dispatch(event, ViolationDocument.builder()
+                        .mitigationStrategy(MitigationStrategy.MITIGATE)
+                        .description("send tag with big list")
+                        .debugs(Arrays.asList(
+                            new Debug<>("Size", size),
+                            new Debug<>("Tag", s)
+                        ))
+                        .build());
+                    compound.removeTag(s);
+                }
+                for (int i = 0; i < list.size(); ++i) {
+                    final String content = String.valueOf(list.getTag(i));
+                    if (content == null || content.equalsIgnoreCase("null")) {
+                        dispatch(event, ViolationDocument.builder()
+                            .mitigationStrategy(MitigationStrategy.MITIGATE)
+                            .description("send tag with invalid list content")
+                            .debugs(Arrays.asList(
+                                new Debug<>("Size", size),
+                                new Debug<>("Tag", s),
+                                new Debug<>("Index", i)
+                            ))
+                            .build());
+                    }
+                    if (content.length() > 90) {
+                        dispatch(event, ViolationDocument.builder()
+                            .mitigationStrategy(MitigationStrategy.MITIGATE)
+                            .description("send tag with invalid list content")
+                            .debugs(Arrays.asList(
+                                new Debug<>("Size", size),
+                                new Debug<>("Tag", s),
+                                new Debug<>("Index", i),
+                                new Debug<>("Content", content.length())
+                            )).build());
+                    }
+                }
+            }
+        });
+
+        if (compound.getTags().size() > 20) {
+            dispatch(event, ViolationDocument.builder()
+                .mitigationStrategy(MitigationStrategy.MITIGATE)
+                .description("send tag with too many keys")
+                .debugs(Collections.singletonList(new Debug<>("Tags", compound.getTags().size()))
+                ).build());
+        }
     }
 
     private void checkInvalidClick(WrapperPlayClientClickWindow wrapper, PacketReceiveEvent event) {
