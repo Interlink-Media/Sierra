@@ -133,7 +133,8 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handleAnvilInventory(PacketReceiveEvent event) {
         if (event.getPacketType() == PacketType.Play.Client.PLUGIN_MESSAGE) {
-            WrapperPlayClientPluginMessage wrapper = new WrapperPlayClientPluginMessage(event);
+            WrapperPlayClientPluginMessage wrapper = CastUtil.getSupplier(
+                () -> new WrapperPlayClientPluginMessage(event), getPlayerData()::exceptionDisconnect);
 
             String channelName = wrapper.getChannelName();
 
@@ -1432,16 +1433,22 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
 
         if (event.getPacketType() == PacketType.Play.Server.SET_EXPERIENCE) {
+
             WrapperPlayServerSetExperience wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayServerSetExperience(event), playerData::exceptionDisconnect);
             checkSetExperience(wrapper, event);
+
         } else if (event.getPacketType() == PacketType.Play.Server.WINDOW_ITEMS) {
+
             WrapperPlayServerWindowItems wrapper = CastUtil.getSupplier(
                 () -> new WrapperPlayServerWindowItems(event), playerData::exceptionDisconnect);
+
             checkWindowItems(wrapper, event);
+
         } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
             WrapperPlayServerOpenWindow window = CastUtil.getSupplier(
                 () -> new WrapperPlayServerOpenWindow(event), playerData::exceptionDisconnect);
+
             checkOpenWindow(window);
         }
     }

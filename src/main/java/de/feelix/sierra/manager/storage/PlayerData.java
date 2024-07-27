@@ -108,6 +108,10 @@ public class PlayerData implements SierraUser {
         ));
     }
 
+    public void addRealTimeTask(int transaction, Runnable runnable) {
+        transactionProcessor.addRealTimeTask(transaction, false, runnable);
+    }
+
     public int getTicksExisted() {
         return FormatUtils.convertMillisToTicks(System.currentTimeMillis() - this.joinTime);
     }

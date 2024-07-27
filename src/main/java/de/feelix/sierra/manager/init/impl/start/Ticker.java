@@ -51,7 +51,7 @@ public class Ticker implements Initable {
                 }
                 handleCheckViolations(value);
             }
-        }, 5, 20);
+        }, 0, 1);
     }
 
     private boolean isUserValid(PlayerData playerData) {

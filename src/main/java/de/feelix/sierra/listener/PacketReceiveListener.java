@@ -10,6 +10,7 @@ import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.manager.storage.logger.LogTag;
+import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.violation.MitigationStrategy;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -66,13 +67,13 @@ public class PacketReceiveListener extends PacketListenerAbstract {
 
     private void handleLocale(PacketReceiveEvent event, PlayerData playerData) {
         if (event.getPacketType() == PacketType.Play.Client.CLIENT_SETTINGS) {
-            WrapperPlayClientSettings wrapper = new WrapperPlayClientSettings(event);
+            WrapperPlayClientSettings wrapper = CastUtil.getSupplier(
+                () -> new WrapperPlayClientSettings(event), playerData::exceptionDisconnect);
             playerData.setLocale(wrapper.getLocale());
         }
     }
 
     private boolean isWeirdPacket(ProtocolPacketEvent<Object> event, PlayerData playerData) {
-
 
         YamlConfiguration sierraConfig = Sierra.getPlugin().getSierraConfigEngine().config();
 
