@@ -166,12 +166,12 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
 
     private void handleCreativeInventoryAction(PacketReceiveEvent event, PlayerData data, boolean blockBooks,
                                                List<String> pageList) {
-        if (getPlayerData() != null && getPlayerData().getGameMode() != GameMode.CREATIVE) {
+        if (playerData != null && playerData.getGameMode() != GameMode.CREATIVE) {
             this.dispatch(event, ViolationDocument.builder()
                 .description("spoofed his game-mode")
                 .mitigationStrategy(MitigationStrategy.BAN)
                 .debugs(Arrays.asList(
-                    new Debug<>("GameMode", getPlayerData().getGameMode().name()),
+                    new Debug<>("GameMode", playerData.getGameMode().name()),
                     new Debug<>("Fake", "CREATIVE")
                 ))
                 .build());
