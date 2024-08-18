@@ -4,6 +4,7 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
@@ -112,6 +113,10 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
         if (!configEngine().config().getBoolean("prevent-timer-cheats", true)) {
             return;
         }
+
+         if(!event.getUser().getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
+             return;
+         }
 
         long timeMillis = System.currentTimeMillis();
 

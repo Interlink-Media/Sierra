@@ -25,13 +25,13 @@ repositories {
 }
 
 dependencies {
-    implementation(files("depends/packetevents-518.jar"))
+    implementation(files("depends/packetevents-549.jar"))
     implementation(project(':api'))
-    implementation 'com.github.cryptomorin:XSeries:11.2.0.1'
+    implementation 'com.github.cryptomorin:XSeries:11.2.0'
     implementation 'com.google.guava:guava:33.2.1-jre'
     implementation 'com.google.code.gson:gson:2.11.0'
 
-    compileOnly 'org.spigotmc:spigot-api:1.21-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot-api:1.21.1-R0.1-SNAPSHOT'
 
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'

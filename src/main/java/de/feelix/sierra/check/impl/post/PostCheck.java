@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.github.retrooper.packetevents.protocol.packettype.PacketType.Play.Client.*;
-import static com.github.retrooper.packetevents.protocol.packettype.PacketType.Play.Client.ENTITY_ACTION;
 
 @SierraCheckData(checkType = CheckType.POST)
 public class PostCheck extends SierraDetection implements IngoingProcessor, OutgoingProcessor {
@@ -43,7 +42,9 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
     private boolean hasSentFlyingPacket = false;
 
     private void handleFlyingPacket(PacketReceiveEvent event) {
-        if (!flags.isEmpty() && configEngine().config().getBoolean("prevent-post-packets", true)) {
+        if (!flags.isEmpty() && configEngine().config().getBoolean("prevent-post-packets", true) && event.getUser()
+            .getClientVersion()
+            .isOlderThan(ClientVersion.V_1_9)) {
 
             // Okay, the user might be cheating, let's double check
             // 1.8 clients have the idle packet, and this shouldn't false on 1.8 clients
