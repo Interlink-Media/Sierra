@@ -120,7 +120,7 @@ public class PlayerData implements SierraUser {
         return this.bypassPermission;
     }
 
-    public void cancelEvent(ProtocolPacketEvent<Object> event) {
+    public void cancelEvent(ProtocolPacketEvent event) {
         event.cleanUp();
         event.setCancelled(true);
     }

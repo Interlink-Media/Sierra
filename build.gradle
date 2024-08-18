@@ -41,7 +41,7 @@ dependencies {
 }
 
 group = 'de.feelix.sierra'
-version = '1.4.8'
+version = '1.4.9'
 description = 'Sierra'
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8

@@ -73,7 +73,7 @@ public class PacketReceiveListener extends PacketListenerAbstract {
         }
     }
 
-    private boolean isWeirdPacket(ProtocolPacketEvent<Object> event, PlayerData playerData) {
+    private boolean isWeirdPacket(ProtocolPacketEvent event, PlayerData playerData) {
 
         YamlConfiguration sierraConfig = Sierra.getPlugin().getSierraConfigEngine().config();
 
@@ -130,11 +130,11 @@ public class PacketReceiveListener extends PacketListenerAbstract {
                && playerData.isBypassPermission();
     }
 
-    private PlayerData getPlayerData(ProtocolPacketEvent<Object> event) {
+    private PlayerData getPlayerData(ProtocolPacketEvent event) {
         return SierraDataManager.getInstance().getPlayerData(event.getUser()).get();
     }
 
-    private boolean handleExemptOrBlockedPlayer(PlayerData playerData, ProtocolPacketEvent<?> event) {
+    private boolean handleExemptOrBlockedPlayer(PlayerData playerData, ProtocolPacketEvent event) {
         if (playerData.isExempt()) {
             event.setCancelled(false);
             return true;

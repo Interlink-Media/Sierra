@@ -801,7 +801,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
     }
 
-    private void checkAttributes(ProtocolPacketEvent<Object> event, ItemStack itemStack) {
+    private void checkAttributes(ProtocolPacketEvent event, ItemStack itemStack) {
         if (!hasAttributeModifiers(itemStack)) return;
         List<NBTCompound> tags = getAttributeModifiers(itemStack);
         boolean vanillaMapping = useVanillaAttributeMapping();
@@ -848,7 +848,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
     }
 
-    private void handleAttributeViolation(ProtocolPacketEvent<Object> event, boolean vanillaMapping,
+    private void handleAttributeViolation(ProtocolPacketEvent event, boolean vanillaMapping,
                                           AttributeMapper attributeMapper, NBTCompound tag) {
 
         if (tag == null) return;

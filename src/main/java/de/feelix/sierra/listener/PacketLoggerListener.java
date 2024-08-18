@@ -99,7 +99,7 @@ public class PacketLoggerListener extends PacketListenerAbstract {
         }
     }
 
-    private PlayerData getPlayerData(ProtocolPacketEvent<Object> event) {
+    private PlayerData getPlayerData(ProtocolPacketEvent event) {
         return SierraDataManager.getInstance().getPlayerData(event.getUser()).get();
     }
 }

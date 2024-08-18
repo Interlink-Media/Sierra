@@ -47,7 +47,7 @@ public class PacketSendListener extends PacketListenerAbstract {
                && playerData.isBypassPermission();
     }
 
-    private boolean handleExemptOrBlockedPlayer(PlayerData playerData, ProtocolPacketEvent<?> event) {
+    private boolean handleExemptOrBlockedPlayer(PlayerData playerData, ProtocolPacketEvent event) {
         if (playerData.isExempt()) {
             event.setCancelled(false);
             return true;
@@ -59,7 +59,7 @@ public class PacketSendListener extends PacketListenerAbstract {
         return false;
     }
 
-    private PlayerData getPlayerData(ProtocolPacketEvent<Object> event) {
+    private PlayerData getPlayerData(ProtocolPacketEvent event) {
         return SierraDataManager.getInstance().getPlayerData(event.getUser()).get();
     }
 }
