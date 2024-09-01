@@ -25,6 +25,7 @@ public class CompatibilityHandler {
         descriptors.add(new ProtocolLibDescriptor());
         descriptors.add(new FastAsyncWorldEditDescriptor());
         descriptors.add(new DeluxeMenusDescriptor());
+        descriptors.add(new BetterRTPDescriptor());
         descriptors.add(new InfiniteParkourDescriptor());
         descriptors.add(new InsaneAnnouncerDescriptor());
     }
