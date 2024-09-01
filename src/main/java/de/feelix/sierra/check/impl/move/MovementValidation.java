@@ -13,6 +13,7 @@ import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.check.violation.ViolationDocument;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
+import de.feelix.sierra.manager.storage.SierraDataManager;
 import de.feelix.sierra.utilities.CastUtil;
 import de.feelix.sierra.utilities.FormatUtils;
 import de.feelix.sierraapi.check.CheckType;
@@ -227,7 +228,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
 
         long timeMillis = System.currentTimeMillis();
 
-        boolean hasTeleported = timeMillis - playerData.getTeleportProcessor().getLastTeleportTime() < 1000;
+        boolean hasTeleported = timeMillis - playerData.getTeleportProcessor().getLastTeleportTime() < 2000;
         boolean passedThreshold = timeMillis - playerData.getJoinTime() > 1000 && !hasTeleported;
 
         if (passedThreshold && deltaXZ > 7 && playerData.getGameMode() == GameMode.SURVIVAL) {
@@ -246,7 +247,7 @@ public class MovementValidation extends SierraDetection implements IngoingProces
             deltaBuffer = Math.max(0, deltaBuffer - 1);
         }
 
-        if (invalidDeltaValue(deltaX, deltaY, deltaZ)) {
+        if (invalidDeltaValue(deltaX, deltaY, deltaZ) && !SierraDataManager.skipDeltaPositionCheck) {
             this.dispatch(event, ViolationDocument.builder()
                 .description("is moving invalid")
                 .mitigationStrategy(MitigationStrategy.KICK)

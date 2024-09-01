@@ -47,6 +47,7 @@ public class SierraDataManager implements UserRepository {
     public static boolean skipSkullUUIDCheck = false;
     public static boolean skipModelCheck = false;
     public static boolean skipAnvilCheck = false;
+    public static boolean skipDeltaPositionCheck = false;
 
     @Getter
     private static SierraDataManager instance;
