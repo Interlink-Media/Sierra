@@ -2,6 +2,7 @@ package de.feelix.sierra.compatibility.impl;
 
 import de.feelix.sierra.compatibility.Descriptor;
 import de.feelix.sierra.manager.storage.SierraDataManager;
+import org.bukkit.Bukkit;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +28,6 @@ public class BetterRTPDescriptor implements Descriptor {
 
     @Override
     public boolean compatibilityProblematic() {
-        return true;
+        return Bukkit.getPluginManager().getPlugin(pluginName()) != null;
     }
 }
