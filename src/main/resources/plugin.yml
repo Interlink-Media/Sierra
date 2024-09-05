@@ -1,5 +1,5 @@
 name: Sierra
-version: '1.4.9'
+version: '1.5.0'
 author: Feelix
 main: de.feelix.sierra.Sierra
 description: Packet Analysis Tool for the Minecraft Protocol
