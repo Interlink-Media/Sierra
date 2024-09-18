@@ -56,8 +56,6 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
             handleEditBook(event, data, blockBooks, pageList);
         } else if (packetType == PacketType.Play.Client.PLUGIN_MESSAGE) {
             handlePluginMessage(event, data, blockBooks, pageList);
-        } else if (packetType == PacketType.Play.Client.PICK_ITEM) {
-            handlePickItem(event, data, blockBooks, pageList);
         } else if (packetType == PacketType.Play.Client.PLAYER_BLOCK_PLACEMENT) {
             handleBlockPlacement(event, data, blockBooks, pageList);
         } else if (packetType == PacketType.Play.Client.CREATIVE_INVENTORY_ACTION) {
@@ -120,34 +118,6 @@ public class BookValidation extends SierraDetection implements IngoingProcessor 
                     .debugs(Collections.singletonList(new Debug<>("Exception", exception.getMessage())))
                     .build());
             }
-        } finally {
-            ByteBufHelper.release(buffer);
-        }
-    }
-
-    private void handlePickItem(PacketReceiveEvent event, PlayerData data, boolean blockBooks, List<String> pageList) {
-        WrapperPlayClientPickItem wrapper = CastUtil.getSupplier(
-            () -> new WrapperPlayClientPickItem(event), data::exceptionDisconnect);
-
-        Object buffer = null;
-        try {
-            buffer = UnpooledByteBufAllocationHelper.buffer();
-            ByteBufHelper.writeBytes(buffer, wrapper.getBuffer());
-            PacketWrapper<?> universalWrapper = PacketWrapper.createUniversalPacketWrapper(buffer);
-
-            ItemStack wrappedItemStack = universalWrapper.readItemStack();
-
-            if ((wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK
-                 || wrappedItemStack.getType() == ItemTypes.WRITTEN_BOOK) && blockBooks) {
-
-                this.dispatch(event, ViolationDocument.builder()
-                    .description("used book while disabled")
-                    .mitigationStrategy(MitigationStrategy.KICK)
-                    .debugs(Collections.emptyList())
-                    .build());
-            }
-
-            checkForInvalidAuthor(event, pageList, wrappedItemStack);
         } finally {
             ByteBufHelper.release(buffer);
         }
