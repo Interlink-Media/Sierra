@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    implementation(files("depends/packetevents-585.jar"))
+    implementation(files("depends/packetevents-619.jar"))
     implementation(project(':api'))
     implementation 'com.github.cryptomorin:XSeries:12.1.0'
     implementation 'com.google.guava:guava:33.3.1-jre'
@@ -41,7 +41,7 @@ dependencies {
 }
 
 group = 'de.feelix.sierra'
-version = '1.5.2'
+version = '1.5.3'
 description = 'Sierra'
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8

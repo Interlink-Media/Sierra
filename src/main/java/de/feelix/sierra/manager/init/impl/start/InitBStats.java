@@ -3,7 +3,9 @@ package de.feelix.sierra.manager.init.impl.start;
 import de.feelix.sierra.Sierra;
 import de.feelix.sierra.manager.init.Initable;
 import de.feelix.sierra.manager.storage.SierraDataManager;
-import io.github.retrooper.packetevents.bstats.Metrics;
+import io.github.retrooper.packetevents.bstats.bukkit.Metrics;
+import io.github.retrooper.packetevents.bstats.charts.AdvancedPie;
+import io.github.retrooper.packetevents.bstats.charts.SingleLineChart;
 
 /**
  * The InitBStats class is responsible for initializing the bStats metrics for the Sierra plugin.
@@ -26,9 +28,9 @@ public class InitBStats implements Initable {
      */
     @Override
     public void start() {
-        Metrics metrics = new Metrics(Sierra.getPlugin(), PLUGIN_ID);
+        Metrics metrics = new io.github.retrooper.packetevents.bstats.bukkit.Metrics(Sierra.getPlugin(), PLUGIN_ID);
 
-        metrics.addCustomChart(new Metrics.SingleLineChart(
+        metrics.addCustomChart(new SingleLineChart(
             "bans",
             () -> {
                 int bans = SierraDataManager.BANS;
@@ -36,7 +38,7 @@ public class InitBStats implements Initable {
                 return bans;
             }
         ));
-        metrics.addCustomChart(new Metrics.SingleLineChart(
+        metrics.addCustomChart(new SingleLineChart(
             "kicks",
             () -> {
                 int kicks = SierraDataManager.KICKS;
@@ -44,7 +46,7 @@ public class InitBStats implements Initable {
                 return kicks;
             }
         ));
-        metrics.addCustomChart(new Metrics.AdvancedPie(
+        metrics.addCustomChart(new AdvancedPie(
             "active_check_types",
             () -> SierraDataManager.violationCount
         ));
