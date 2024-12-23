@@ -16,6 +16,7 @@ import de.feelix.sierraapi.SierraApiAccessor;
 import de.feelix.sierraapi.events.EventBus;
 import de.feelix.sierraapi.server.SierraServer;
 import de.feelix.sierraapi.user.UserRepository;
+import io.github.retrooper.packetevents.util.viaversion.ViaVersionUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -146,6 +147,8 @@ public final class Sierra extends JavaPlugin implements SierraApi {
         this.sierraDataManager = new SierraDataManager();
         setPrefix();
         initManager.start();
+
+        ViaVersionUtil.checkIfViaIsPresent();
 
         SierraApiAccessor.setSierraApiInstance(this);
         this.getLogger().info("API is ready");

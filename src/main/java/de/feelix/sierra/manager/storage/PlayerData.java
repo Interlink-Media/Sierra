@@ -1,5 +1,6 @@
 package de.feelix.sierra.manager.storage;
 
+import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.ProtocolPacketEvent;
 import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
@@ -15,6 +16,7 @@ import de.feelix.sierra.utilities.message.ConfigValue;
 import de.feelix.sierraapi.timing.TimingHandler;
 import de.feelix.sierraapi.user.settings.AlertSettings;
 import io.github.retrooper.packetevents.util.folia.FoliaScheduler;
+import io.github.retrooper.packetevents.util.viaversion.ViaVersionUtil;
 import lombok.Data;
 import de.feelix.sierraapi.check.CheckRepository;
 import de.feelix.sierraapi.user.impl.SierraUser;
@@ -74,6 +76,26 @@ public class PlayerData implements SierraUser {
             sierraLogger = new SierraLogger(bukkitPlayer.getName());
         }
         sendTransaction();
+    }
+
+    public ClientVersion getClientVersion() {
+        // Use ViaVersion cause its an early injector
+        if (ViaVersionUtil.getViaVersionAccessor() != null) {
+            this.clientVersion = ClientVersion.getById(ViaVersionUtil.getViaVersionAccessor().getProtocolVersion(user));
+            return this.clientVersion;
+        }
+
+        if (this.clientVersion == null) {
+            // First use players own sent client version
+            this.clientVersion= user.getClientVersion();
+
+            // If players version is still null use server version as client version
+            if (this.clientVersion == null) {
+                this.clientVersion = ClientVersion.getById(
+                    PacketEvents.getAPI().getServerManager().getVersion().getProtocolVersion());
+            }
+        }
+        return this.clientVersion;
     }
 
     public void sendTransaction() {
@@ -167,7 +189,7 @@ public class PlayerData implements SierraUser {
 
     @Override
     public String version() {
-        return user.getClientVersion().name().replace("V_", "").replace("_", ".");
+        return getClientVersion().name().replace("V_", "").replace("_", ".");
     }
 
     @Override

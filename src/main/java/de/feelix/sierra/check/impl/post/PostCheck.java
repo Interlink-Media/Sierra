@@ -42,9 +42,7 @@ public class PostCheck extends SierraDetection implements IngoingProcessor, Outg
     private boolean hasSentFlyingPacket = false;
 
     private void handleFlyingPacket(PacketReceiveEvent event) {
-        if (!flags.isEmpty() && configEngine().config().getBoolean("prevent-post-packets", true) && event.getUser()
-            .getClientVersion()
-            .isOlderThan(ClientVersion.V_1_9)) {
+        if (!flags.isEmpty() && configEngine().config().getBoolean("prevent-post-packets", true)) {
 
             // Okay, the user might be cheating, let's double check
             // 1.8 clients have the idle packet, and this shouldn't false on 1.8 clients

@@ -530,7 +530,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
         }
 
         boolean isSequenceNegative = wrapper.getSequence() < 0;
-        boolean isNewerThanV119 = event.getUser().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19);
+        boolean isNewerThanV119 = playerData.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19);
         ServerVersion currentVersion = PacketEvents.getAPI().getServerManager().getVersion();
         boolean isVersionV119OrNewer = currentVersion.isNewerThanOrEquals(ServerVersion.V_1_19);
 
@@ -640,7 +640,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void handlePlayerDigging(PacketReceiveEvent event, PlayerData playerData) {
 
-        ClientVersion playerVersion = event.getUser().getClientVersion();
+        ClientVersion playerVersion = playerData.getClientVersion();
         boolean isClientVersion19OrNewer = playerVersion.isNewerThanOrEquals(ClientVersion.V_1_19);
 
         ServerVersion currentVersion = PacketEvents.getAPI().getServerManager().getVersion();
@@ -657,7 +657,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
 
     private void checkPlayerDigging(WrapperPlayClientPlayerDigging dig, PacketReceiveEvent event) {
         boolean isSequenceNegative = dig.getSequence() < 0;
-        boolean isNewerVersion = event.getUser().getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19);
+        boolean isNewerVersion = playerData.getClientVersion().isNewerThanOrEquals(ClientVersion.V_1_19);
         ServerVersion currentVersion = PacketEvents.getAPI().getServerManager().getVersion();
         boolean isVersion19OrNewer = currentVersion.isNewerThanOrEquals(ServerVersion.V_1_19);
 
@@ -671,7 +671,7 @@ public class ProtocolValidation extends SierraDetection implements IngoingProces
     }
 
     private void handleUseItem(PacketReceiveEvent event, PlayerData playerData) {
-        ClientVersion playerVersion = event.getUser().getClientVersion();
+        ClientVersion playerVersion = playerData.getClientVersion();
         boolean isClientVersionAtLeastV1_19 = playerVersion.isNewerThanOrEquals(ClientVersion.V_1_19);
 
         ServerVersion currentVersion = PacketEvents.getAPI().getServerManager().getVersion();

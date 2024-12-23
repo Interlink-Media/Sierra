@@ -114,7 +114,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             return;
         }
 
-         if(!event.getUser().getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
+         if(!data.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
              return;
          }
 
