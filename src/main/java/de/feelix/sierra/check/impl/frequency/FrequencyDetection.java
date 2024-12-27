@@ -4,7 +4,6 @@ import com.github.retrooper.packetevents.event.PacketReceiveEvent;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.packettype.PacketTypeCommon;
-import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.DiggingAction;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPlayerDigging;
@@ -16,13 +15,13 @@ import de.feelix.sierra.Sierra;
 import de.feelix.sierra.check.SierraDetection;
 import de.feelix.sierra.check.violation.Debug;
 import de.feelix.sierra.check.violation.ViolationDocument;
+import de.feelix.sierra.manager.init.impl.start.Ticker;
 import de.feelix.sierra.manager.packet.IngoingProcessor;
 import de.feelix.sierra.manager.packet.OutgoingProcessor;
 import de.feelix.sierra.manager.storage.PlayerData;
 import de.feelix.sierra.utilities.CastUtil;
-import de.feelix.sierra.manager.init.impl.start.Ticker;
-import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.check.CheckType;
+import de.feelix.sierraapi.check.SierraCheckData;
 import de.feelix.sierraapi.violation.MitigationStrategy;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -39,12 +38,18 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
     private int dropCount = 0;
     private int containerId = -1;
 
-    private long lastFlyingTime = 0L;
-    private long balance = 0L;
+    long timerBalanceRealTime = 0;
 
-    private static final long MAX_BAL = 0;
-    private static final long BAL_RESET = -50;
-    private static final long BAL_SUB_ON_TP = 50;
+    // Default value is real time minus max keep-alive time
+    long knownPlayerClockTime = (long) (System.nanoTime() - 6e10);
+    long lastMovementPlayerClock = (long) (System.nanoTime() - 6e10);
+
+    // How long should the player be able to fall back behind their ping?
+    // Default: 120 milliseconds
+    long clockDrift = (long) (120.0 * 1e6);
+    long limitAbuseOverPing = 1000;
+
+    boolean hasGottenMovementAfterTransaction = false;
 
     private final HashMap<PacketTypeCommon, Integer> packetCounts = new HashMap<>();
 
@@ -102,46 +107,69 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
             handleCraftRecipeRequest(event);
         } else if (packetType.equals(PacketType.Play.Client.PLAYER_DIGGING)) {
             handlePlayerDigging(event, playerData);
-        } else if (WrapperPlayClientPlayerFlying.isFlying(event.getPacketType())) {
-            handleFlyingDelay(event, playerData);
         }
+
+        if (hasGottenMovementAfterTransaction && checkForTransaction(event.getPacketType())) {
+            knownPlayerClockTime = lastMovementPlayerClock;
+            lastMovementPlayerClock = playerData.getPlayerClockAtLeast();
+            hasGottenMovementAfterTransaction = false;
+        }
+
+        if (!shouldCountPacketForTimer(event.getPacketType())) return;
+
+        hasGottenMovementAfterTransaction = true;
+        timerBalanceRealTime += (long) 50e6;
+
+        doCheck(event);
 
         playerData.getTimingProcessor().getFrequencyTask().end();
     }
 
-    private void handleFlyingDelay(PacketReceiveEvent event, PlayerData data) {
-        if (!configEngine().config().getBoolean("prevent-timer-cheats", true)) {
-            return;
-        }
+    // Check from: https://github.com/GrimAnticheat/Grim -> Credits to MWHunter
+    private void doCheck(PacketReceiveEvent event) {
 
-         if(!data.getClientVersion().isOlderThan(ClientVersion.V_1_9)) {
-             return;
-         }
+        final double transactionPing = getPlayerData().getTransactionPing();
+        // Limit using transaction ping if over 1000ms (default)
+        final boolean needsAdjustment = limitAbuseOverPing != -1 && transactionPing >= limitAbuseOverPing;
+        final boolean wouldFailNormal = timerBalanceRealTime > System.nanoTime();
+        final boolean failsAdjusted = needsAdjustment
+                                      && (timerBalanceRealTime + ((transactionPing * 1e6) - clockDrift - 50e6))
+                                         > System.nanoTime();
+        if (wouldFailNormal || failsAdjusted) {
 
-        long timeMillis = System.currentTimeMillis();
+            double delay = (System.nanoTime() - timerBalanceRealTime) / (1000000000.0 / 20.0);
 
-        boolean hasTeleported = timeMillis - playerData.getTeleportProcessor().getLastTeleportTime() < 1000;
-        boolean passedThreshold = timeMillis - data.getJoinTime() > 1000 && !hasTeleported;
-
-        if (lastFlyingTime != 0L && passedThreshold) {
-            long now = System.currentTimeMillis();
-            balance += 50L;
-            balance -= now - lastFlyingTime;
-            if (balance > MAX_BAL) {
-                this.dispatch(event, ViolationDocument.builder()
+            this.dispatch(
+                event, ViolationDocument.builder()
                     .description("is moving too frequent")
                     .mitigationStrategy(violations() > 75 ? MitigationStrategy.KICK : MitigationStrategy.MITIGATE)
                     .debugs(Arrays.asList(
-                        new Debug<>("Balance", balance),
-                        new Debug<>("Version", playerData.getClientVersion().getReleaseName()),
-                        new Debug<>("Ping", playerData.getPingProcessor().getPing()),
-                        new Debug<>("Transaction", playerData.getTransactionProcessor().getTransactionPing())
+                        new Debug<>("Version", getPlayerData().getClientVersion().getReleaseName()),
+                        new Debug<>("Ping", getPlayerData().getPingProcessor().getPing() + "ms"),
+                        new Debug<>("Desync", Math.abs(delay) + " ticks ahead"),
+                        new Debug<>("Last Trans", (System.currentTimeMillis() - this.getPlayerData()
+                            .getTransactionProcessor().lastTransReceived) + "ms"
+                        )
                     ))
                     .build());
-                balance = BAL_RESET;
-            }
+
+            // Reset the violation by 1 movement
+            timerBalanceRealTime -= (long) 50e6;
         }
-        lastFlyingTime = timeMillis;
+
+        timerBalanceRealTime = Math.max(timerBalanceRealTime, lastMovementPlayerClock - clockDrift);
+
+    }
+
+    public boolean shouldCountPacketForTimer(PacketTypeCommon packetType) {
+        // If not flying, or this was a teleport, or this was a duplicate 1.17 mojang stupidity packet
+        return WrapperPlayClientPlayerFlying.isFlying(packetType)
+               && System.currentTimeMillis() - getPlayerData().getTeleportProcessor().getLastTeleportTime() > 1000;
+    }
+
+    public boolean checkForTransaction(PacketTypeCommon packetType) {
+        return packetType == PacketType.Play.Client.PONG ||
+               packetType == PacketType.Play.Client.WINDOW_CONFIRMATION;
     }
 
     private int retrieveLimitFromConfiguration(PacketTypeCommon packetType) {
@@ -234,10 +262,7 @@ public class FrequencyDetection extends SierraDetection implements IngoingProces
 
     @Override
     public void handle(PacketSendEvent event, PlayerData playerData) {
-        if (event.getPacketType() == PacketType.Play.Server.PLAYER_POSITION_AND_LOOK
-            || event.getPacketType() == PacketType.Play.Server.ENTITY_VELOCITY) {
-            balance -= BAL_SUB_ON_TP;
-        } else if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
+        if (event.getPacketType() == PacketType.Play.Server.OPEN_WINDOW) {
             WrapperPlayServerOpenWindow window = CastUtil.getSupplier(
                 () -> new WrapperPlayServerOpenWindow(event), playerData::exceptionDisconnect);
             this.containerId = window.getContainerId();

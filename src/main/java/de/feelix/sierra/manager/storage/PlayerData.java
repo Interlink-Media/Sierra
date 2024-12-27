@@ -42,6 +42,7 @@ public class PlayerData implements SierraUser {
     private String locale = "unset";
     private final Set<String> channels = new HashSet<>();
     private final long joinTime = System.currentTimeMillis();
+    private long playerClock = System.nanoTime();
 
     private boolean receivedPunishment = false;
     private boolean exempt = false;
@@ -236,5 +237,13 @@ public class PlayerData implements SierraUser {
     @Override
     public TimingHandler timingHandler() {
         return this.getTimingProcessor();
+    }
+
+    public long getPlayerClockAtLeast() {
+        return this.playerClock;
+    }
+
+    public int getTransactionPing() {
+        return (int) Math.floor(this.transactionProcessor.getTransactionPing() / 1e6);
     }
 }

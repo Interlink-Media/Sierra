@@ -75,6 +75,7 @@ public class TransactionProcessor {
 
                 lastTransactionReceived.incrementAndGet();
                 lastTransReceived = System.currentTimeMillis();
+                this.player.setPlayerClock(System.nanoTime());
                 transactionPing = (System.nanoTime() - data.getSecond());
                 playerClockAtLeast = data.getSecond();
             } while (data.getFirst() != id);
