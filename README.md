@@ -6,6 +6,8 @@
 
 <h3 align="center">Sierra</h3>
 
+<h3 align="center">Project is moved to <a href="https://sierra.rip">this page</a></h3>
+
 <p align="center">
   Packet Analysis Tool for the Minecraft Protocol by Feelix.
   <br />
