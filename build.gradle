@@ -28,7 +28,7 @@ dependencies {
     implementation(files("depends/packetevents-619.jar"))
     implementation(project(':api'))
     implementation 'com.github.cryptomorin:XSeries:13.0.0'
-    implementation 'com.google.guava:guava:33.4.5-jre'
+    implementation 'com.google.guava:guava:33.4.6-jre'
     implementation 'com.google.code.gson:gson:2.12.1'
 
     compileOnly 'org.spigotmc:spigot-api:1.21.5-R0.1-SNAPSHOT'
