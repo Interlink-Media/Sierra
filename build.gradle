@@ -27,7 +27,7 @@ repositories {
 dependencies {
     implementation(files("depends/packetevents-619.jar"))
     implementation(project(':api'))
-    implementation 'com.github.cryptomorin:XSeries:13.0.0'
+    implementation 'com.github.cryptomorin:XSeries:13.2.0'
     implementation 'com.google.guava:guava:33.4.6-jre'
     implementation 'com.google.code.gson:gson:2.13.1'
 
