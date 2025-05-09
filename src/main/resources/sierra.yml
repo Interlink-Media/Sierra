@@ -119,7 +119,7 @@ skip-negative-experience-check: false # Not recommended
 generic-packet-size-limit: 6000 # Set -1 to disable (Not recommended)
 
 # Default packet per second limit
-generic-packet-frequency-default: 50
+generic-packet-frequency-default: 120
 
 # This check is important for some chinese letter books or some other weird unicode's
 skip-book-readable-check: false
@@ -127,29 +127,30 @@ skip-book-readable-check: false
 # Limit packets per second
 # - PACKET_TYPE:Count ex. PLAYER_DIGGING:5
 generic-packet-frequency-limit:
-  - "CREATIVE_INVENTORY_ACTION:60"
-  - "PLAYER_BLOCK_PLACEMENT:40"
-  - "CRAFT_RECIPE_REQUEST:20"
-  - "WINDOW_CONFIRMATION:35"
-  - "CLICK_WINDOW_BUTTON:25"
-  - "HELD_ITEM_CHANGE:25"
-  - "INTERACT_ENTITY:50"
+  - "CREATIVE_INVENTORY_ACTION:120"
+  - "PLAYER_BLOCK_PLACEMENT:120"
+  - "CRAFT_RECIPE_REQUEST:60"
+  - "CLICK_WINDOW_BUTTON:75"
+  - "HELD_ITEM_CHANGE:75"
+  - "INTERACT_ENTITY:120"
   - "CLIENT_SETTINGS:50"
-  - "PLAYER_DIGGING:50"
+  - "PLAYER_DIGGING:120"
   - "PLUGIN_MESSAGE:25"
   - "CLIENT_STATUS:15"
-  - "TAB_COMPLETE:15"
-  - "CLICK_WINDOW:30"
+  - "TAB_COMPLETE:35"
+  - "CLICK_WINDOW:75"
   - "UPDATE_SIGN:20"
   - "CHAT_MESSAGE:5"
-  - "ANIMATION:50"
+  - "ANIMATION:120"
   - "PICK_ITEM:20"
   - "EDIT_BOOK:10"
   - "USE_ITEM:40"
 
 # All excluded packets for the frequency limit check
 excluded-packets-from-limit:
-  - ""
+  - "WINDOW_CONFIRMATION"
+  - "PING"
+  - "PONG"
 
 # Blocking time in minutes
 connection-block-time: 15 # Time in minutes
